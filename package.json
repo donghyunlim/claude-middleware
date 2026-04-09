@@ -1,0 +1,14 @@
+{
+  "name": "claude-middleware",
+  "version": "1.0.0",
+  "description": "Claude Code plugin for .middleware/ project knowledge",
+  "author": "donny",
+  "license": "MIT",
+  "files": [
+    ".claude-plugin",
+    "hooks",
+    "skills",
+    "AGENTS.md",
+    "README.md"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-middleware",
+  "description": "Project knowledge middleware for Claude Code",
+  "owner": {
+    "name": "donny"
+  },
+  "plugins": [
+    {
+      "name": "middleware",
+      "description": "Read .middleware/ project knowledge to amplify user intent",
+      "version": "1.0.0",
+      "source": "./",
+      "category": "productivity",
+      "tags": ["context", "planning", "middleware", "knowledge"]
+    }
+  ]
+}

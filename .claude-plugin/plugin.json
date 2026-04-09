@@ -1,0 +1,14 @@
+{
+  "name": "middleware",
+  "version": "1.0.0",
+  "description": "Read .middleware/ project knowledge to amplify user intent before code work",
+  "author": {
+    "name": "donny"
+  },
+  "homepage": "https://github.com/donghyunlim/claude-middleware",
+  "repository": "https://github.com/donghyunlim/claude-middleware",
+  "license": "MIT",
+  "keywords": ["middleware", "context", "planning", "code-knowledge"],
+  "skills": "./skills/",
+  "hooks": "./hooks/"
+}

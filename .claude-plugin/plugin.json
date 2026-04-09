@@ -9,5 +9,6 @@
   "repository": "https://github.com/donghyunlim/claude-middleware",
   "license": "MIT",
   "keywords": ["middleware", "context", "planning", "code-knowledge"],
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
 }

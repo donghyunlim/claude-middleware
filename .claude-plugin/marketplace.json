@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "claude-middleware",
+  "name": "donghyunlim",
   "description": "Project knowledge middleware for Claude Code",
   "owner": {
     "name": "donny"

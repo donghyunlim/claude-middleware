@@ -13,14 +13,6 @@
       "source": "./",
       "category": "productivity",
       "tags": ["context", "planning", "middleware", "knowledge"]
-    },
-    {
-      "name": "wrxp",
-      "description": "Breakdown orchestrator: intent refinement, recursive decomposition, dynamic agent matching, DAG-based parallel execution",
-      "version": "0.1.0",
-      "source": "github:donghyunlim/wrxp",
-      "category": "productivity",
-      "tags": ["orchestration", "decomposition", "agents", "breakdown", "dag"]
     }
   ]
 }

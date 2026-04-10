@@ -1,9 +1,16 @@
 {
-  "hooks": [
-    {
-      "type": "UserPromptSubmit",
-      "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-middleware.sh",
-      "timeout": 5000
-    }
-  ]
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-middleware.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
 }

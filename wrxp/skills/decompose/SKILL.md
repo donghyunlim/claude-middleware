@@ -44,25 +44,157 @@ middleware가 없는 프로젝트에서는 코드 서치 모드로 전환한다.
 
 ---
 
-## Step 2 — Intent Clarification
+## Step 2 — Intent Clarification (Deep Reasoning + AskUserQuestion)
 
-유저 요청에서 모호한 부분을 식별하고 질문으로 제거한다.
+유저 요청에서 모호한 부분을 식별하고 질문으로 제거한다. 이 Step은 **Pre-Q Deep Reasoning → AskUserQuestion 강제 질문 → Post-Q Integration Reasoning** 의 세 서브스텝으로 구성된다.
 
-### 모호성 식별 기준
+### Step 2A — Pre-Q Deep Reasoning (Gemini-style)
+
+> 질문을 생성하기 전에 반드시 아래 9가지 원칙으로 의도를 심층 분석한다. 이 reasoning이 완료되기 전에는 **절대 질문을 생성하지 않는다** (Response Inhibition).
+
+**9가지 원칙** (의도 정제 맥락으로 재작성):
+
+1. **Logical Dependencies & Constraints** — 요청의 암묵적 전제조건과 실행 순서를 분석한다
+   - 정책/컨벤션 규칙 (프로젝트 architecture)
+   - 작업 순서 (A가 B를 막으면 안 됨)
+   - 필수 선행 정보/행동
+   - 유저가 명시한 제약사항
+
+2. **Risk Assessment** — 의도를 잘못 해석했을 때의 파급효과를 평가한다
+   - 탐색형 질문은 LOW risk
+   - 되돌릴 수 없는 행동은 HIGH risk → 사전 질문 필수
+   - 기존 정보로 추론 가능하면 질문보다 추론 우선
+
+3. **Abductive Reasoning & Hypothesis Exploration** — 유저가 명시하지 않은 숨은 의도를 가설로 세운다
+   - 표면적 요청 너머의 실제 목표를 추정
+   - 여러 해석이 가능하면 각각을 가설로 기록
+   - 낮은 확률 가설도 성급히 버리지 않음
+
+4. **Outcome Evaluation & Adaptability** — 중간 발견에 따라 계획을 수정한다
+   - 초기 가설이 반증되면 즉시 새 가설 생성
+   - 이해를 지속적으로 정제
+
+5. **Information Availability** — 사용 가능한 모든 정보원을 총동원한다
+   - Step 1에서 수집한 프로젝트 컨텍스트
+   - `.middleware/` 지식 (존재 시)
+   - 대화 히스토리
+   - 유저 질문은 최후의 수단
+
+6. **Precision & Grounding** — 모호성 주장마다 구체적 증거를 인용한다
+   - "애매해 보인다"가 아니라 "파일 X의 Y 함수가 이 동작을 한다"
+   - 정책/규칙 참조 시 정확히 인용
+
+7. **Completeness** — 요건·제약·옵션·선호를 빠짐없이 고려한다
+   - 충돌 시 원칙 1(Logical Dependencies)의 우선순위 사용
+   - 복수 해석 가능성 존재 시 성급한 결론 금지
+
+8. **Persistence & Patience** — 한두 번 애매하다고 포기하지 않는다
+   - 시간/복잡도에 구애받지 않음
+   - 일시 오류는 재시도, 다른 오류는 전략 변경
+
+9. **Response Inhibition** — 이 모든 reasoning이 완료된 후에야 질문 생성 단계로 진행한다
+   - 🚫 reasoning 없이 즉시 AskUserQuestion 호출 금지
+   - ✅ 위 8개 원칙의 산출물을 "모호성 목록"으로 도출한 뒤에만 질문 단계 진입
+
+**출력 형식:**
+
+```
+🧠 Pre-Q Deep Reasoning 결과
+
+📋 Logical Dependencies: [분석]
+⚠️ Risk Assessment: [분석]
+🔬 Hypothesis Exploration: [숨은 의도 가설들]
+📚 Information Sources: [참조한 컨텍스트]
+🎯 Identified Ambiguities: [번호 매긴 모호성 목록 — 다음 Step 2B의 질문 재료]
+```
+
+---
+
+### Step 2B — AskUserQuestion 강제 질문
+
+> ⚠️ **MANDATORY RULE**: Step 2A에서 도출된 모호성을 해소하기 위한 **모든 질문**은
+> 반드시 **`AskUserQuestion` 도구**로만 수행한다.
+>
+> 🚫 **절대 금지**:
+> - 평문(plain text)으로 "~할까요?", "~하시겠어요?" 등 서술형 질문
+> - 유저 응답을 그냥 기다리는 free-form 질문
+> - 여러 질문을 markdown 리스트로 나열 후 응답 기다리기
+>
+> ✅ **유일하게 허용**:
+> - `AskUserQuestion({questions: [...]})` 도구 호출
+
+#### 모호성 식별 기준
 
 - 유저가 확실하다고 생각하지만 AI 관점에서 모호한 것
 - 조금 생각해보면 여러 해석이 가능한 것
 - Step 1의 middleware 지식과 조합했을 때 드러나는 불확실성
+- Step 2A의 9원칙 분석으로 도출된 모호성 목록
 
-### 질문 방식
+#### 질문 방식
 
-AskUserQuestion 도구를 사용한다:
-- 한 번에 하나의 질문만
-- 가능하면 선택지(options) 제공
-- multiSelect가 적절한 경우 활용
+**원칙:**
+- 한 번에 하나의 질문만 (`questions` 배열 길이 권장 1, 최대 4)
+- 가능하면 `options` 제공
+- `multiSelect`가 적절한 경우 활용
 - 모호성이 충분히 제거될 때까지 반복
 
 **Soft cap: 5회 / Hard cap: 10회**
+
+**✅ 올바른 사용 예시:**
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "소셜 로그인은 어떤 프로바이더를 지원할까요?",
+    header: "프로바이더",
+    multiSelect: true,
+    options: [
+      { label: "Google", description: "Google OAuth 2.0" },
+      { label: "Kakao", description: "Kakao REST API" },
+      { label: "Naver", description: "Naver OAuth" }
+    ]
+  }]
+})
+```
+
+**❌ 잘못된 사용 예시 (절대 금지):**
+
+```
+❌ "소셜 로그인은 어떤 프로바이더를 지원할까요? Google, Kakao, Naver 중에
+    선택해 주세요."  ← 평문 질문, 유저 응답 대기 (금지)
+
+❌ 다음 내용을 확인해 주세요:
+   1. 프로바이더는?
+   2. 세션 저장 방식은?
+   3. 토큰 갱신 주기는?     ← markdown 리스트 나열 (금지)
+```
+
+---
+
+### Step 2C — Post-Q Integration Reasoning
+
+> Step 2B에서 답변을 수집한 후, `intent-{slug}.md` 파일로 저장하기 전에 답변들을 통합 검증한다.
+
+**체크리스트:**
+
+1. **Completeness 재검증** — Step 2A에서 도출한 모호성 목록의 모든 항목이 해소되었는가?
+2. **Consistency 검증** — 답변들 사이에 논리적 모순이 없는가?
+3. **암묵적 가정 재확인** — 답변을 받고 나서 새롭게 드러난 모호성이 있는가?
+4. **추가 질문 판단** — 해소되지 않은 것이 있고 Soft cap(5회) 이내라면 **Step 2B로 돌아가 추가 질문 생성** (Hard cap 10회 초과 금지)
+5. **통과 시** → Step 3 (Recursive Decomposition)로 진행
+
+**출력 형식:**
+
+```
+🔁 Post-Q Integration Reasoning
+
+✅ Completeness: [해소된 모호성 / 남은 모호성]
+✅ Consistency: [답변 간 모순 여부]
+🎯 Final Intent: [통합된 정제 의도]
+🚦 Decision: [Step 3 진행 / Step 2B 재호출]
+```
+
+---
 
 ### 출력
 
@@ -212,6 +344,9 @@ AskUserQuestion으로 트리 승인을 요청한다:
 
 | 실수 | 올바른 방법 |
 |------|-----------|
+| **평문으로 질문 (예: "어떤 방식을 원하시나요?")** | **반드시 `AskUserQuestion` 도구 사용** |
+| **Step 2A reasoning 건너뛰고 즉시 질문** | **Pre-Q Deep Reasoning 9원칙 완료 후에만 질문** |
+| **답변 받고 곧바로 intent 문서 저장** | **Step 2C Post-Q Integration 체크 후 저장** |
 | middleware 스캔 없이 바로 분해 | Step 1에서 반드시 관련 feature 확인 후 분해 |
 | 리프 노드가 너무 큼 (여러 에이전트 필요) | 단일 에이전트가 독립 완료 가능한 크기까지 분해 |
 | 유저 승인 없이 분해 트리 확정 | Step 4에서 반드시 AskUserQuestion으로 승인 |

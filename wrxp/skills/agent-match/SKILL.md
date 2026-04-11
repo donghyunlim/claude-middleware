@@ -11,7 +11,7 @@ level: 4
 
 분해된 태스크 목록(또는 트리)을 받아, 각 태스크에 최적의 에이전트를 동적으로 매칭하고, 의존성 DAG를 구성하여 실행 계획을 출력하는 스킬.
 
-breakdown의 Phase 3를 독립 스킬로 분리한 것. 독립 사용과 breakdown 내부 호출 모두 지원.
+breakdown의 Phase 4를 독립 스킬로 분리한 것. 독립 사용과 breakdown 내부 호출 모두 지원.
 
 ---
 
@@ -188,9 +188,9 @@ Wave 3 (순차, Wave 2 의존):
 - 유저가 검토 후 수동 실행하거나 breakdown으로 이어서 사용
 
 ### breakdown에서 내부 호출
-- breakdown이 Phase 3에서 이 스킬의 로직을 사용
+- breakdown이 Phase 4에서 이 스킬의 로직을 사용
 - decompose 출력물 (`tree-{slug}.json`)을 입력으로 받음
-- DAG 저장 후 breakdown이 Phase 4(실행)로 진행
+- DAG 저장 후 breakdown이 Phase 6(실행)로 진행
 
 ---
 

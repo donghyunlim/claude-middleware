@@ -1,6 +1,6 @@
 {
   "name": "wrxp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Intent refinement + recursive decomposition + dynamic agent matching + DAG-based autonomous execution for Claude Code",
   "author": "donghyunlim",
   "license": "MIT",

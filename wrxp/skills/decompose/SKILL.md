@@ -228,7 +228,7 @@ slug는 요청의 핵심 키워드를 kebab-case로 변환하여 생성한다.
 정제된 의도가 이미 단일 에이전트로 완료 가능한 크기라면, **분해를 스킵**한다.
 - 단일 노드 트리(`root` = 리프)를 생성하고 Step 4(시각화/승인)도 스킵
 - 바로 Step 5(출력)로 진행
-- breakdown에서 호출 시: Phase 3(agent-match) 이후 단계는 그대로 수행
+- breakdown에서 호출 시: Phase 4(agent-match) 이후 단계는 그대로 수행
 
 ### 분해 규칙
 
@@ -335,7 +335,7 @@ AskUserQuestion으로 트리 승인을 요청한다:
 
 ### breakdown에서 호출 시
 
-분해 트리를 저장한 뒤 `/breakdown`의 Phase 3(agent-match)으로 제어를 반환한다.  
+분해 트리를 저장한 뒤 `/breakdown`의 Phase 4(agent-match)으로 제어를 반환한다.  
 출력 경로는 동일한 `.wrxp/state/` 디렉토리를 사용한다.
 
 ---

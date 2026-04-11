@@ -9,11 +9,11 @@ level: 4
 
 ## Overview
 
-유저의 요청을 받아 **5단계 파이프라인**으로 자율 실행하는 메인 오케스트레이터.
+유저의 요청을 받아 **7단계 파이프라인**으로 자율 실행하는 메인 오케스트레이터.
 
 **핵심 철학**: 메인 AI(Opus)는 조율에만 집중한다. 코드 읽기, 분석, 실행은 전부 에이전트에게 위임하여 컨텍스트를 보호한다.
 
-**컴포저블 구조**: `breakdown` = `decompose` (Phase 1+2) → `agent-match` (Phase 3) → 자율 실행 (Phase 4+5)
+**컴포저블 구조**: `breakdown` = `decompose` (Phase 1+2) → `agent-match` (Phase 4) → 자율 실행 (Phase 6+7)
 
 ---
 
@@ -58,7 +58,7 @@ level: 4
 
 ### 2-1. 분해 규칙
 
-**단일 태스크 fast-path**: 정제된 의도가 이미 단일 에이전트로 완료 가능한 크기라면, 분해를 스킵하고 단일 노드 트리를 생성하여 바로 Phase 3로 진행. 나머지 단계(에이전트 매칭, 실행, 검증, 결과 통합)는 그대로 수행.
+**단일 태스크 fast-path**: 정제된 의도가 이미 단일 에이전트로 완료 가능한 크기라면, 분해를 스킵하고 단일 노드 트리를 생성하여 바로 Phase 4로 진행. 나머지 단계(에이전트 매칭, 실행, 검증, 결과 통합)는 그대로 수행.
 
 분해가 필요한 경우:
 1. 정제된 의도를 서브태스크로 분해
@@ -95,11 +95,11 @@ level: 4
 
 ---
 
-## Phase 2.5 — Implementation Plan Writing (상세 기획)
+## Phase 3 — Implementation Plan Writing (상세 기획)
 
-> Phase 2의 분해 트리가 승인되면, Phase 3(에이전트 매칭) 전에 **writing-plans 수준의 완전한 실행 지시서**를 작성한다. "무엇을 분해했는가"에서 "정확히 어떻게 구현하는가"로 전환하는 gate.
+> Phase 2의 분해 트리가 승인되면, Phase 4(에이전트 매칭) 전에 **writing-plans 수준의 완전한 실행 지시서**를 작성한다. "무엇을 분해했는가"에서 "정확히 어떻게 구현하는가"로 전환하는 gate.
 
-### 2.5-1. 설계 원칙 (writing-plans 계승)
+### 3-1. 설계 원칙 (writing-plans 계승)
 
 > "엔지니어가 이 코드베이스에 대한 사전 지식이 전혀 없다고 가정하고 작성한다. DRY, YAGNI, TDD, 빈번한 커밋."
 
@@ -108,7 +108,7 @@ level: 4
 - **Architecture**: 2-3 문장의 접근 방식
 - **Tech Stack**: 핵심 기술/라이브러리 목록
 
-### 2.5-2. File Structure Mapping
+### 3-2. File Structure Mapping
 
 각 리프 태스크에 대해 파일 매핑 명시:
 - **Create**: `정확/한/경로/파일.py`
@@ -117,7 +117,7 @@ level: 4
 
 파일 경계는 책임 단위로 나누고, 한 파일이 하나의 명확한 역할만 갖도록 한다.
 
-### 2.5-3. Bite-sized Step Decomposition
+### 3-3. Bite-sized Step Decomposition
 
 각 리프 태스크를 2-5분 단위 step으로 분해 (TDD 사이클):
 
@@ -129,7 +129,7 @@ level: 4
 - [ ] Step 5: 커밋 (커밋 메시지 포함)
 ```
 
-### 2.5-4. No-Placeholder Rule
+### 3-4. No-Placeholder Rule
 
 🚫 **다음 패턴은 절대 금지** (플랜 실패 신호):
 - `TBD`, `TODO`, `나중에 구현`, `세부사항 채우기`
@@ -139,7 +139,7 @@ level: 4
 - 어떻게 하는지 보여주지 않고 무엇을 하라고만 설명
 - 어느 태스크에서도 정의되지 않은 타입/함수/메서드 참조
 
-### 2.5-5. Self-Review 체크리스트
+### 3-5. Self-Review 체크리스트
 
 플랜 작성 완료 후 새로운 시각으로 검토:
 
@@ -149,7 +149,7 @@ level: 4
 
 문제 발견 시 즉시 inline 수정.
 
-### 2.5-6. 출력
+### 3-6. 출력
 
 파일 저장: `.wrxp/state/plan-{slug}.md`
 
@@ -178,11 +178,11 @@ level: 4
 
 ---
 
-## Phase 3 — 에이전트 매칭 + DAG 구성 (Agent Matching)
+## Phase 4 — 에이전트 매칭 + DAG 구성 (Agent Matching)
 
 > 이 Phase는 내부적으로 `/agent-match` 스킬을 사용한다. 독립 사용 시 `/agent-match "태스크 목록"` 직접 호출 가능.
 
-### 3-1. 동적 에이전트 선택
+### 4-1. 동적 에이전트 선택
 
 > **하드코딩 금지**: 에이전트 목록을 미리 정의하지 않는다. 매번 실행 시 현재 사용 가능한 에이전트 목록을 동적으로 확인한 뒤, 태스크에 가장 적합한 에이전트를 선택한다.
 
@@ -198,14 +198,14 @@ level: 4
 3. 도메인: 백엔드 / 프론트엔드 / 인프라 / 데이터
 4. 교차 검증 필요 여부
 
-### 3-2. Middleware Do 지식 주입
+### 4-2. Middleware Do 지식 주입
 
 각 에이전트 프롬프트에 관련 middleware 지식 주입:
 - `features`: 해당 모듈의 purpose, status
 - `domain_knowledge`: topic, summary
 - `design_decisions`: title, decision, rationale (accepted만)
 
-### 3-3. DAG 구성
+### 4-3. DAG 구성
 
 - 독립 태스크 → 병렬 실행 마킹
 - 의존성 있는 태스크만 순차 관계 설정
@@ -215,11 +215,11 @@ level: 4
 
 ---
 
-## Phase 3.5 — Strategy Selection (실행 전략 선택)
+## Phase 5 — Strategy Selection (실행 전략 선택)
 
-> ⚠️ **MANDATORY GATE**: Phase 4(실제 실행) 진입 전에 반드시 `AskUserQuestion`으로 실행 전략을 유저에게 선택받는다. 이 Phase를 건너뛰고 Phase 4로 진입하는 것은 **절대 금지**.
+> ⚠️ **MANDATORY GATE**: Phase 6(실제 실행) 진입 전에 반드시 `AskUserQuestion`으로 실행 전략을 유저에게 선택받는다. 이 Phase를 건너뛰고 Phase 6로 진입하는 것은 **절대 금지**.
 
-### 3.5-1. 전략 차원 정의
+### 5-1. 전략 차원 정의
 
 4가지 옵션은 다음 3축을 조합하여 생성:
 
@@ -229,9 +229,9 @@ level: 4
 | **에이전트 조합 (Agent Mix)** | executor 단독 / architect+executor+verifier / test-engineer+executor+critic / 기본 DAG |
 | **진행 방식 (Execution Mode)** | Wave 전자동 / Wave 간 승인 / 리프별 승인 / Batch+체크포인트 |
 
-### 3.5-2. 기본 4가지 프리셋
+### 5-2. 기본 4가지 프리셋
 
-Phase 3에서 구성한 DAG를 바탕으로 다음 4개 프리셋을 **동적으로 생성**한다 (태스크 성격에 따라 에이전트 구성과 설명을 조정):
+Phase 4에서 구성한 DAG를 바탕으로 다음 4개 프리셋을 **동적으로 생성**한다 (태스크 성격에 따라 에이전트 구성과 설명을 조정):
 
 **A. 🚀 Speed-first (빠른 구현)**
 - 방향: 속도 중심
@@ -253,24 +253,24 @@ Phase 3에서 구성한 DAG를 바탕으로 다음 4개 프리셋을 **동적으
 
 **D. 🤖 Full autonomous (완전 자율)**
 - 방향: 완전 자율
-- 에이전트: Phase 3의 기본 DAG 그대로 사용
-- 진행: 유저 개입 없이 병렬 실행, Phase 5 요약만 보고
+- 에이전트: Phase 4의 기본 DAG 그대로 사용
+- 진행: 유저 개입 없이 병렬 실행, Phase 7 요약만 보고
 - 적합: 신뢰된 반복 태스크, 최소 개입
 
-### 3.5-3. 동적 조정 규칙
+### 5-3. 동적 조정 규칙
 
-Phase 3의 DAG 결과를 분석하여 프리셋을 조정:
+Phase 4의 DAG 결과를 분석하여 프리셋을 조정:
 - 태스크 중 `domain: infra` 또는 `domain: security`가 포함되면 → A의 우선순위 낮춤, B 우선순위 높임
 - 태스크가 10개 이상이면 → D의 추천 레이블에 "(대규모 자동화에 적합)" 추가
 - 태스크 중 `type: test` 노드가 없으면 → C의 설명에 "테스트 태스크 자동 생성 포함" 명시
 - 태스크 중 `critical: true` 플래그가 있으면 → A의 설명에 "⚠️ 크리티컬 태스크 포함 — 주의" 경고
 
-### 3.5-4. 유저 선택 (MANDATORY AskUserQuestion)
+### 5-4. 유저 선택 (MANDATORY AskUserQuestion)
 
 > 🚫 **절대 금지**:
 > - 평문으로 "어떤 전략을 원하시나요?" 라고 묻기
 > - 4가지 옵션을 markdown 리스트로 나열 후 응답 대기
-> - AskUserQuestion 없이 기본값으로 Phase 4 진입
+> - AskUserQuestion 없이 기본값으로 Phase 6 진입
 
 ✅ **유일하게 허용**: `AskUserQuestion` 도구로 4지선다 제시
 
@@ -290,7 +290,7 @@ AskUserQuestion({
 })
 ```
 
-### 3.5-5. 선택 반영
+### 5-5. 선택 반영
 
 유저 선택 이후:
 1. 선택된 전략에 따라 DAG 재구성 (에이전트 교체, wave 재편성)
@@ -306,22 +306,22 @@ AskUserQuestion({
      "selected_at": "ISO-8601 timestamp"
    }
    ```
-4. Phase 4(Autonomous Execution)로 진입
+4. Phase 6(Autonomous Execution)로 진입
 
 ---
 
-## Phase 4 — 자율 실행 (Autonomous Execution)
+## Phase 6 — 자율 실행 (Autonomous Execution)
 
-### 4-0. 진입 조건 (MANDATORY Gate)
+### 6-0. 진입 조건 (MANDATORY Gate)
 
-> 🚫 **절대 금지**: Phase 3.5의 유저 전략 선택 없이 Phase 4 진입.
+> 🚫 **절대 금지**: Phase 5의 유저 전략 선택 없이 Phase 6 진입.
 
 진입 전 체크:
 1. `.wrxp/state/strategy-{slug}.json` 파일이 존재하는가?
-2. 존재하지 않으면 → Phase 3.5로 되돌아가 `AskUserQuestion` 4지선다 제시
-3. 유저 응답 수신 후 strategy 파일 생성 완료 시에만 Phase 4 진행
+2. 존재하지 않으면 → Phase 5로 되돌아가 `AskUserQuestion` 4지선다 제시
+3. 유저 응답 수신 후 strategy 파일 생성 완료 시에만 Phase 6 진행
 
-### 4-1. DAG 기반 병렬 실행
+### 6-1. DAG 기반 병렬 실행
 
 ```
 반복:
@@ -332,7 +332,7 @@ AskUserQuestion({
 until 모든 리프 노드 완료
 ```
 
-### 4-2. 에이전트 신뢰도 피드백
+### 6-2. 에이전트 신뢰도 피드백
 
 태스크 완료 후 결과물 검증:
 1. critic 또는 verifier 에이전트가 결과물 검토
@@ -340,7 +340,7 @@ until 모든 리프 노드 완료
 3. **동률 시 critic 우세** (비평적 관점이 품질 보장에 유리)
 4. 신뢰도 낮으면 → 해당 에이전트에게 재작업 지시
 
-### 4-3. 에스컬레이션 정책
+### 6-3. 에스컬레이션 정책
 
 | 상황 | 처리 방식 |
 |------|---------|
@@ -348,7 +348,7 @@ until 모든 리프 노드 완료
 | 태스크 실패 | 유저 에스컬레이션 (자동 재시도 없음) |
 | 일반 이슈 | 에이전트 자체 해결 |
 
-### 4-4. 실행 상태 기록
+### 6-4. 실행 상태 기록
 
 파일 저장: `.wrxp/state/execution-{slug}.json`
 
@@ -364,7 +364,7 @@ until 모든 리프 노드 완료
 
 ---
 
-## Phase 5 — 결과 통합 (Result Integration)
+## Phase 7 — 결과 통합 (Result Integration)
 
 1. 모든 에이전트 결과물 수집
 2. 메인 Opus는 **요약만** 유저에게 전달 (컨텍스트 보호)
@@ -378,10 +378,10 @@ until 모든 리프 노드 완료
 .wrxp/state/
 ├── intent-{slug}.md          # Phase 1: 정제된 의도
 ├── tree-{slug}.json          # Phase 2: 분해 트리
-├── plan-{slug}.md            # Phase 2.5: writing-plans 수준 상세 기획
-├── dag-{slug}.json           # Phase 3: 에이전트 매칭 + DAG
-├── strategy-{slug}.json      # Phase 3.5: 유저 선택 실행 전략
-├── execution-{slug}.json     # Phase 4: 실행 상태
+├── plan-{slug}.md            # Phase 3: writing-plans 수준 상세 기획
+├── dag-{slug}.json           # Phase 4: 에이전트 매칭 + DAG
+├── strategy-{slug}.json      # Phase 5: 유저 선택 실행 전략
+├── execution-{slug}.json     # Phase 6: 실행 상태
 └── breakdown-{slug}.json     # 전체 파이프라인 상태 (진행률, 에러)
 ```
 
@@ -393,9 +393,9 @@ until 모든 리프 노드 완료
 
 | 호출 | 실행 범위 | 사용 시점 |
 |------|---------|---------|
-| `/breakdown "요청"` | Phase 1-5 전체 | 전체 자율 실행 원할 때 |
+| `/breakdown "요청"` | Phase 1-7 전체 | 전체 자율 실행 원할 때 |
 | `/decompose "문제"` | Phase 1+2만 | 분해 트리만 보고 싶을 때 |
-| `/agent-match "태스크 목록"` | Phase 3만 | 이미 분해된 태스크에 에이전트 매칭할 때 |
+| `/agent-match "태스크 목록"` | Phase 4만 | 이미 분해된 태스크에 에이전트 매칭할 때 |
 
 ---
 
@@ -405,11 +405,11 @@ until 모든 리프 노드 완료
 유저 요청
   -> Phase 1: middleware 스캔 + AskUserQuestion 모호성 제거 → intent-{slug}.md
   -> Phase 2: 재귀 분해 + 트리 시각화 + 유저 승인 → tree-{slug}.json
-  -> Phase 2.5: writing-plans 수준 상세 기획 → plan-{slug}.md            [NEW]
-  -> Phase 3: 에이전트 매칭 + middleware 지식 주입 + DAG → dag-{slug}.json
-  -> Phase 3.5: 4가지 전략 옵션 AskUserQuestion → strategy-{slug}.json   [NEW]
-  -> Phase 4: 병렬 실행 (Wave) + 신뢰도 검증 + 에스컬레이션 → execution-{slug}.json
-  -> Phase 5: 요약 전달
+  -> Phase 3: writing-plans 수준 상세 기획 → plan-{slug}.md
+  -> Phase 4: 에이전트 매칭 + middleware 지식 주입 + DAG → dag-{slug}.json
+  -> Phase 5: 4가지 전략 옵션 AskUserQuestion → strategy-{slug}.json
+  -> Phase 6: 병렬 실행 (Wave) + 신뢰도 검증 + 에스컬레이션 → execution-{slug}.json
+  -> Phase 7: 요약 전달
 ```
 
 ---
@@ -418,12 +418,12 @@ until 모든 리프 노드 완료
 
 | 실수 | 올바른 방법 |
 |------|-----------|
-| **Phase 2.5 건너뛰고 바로 Phase 3** | **분해 트리 승인 후 plan-{slug}.md 작성 필수** |
+| **Phase 3 (Plan Writing) 건너뛰고 바로 Phase 4** | **분해 트리 승인 후 plan-{slug}.md 작성 필수** |
 | **No-Placeholder 규칙 무시** | **"TBD", "적절한 처리" 등 금지 패턴 스캔** |
-| **Phase 3.5 건너뛰고 바로 실행** | **strategy-{slug}.json 생성 후에만 Phase 4 진입** |
+| **Phase 5 (Strategy Selection) 건너뛰고 바로 Phase 6** | **strategy-{slug}.json 생성 후에만 Phase 6 진입** |
 | **전략 선택을 평문으로 질문** | **반드시 `AskUserQuestion` 4지선다로 제시** |
 | 메인 AI가 직접 코드를 읽고 분석 | 탐색은 explore 에이전트에게 위임 |
 | 여러 질문을 한꺼번에 | AskUserQuestion은 한 번에 하나씩 |
 | 실패 시 자동 재시도 | 즉시 유저 에스컬레이션 |
 | 분해 없이 바로 에이전트 스폰 | Phase 2 분해 트리 + 유저 승인 필수 |
-| middleware 지식 없이 에이전트 실행 | Phase 3에서 Do 지식 반드시 주입 |
+| middleware 지식 없이 에이전트 실행 | Phase 4에서 Do 지식 반드시 주입 |

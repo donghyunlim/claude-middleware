@@ -1,0 +1,16 @@
+version: "0.1"
+rules:
+  - path: "wrxp/**"
+    level: guarded
+    reason: "wrxp 플러그인 독립 영역. middleware 작업 시 실수로 수정하지 않도록 주의"
+    allow: [bugfix]
+
+  - path: ".claude-plugin/marketplace.json"
+    level: guarded
+    reason: "두 플러그인의 버전과 메타데이터를 관리. 실수로 wrxp 버전을 바꾸면 안 됨"
+    allow: [bugfix, feature]
+
+  - path: "wrxp/skills/ha/SKILL.md"
+    level: locked
+    reason: "canonical 파이프라인. /haq, /haqq, /haqqq가 모두 의존. 변경 시 전체 tier에 영향"
+    allow: []

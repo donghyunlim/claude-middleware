@@ -1,0 +1,9 @@
+version: '0.2'
+phase: 4
+created: '2026-04-12'
+updated: '2026-04-12'
+backend: graphiti
+group_id: p_middleware
+schemas:
+  rules: '0.1'
+  context: '0.1'

@@ -41,7 +41,7 @@ Phase 0~6의 모든 로직은 /cast이 관리한다. 이 파일에서는 Phase 0
 
 ---
 
-## Config Block (passed to /ha)
+## Config Block (passed to /cast)
 
 ```
 depth_budget: 0-4

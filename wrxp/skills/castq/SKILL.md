@@ -1,15 +1,15 @@
 ---
-name: runq
-description: 빠른 실행 - 0~4개 질문 (불확실성 기반) 후 /run 파이프라인 실행 (thin shim)
+name: castq
+description: 빠른 실행 - 0~4개 질문 (불확실성 기반) 후 /cast 파이프라인 실행 (thin shim)
 argument-hint: "[요청 내용]"
 level: 4
 ---
 
 ultrathink.
 
-# /runq — Quick Tier (Thin Shim over /run)
+# /castq — Quick Tier (Thin Shim over /cast)
 
-This skill produces high-quality outputs by passing a quick-tier configuration to the canonical /run pipeline. It is a **thin shim**: it does NOT re-implement Phase 0 detection, Pre-Q reasoning, design templates, delegation, or verification. All of those are managed by /run.
+This skill produces high-quality outputs by passing a quick-tier configuration to the canonical /cast pipeline. It is a **thin shim**: it does NOT re-implement Phase 0 detection, Pre-Q reasoning, design templates, delegation, or verification. All of those are managed by /cast.
 
 **Output all responses in Korean.**
 
@@ -20,12 +20,12 @@ $ARGUMENTS
 
 ## Role of This File
 
-/runq는 /run 위에 얹힌 **thin shim** (얇은 래퍼)이다. 이 파일이 하는 일은 단 두 가지다:
+/castq는 /cast 위에 얹힌 **thin shim** (얇은 래퍼)이다. 이 파일이 하는 일은 단 두 가지다:
 
-1. /run에 전달할 **depth configuration**을 명시한다 (질문 수 상한, 라운드 수, 예산)
-2. /runq tier에 적합한 **task-type별 질문 카테고리 가이드**를 제공한다 (Phase 2에서 사용)
+1. /cast에 전달할 **depth configuration**을 명시한다 (질문 수 상한, 라운드 수, 예산)
+2. /castq tier에 적합한 **task-type별 질문 카테고리 가이드**를 제공한다 (Phase 2에서 사용)
 
-Phase 0~6의 모든 로직은 /run이 관리한다. 이 파일에서는 Phase 0 감지, Pre-Q reasoning, design template, Haiku delegation, verification recipe 어느 것도 다시 정의하지 않는다.
+Phase 0~6의 모든 로직은 /cast이 관리한다. 이 파일에서는 Phase 0 감지, Pre-Q reasoning, design template, Haiku delegation, verification recipe 어느 것도 다시 정의하지 않는다.
 
 ---
 
@@ -35,9 +35,9 @@ Phase 0~6의 모든 로직은 /run이 관리한다. 이 파일에서는 Phase 0 
 - **Per-phase 함대 상한**: 5 agents
 - **3-phase 총합 상한**: 15 agents
 - **Budget policy**: Standard
-- **동작 원칙**: /run의 "Fleet Dispatching — Quality Tier Policy" 섹션 참조 (Phase 1/5/6 전 구간에서 parallel specialized subagents dispatch)
+- **동작 원칙**: /cast의 "Fleet Dispatching — Quality Tier Policy" 섹션 참조 (Phase 1/5/6 전 구간에서 parallel specialized subagents dispatch)
 - **복잡도 스케일링**: Task complexity × tier 상한으로 실제 함대 수 결정. Trivial task이면 tier=중상급이어도 1-2개만 dispatch. Critical task이면 5개 상한을 모두 사용.
-- **Runtime detection**: Agent 리스트는 하드코딩되지 않는다. /run Fleet Dispatching 정책의 dynamic detection pseudocode에 따라 매 실행마다 현재 available subagent들을 enumerate → filter → diversify → rank 순으로 선별한다.
+- **Runtime detection**: Agent 리스트는 하드코딩되지 않는다. /cast Fleet Dispatching 정책의 dynamic detection pseudocode에 따라 매 실행마다 현재 available subagent들을 enumerate → filter → diversify → rank 순으로 선별한다.
 
 ---
 
@@ -88,21 +88,21 @@ fleet_upper_bound: 5
 
 ## Skill Invocation
 
-/haq는 /ha를 호출할 때 위의 config block을 args 앞부분에 prepend한다.
+/castq는 /cast를 호출할 때 위의 config block을 args 앞부분에 prepend한다.
 
 ```
 Skill tool parameters:
-- skill: "ha"
+- skill: "cast"
 - args: |
     depth_budget: 0-4
     question_rounds: 1
     max_budget: 4
-    tier: haq
+    tier: castq
     
     [원본 $ARGUMENTS 내용을 그대로 이어서]
 ```
 
-> **중요**: 이 skill 자체에서 직접 Haiku를 호출하거나 design template을 만들지 않는다. /ha가 모든 phase를 관리한다. /haq는 단지 quick-tier 설정과 카테고리 힌트만 전달한다.
+> **중요**: 이 skill 자체에서 직접 Haiku를 호출하거나 design template을 만들지 않는다. /cast가 모든 phase를 관리한다. /castq는 단지 quick-tier 설정과 카테고리 힌트만 전달한다.
 
 ---
 
@@ -111,9 +111,9 @@ Skill tool parameters:
 이 skill의 output은 사실상 /ha의 output이다 (Phase 0-6 모두 /ha가 출력한다). /haq 자체는 다음 짧은 헤더만 출력한다:
 
 ```
-🎚️ Tier: haq (depth_budget=0-4, max=4, rounds=1)
+🎚️ Tier: castq (depth_budget=0-4, max=4, rounds=1)
 📚 Category guidance: 핵심 2개 카테고리 사용
-🚀 /ha 호출 중...
+🚀 /cast 호출 중...
 
-[/ha의 Phase 0-6 출력이 이어짐]
+[/cast의 Phase 0-6 출력이 이어짐]
 ```

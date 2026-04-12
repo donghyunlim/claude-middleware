@@ -1,6 +1,6 @@
 ---
-name: runqq
-description: 중간 깊이 실행 - 5~8개 질문 (불확실성 기반) 후 /run 파이프라인 실행 (thin shim)
+name: castqq
+description: 중간 깊이 실행 - 5~8개 질문 (불확실성 기반) 후 /cast 파이프라인 실행 (thin shim)
 argument-hint: "[요청 내용]"
 level: 4
 ---

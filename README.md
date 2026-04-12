@@ -48,34 +48,6 @@ A structured knowledge directory maintained by the [middleware server](https://g
 | Skill | Invocation | Purpose |
 |---|---|---|
 | context | `/middleware:context` | Deep analysis: relay + selective code reading + counter-questioning (1-20) + plan synthesis + writing-plans transition |
-| session-intent-inject | `/middleware:session-intent-inject` | Mine past Claude Code sessions for user-stated intents and inject them into `.middleware/features.yaml` as `[session:*]` markers |
-
-### Session Intent Inject (v1.3.0+)
-
-Past Claude Code session logs under `~/.claude/projects/*` contain user-stated decisions, constraints, and anti-patterns that never make it into commits. This skill bridges two subsystems that cannot talk directly:
-
-- **MCP `session_search` tool** — reads session jsonl; only reachable from inside a Claude Code session
-- **middleware FastAPI server** — runs the Phase 7 classifier pipeline; accepts a pre-dumped hits JSONL
-
-The skill is the bridge: invoked from a Claude Code session, it can call MCP *and* `curl` the server in one shot.
-
-**Workflow**:
-1. Resolve target project (`--project` or cwd), check middleware server health
-2. Call MCP `session_search` for 9 seed keywords (English + Korean imperatives: `always`, `never`, `must`, `because`, `instead`, `항상`, `절대`, `무조건`, `왜냐하면`)
-3. Filter client-side: `projectPath` prefix + `/subagents/` exclusion + `role=user` + `(sessionId, line)` dedup
-4. Dump survivors to `{project}/.middleware/history/session_hits_<ts>.jsonl`
-5. `POST /api/projects/select` → `POST /api/sessions/extract`
-6. Server pipeline clusters → classifies via Opus (verbatim check) → merges into `features.yaml` as:
-   - `design_decisions[].rationale` with `dd-session-YYYYMMDD-<12hex>` id + `[session:*]` marker
-   - `constraints[].reason` / `anti_patterns[].why_banned` / `domain_knowledge[].summary` with inline `[session:*]` markers
-
-**Args**: `--project <path>`, `--dry-run`, `--seeds "a,b,c"`, `--keep-dump`, `--limit <N>`
-
-**Requirements**: middleware server on port 8085, target project has `.middleware/`, MCP `session_search` tool available (oh-my-claudecode plugin active).
-
-**When to use**: explicit user request to sync session intents; before large orchestration runs that depend on fresh `features.yaml`; after long meta-conversations where the user expressed preferences.
-
-**When NOT to use**: server down; target has no `.middleware/`; current `features.yaml` already answers the question.
 
 ## Requirements
 

@@ -9,7 +9,7 @@
     {
       "name": "middleware",
       "description": "Read .middleware/ project knowledge to amplify user intent",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "source": "./",
       "category": "productivity",
       "tags": ["context", "planning", "middleware", "knowledge"]

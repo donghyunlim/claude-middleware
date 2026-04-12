@@ -9,15 +9,15 @@ Automatically detects `.middleware/` via `UserPromptSubmit` hook. On every messa
 1. **Hook** (`check-middleware.sh`) checks for `.middleware/` and reads `manifest.yaml`
 2. Based on `backend` field, injects appropriate system message:
    - `yaml`: instructs Claude to use Sonnet relay agent for YAML reading
-   - `graphiti`: instructs Claude to use `/middleware:mw` for KG queries
+   - `graphiti`: instructs Claude to use `/middleware:ctx` for KG queries
 3. Auto-installs git post-commit hook if `scripts/middleware/post_commit_graphiti.py` exists
 
 ## Skills
 
 | Skill | Invocation | Backend | Purpose |
 |-------|------------|---------|---------|
-| context | `/middleware:context` | YAML | Deep analysis: relay + counter-questioning + plan synthesis |
-| mw | `/middleware:mw` | Graphiti | KG context injection + conflict detection |
+| brief | `/middleware:brief` | YAML | Deep analysis: relay + counter-questioning + plan synthesis |
+| ctx | `/middleware:ctx` | Graphiti | KG context injection + conflict detection |
 
 ## How It Works
 
@@ -28,13 +28,13 @@ Automatically detects `.middleware/` via `UserPromptSubmit` hook. On every messa
 
 ### Graphiti KG Backend (v2)
 1. Hook injects systemMessage for Graphiti queries
-2. `/middleware:mw` queries knowledge graph for principles, constraints, design decisions
+2. `/middleware:ctx` queries knowledge graph for principles, constraints, design decisions
 3. Conflict detection checks intent against existing design decisions
 4. Post-commit hook auto-ingests commit data to keep KG current
 
 ### Knowledge Cycle (Graphiti)
 ```
-/middleware:mw (read) -> Claude codes -> git commit -> post-commit hook (write) -> KG enriched -> next /mw (read)
+/middleware:ctx (read) -> Claude codes -> git commit -> post-commit hook (write) -> KG enriched -> next /ctx (read)
 ```
 
 ## Requirements

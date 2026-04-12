@@ -147,9 +147,9 @@ mcp__graphiti__add_memory(
   - 에피소드 N개 시드 완료 (백그라운드 처리 중, 3-5분 후 검색 가능)
 
 🔗 다음 단계:
-  - /middleware:mw 로 컨텍스트 조회
+  - /middleware:ctx 로 컨텍스트 조회
   - git commit 시 자동으로 KG 갱신 (post-commit hook 자동 설치됨)
-  - 설계 결정이나 제약이 생기면 /middleware:mw 로 확인 후 작업
+  - 설계 결정이나 제약이 생기면 /middleware:ctx 로 확인 후 작업
 ```
 
 ## 주의사항

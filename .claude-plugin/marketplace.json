@@ -9,7 +9,7 @@
     {
       "name": "middleware",
       "description": "Read .middleware/ project knowledge to amplify user intent",
-      "version": "1.6.0",
+      "version": "1.7.0",
       "source": "./",
       "category": "productivity",
       "tags": ["context", "planning", "middleware", "knowledge", "graphiti"]
@@ -17,7 +17,7 @@
     {
       "name": "wrxp",
       "description": "Breakdown orchestrator: intent refinement, recursive decomposition, dynamic agent matching, DAG-based parallel execution",
-      "version": "0.1.13",
+      "version": "0.1.14",
       "source": "./wrxp",
       "category": "productivity",
       "tags": ["orchestration", "decomposition", "agents", "breakdown", "dag"]

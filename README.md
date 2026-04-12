@@ -23,7 +23,7 @@ When you work in a project with a `.middleware/` directory, the plugin automatic
 | Backend | Storage | Context Injection | Auto-update |
 |---------|---------|-------------------|-------------|
 | **YAML** (v1) | `.middleware/features.yaml` | Sonnet relay agent reads YAML | Manual or LLM extraction |
-| **Graphiti KG** (v2) | Graphiti knowledge graph | `/middleware:mw` queries KG | Post-commit hook auto-ingestion |
+| **Graphiti KG** (v2) | Graphiti knowledge graph | `/middleware:ctx` queries KG | Post-commit hook auto-ingestion |
 
 The backend is determined by `manifest.yaml`:
 ```yaml
@@ -39,17 +39,17 @@ group_id: commercial_insight
 
 | Skill | Invocation | Backend | Purpose |
 |---|---|---|---|
-| context | `/middleware:context` | YAML | Deep analysis: relay + counter-questioning + plan synthesis |
-| **mw** | `/middleware:mw` | **Graphiti** | **KG context injection + conflict detection** |
+| brief | `/middleware:brief` | YAML | Deep analysis: relay + counter-questioning + plan synthesis |
+| **ctx** | `/middleware:ctx` | **Graphiti** | **KG context injection + conflict detection** |
 
-### `/middleware:mw` (Graphiti KG backend)
+### `/middleware:ctx` (Graphiti KG backend)
 
 ```bash
 # Bootstrap: load project architecture principles + constraints
-/middleware:mw
+/middleware:ctx
 
 # Context + conflict detection for a specific task
-/middleware:mw "Add new API endpoint for CSV download"
+/middleware:ctx "Add new API endpoint for CSV download"
 ```
 
 **What it does:**
@@ -64,11 +64,11 @@ group_id: commercial_insight
 - `REQUIRES_NOT_MODIFY` — locked files/paths
 - `REQUIRES_FILTER` — mandatory data filters
 
-### `/middleware:context` (YAML backend)
+### `/middleware:brief` (YAML backend)
 
 For projects still using the YAML backend:
 ```bash
-/middleware:context "Add OAuth2 to the auth system"
+/middleware:brief "Add OAuth2 to the auth system"
 ```
 
 5-phase workflow: Context Gathering -> Selective Code Reading -> Counter-Questioning -> Plan Synthesis -> Writing Plans
@@ -76,7 +76,7 @@ For projects still using the YAML backend:
 ## Knowledge Cycle
 
 ```
-/middleware:mw               git commit
+/middleware:ctx              git commit
   (read from KG)              (write to KG)
        |                           |
        v                           v

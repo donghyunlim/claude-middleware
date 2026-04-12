@@ -1,6 +1,6 @@
 ---
-name: haqqq
-description: 심층 실행 - 9~12개 질문 (최대 20개, 불확실성 기반) 후 /ha 파이프라인 실행 (thin shim)
+name: runqqq
+description: 심층 실행 - 9~12개 질문 (최대 20개, 불확실성 기반) 후 /run 파이프라인 실행 (thin shim)
 argument-hint: "[요청 내용]"
 level: 4
 ---

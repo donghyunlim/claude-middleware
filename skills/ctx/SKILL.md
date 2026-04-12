@@ -1,12 +1,12 @@
 ---
-name: mw
-description: "Graphiti KG에서 프로젝트 컨텍스트를 주입하고 충돌을 감지한다. /middleware:mw 또는 /mw 로 호출."
+name: ctx
+description: "Graphiti KG에서 프로젝트 컨텍스트를 주입하고 충돌을 감지한다. /middleware:ctx 또는 /ctx 로 호출."
 schema_version: "0.2"
 allowed-tools: [mcp__graphiti__search_memory_facts, mcp__graphiti__search_nodes, mcp__graphiti__get_episodes, Glob, Read]
 argument-hint: "[작업 설명 또는 빈칸]"
 ---
 
-# /mw — Middleware Context Injection (Graphiti KG)
+# /ctx — Middleware Context Injection (Graphiti KG)
 
 Graphiti 지식 그래프에서 프로젝트 컨텍스트를 조회하고 작업 충돌을 감지한다.
 
@@ -19,7 +19,7 @@ Graphiti 지식 그래프에서 프로젝트 컨텍스트를 조회하고 작업
 
 ## 실행 모드
 
-### 모드 A: 부트스트랩 (`/mw` — 인자 없음)
+### 모드 A: 부트스트랩 (`/ctx` — 인자 없음)
 
 아래 두 쿼리를 **병렬**로 실행한다.
 
@@ -56,7 +56,7 @@ mcp__graphiti__search_nodes(
 
 ---
 
-### 모드 B: 컨텍스트 + 충돌 감지 (`/mw "작업 설명"` — 인자 있음)
+### 모드 B: 컨텍스트 + 충돌 감지 (`/ctx "작업 설명"` — 인자 있음)
 
 **Step 1:** 모드 A의 부트스트랩을 먼저 수행한다.
 

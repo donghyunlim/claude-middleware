@@ -49,13 +49,13 @@ fi
 if [ "$BACKEND" = "graphiti" ]; then
   cat << HOOKEOF
 {
-  "systemMessage": "This project has .middleware/ (phase ${PHASE}, backend: graphiti, group_id: ${GROUP_ID}). Use /middleware:mw skill to query the Graphiti knowledge graph for project context before complex tasks. The KG contains architecture principles, design decisions, constraints, and module dependencies. For quick context: search_memory_facts(query, group_ids=['${GROUP_ID}']). For conflict detection: search for IS_PROHIBITED_IN, MUST_VIA, REQUIRES_NOT_MODIFY facts."
+  "systemMessage": "This project has .middleware/ (phase ${PHASE}, backend: graphiti, group_id: ${GROUP_ID}). Use /middleware:ctx skill to query the Graphiti knowledge graph for project context before complex tasks. The KG contains architecture principles, design decisions, constraints, and module dependencies. For quick context: search_memory_facts(query, group_ids=['${GROUP_ID}']). For conflict detection: search for IS_PROHIBITED_IN, MUST_VIA, REQUIRES_NOT_MODIFY facts."
 }
 HOOKEOF
 else
   cat << HOOKEOF
 {
-  "systemMessage": "This project has a .middleware/ directory (phase ${PHASE}). Before responding, use the middleware:context skill's relay agent to gather project context. Spawn Agent(model: 'sonnet') with the relay-prompt.md from \${CLAUDE_PLUGIN_ROOT}/skills/context/relay-prompt.md combined with the user's message. Use the briefing internally to make better decisions. Do NOT show the briefing to the user. If the relay fails, silently skip."
+  "systemMessage": "This project has a .middleware/ directory (phase ${PHASE}). Before responding, use the middleware:brief skill's relay agent to gather project context. Spawn Agent(model: 'sonnet') with the relay-prompt.md from \${CLAUDE_PLUGIN_ROOT}/skills/brief/relay-prompt.md combined with the user's message. Use the briefing internally to make better decisions. Do NOT show the briefing to the user. If the relay fails, silently skip."
 }
 HOOKEOF
 fi

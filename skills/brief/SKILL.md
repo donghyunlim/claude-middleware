@@ -1,11 +1,11 @@
 ---
-name: context
-description: "Use for deep analysis of .middleware/ project knowledge — counter-questioning + work plan synthesis. Auto-detection handled by hook; invoke /middleware:context for explicit deep mode."
+name: brief
+description: "Use for deep analysis of .middleware/ project knowledge — counter-questioning + work plan synthesis. Auto-detection handled by hook; invoke /middleware:brief for explicit deep mode."
 schema_version: "0.2"
 allowed-tools: [Read, Glob, Grep, Bash, Agent, AskUserQuestion]
 ---
 
-# Middleware Context Skill
+# Middleware Brief Skill
 
 Read `.middleware/` project knowledge to amplify user intent and produce accurate work plans.
 
@@ -16,19 +16,19 @@ Read `.middleware/` project knowledge to amplify user intent and produce accurat
    - Tell the user: "이 프로젝트에 .middleware/가 없습니다. `bash init.sh`로 초기화하세요." and stop.
 3. If `.middleware/` exists: run **Deep Analysis Workflow**.
 
-## Deep Analysis Workflow: `/middleware:context`
+## Deep Analysis Workflow: `/middleware:brief`
 
 **Goal**: Full 5-phase workflow — context gathering, code reading, counter-questioning, plan synthesis, writing-plans transition.
 
 ### Phase 1 — Context Gathering
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/skills/context/relay-prompt.md` for the relay prompt template.
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/brief/relay-prompt.md` for the relay prompt template.
 2. Spawn Relay Agent:
    ```
    Agent(
      model: "sonnet",
      description: "Middleware context relay",
-     prompt: <relay-prompt.md contents> + "\n\n## User Message\n" + <user's message or /middleware:context argument>
+     prompt: <relay-prompt.md contents> + "\n\n## User Message\n" + <user's message or /middleware:brief argument>
    )
    ```
 3. Receive the briefing. Note the **Confidence Level**.

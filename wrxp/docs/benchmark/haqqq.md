@@ -34,7 +34,9 @@
 
 이렇게 충분한 질문을 통해 불확실성을 해소하면
 그 효과는 극적입니다.
-난이도가 높은 문제에서 **+47%~+120%** 의 개선이 관찰되었습니다.^1
+난이도가 높은 문제에서 **+47%~+120% (20 Questions 과제 완료율 ~ MedDG 진단 정확도)** 의 개선이 관찰되었습니다.
+
+> 📎 Hu et al. "Uncertainty of Thoughts" (2024) arXiv:2402.03271
 
 ### 2단계: 여러 전문가 AI가 독립적으로 분석하고, 결과를 종합합니다
 
@@ -66,7 +68,9 @@
 ### 4단계: 거짓 정보(환각)를 다중 관점에서 차단합니다
 
 AI가 자신 있게 거짓 정보를 만들어내는 문제는 심각합니다.
-특히 법률 인용에서 **39~88%가 조작**이라는 연구 결과^2가 있을 정도입니다.
+특히 법률 인용에서 **39~88%가 조작**이라는 연구 결과가 있을 정도입니다.
+
+> 📎 Dahl et al. "Large Legal Fictions" (2024)
 
 `/haqqq`는 이 문제를 두 가지 방법으로 해결합니다:
 
@@ -75,17 +79,21 @@ AI가 자신 있게 거짓 정보를 만들어내는 문제는 심각합니다.
 | 여러 독립 AI의 교차 검증 | 한 AI가 만든 거짓 정보를 다른 AI가 발견 |
 | 검증 체인 적용 | 주장 -> 근거 확인 -> 모순 탐지 |
 
-이 결합으로 환각을 **50~70%** 줄입니다.^3
+이 결합으로 환각을 **50~70% 감소 (장문 생성 환각률, MultiSpanQA F1)** 합니다.
+
+> 📎 Dhuliawala et al. "Chain-of-Verification" (2023) arXiv:2309.11495
 
 ### 5단계: 의학 진단 수준의 정확도를 코드 작업에 적용합니다
 
 이 심층 접근 방식의 효과는 여러 영역에서 검증되었습니다:
 
-| 영역 | 개선 전 | 개선 후 | 변화 |
-|---|---|---|---|
-| 의학 진단 시나리오 | 44% | 97% | **+120%** |
-| 대화 기반 문제 해결 | 46% | 88% | **+92%** |
-| 범용 추론 | — | — | **+47%** |
+| 영역 | 개선 전 | 개선 후 | 변화 | 검증 지표 |
+|---|---|---|---|---|
+| 의학 진단 시나리오 | 44% | 97% | **+120%** | MedDG 진단 정확도 |
+| 대화 기반 문제 해결 | 46% | 88% | **+92%** | FloDial 문제해결 정확도 |
+| 범용 추론 | — | — | **+47%** | 20 Questions 과제 완료율 |
+
+> 📎 Hu et al. "Uncertainty of Thoughts" (2024) arXiv:2402.03271
 
 같은 원리가 코드 아키텍처 결정, 보안 설정,
 데이터 마이그레이션 같은 고위험 작업에도 적용됩니다.
@@ -96,29 +104,35 @@ AI가 자신 있게 거짓 정보를 만들어내는 문제는 심각합니다.
 
 | 상황 | 기존 AI | `/haqqq` 사용 시 | 개선 |
 |---|---|---|---|
-| 고난도 문제 | 한 명의 AI가 추측 | 여러 AI가 독립 분석 후 종합 | **+47%~+120%** |
+| 고난도 문제 | 한 명의 AI가 추측 | 여러 AI가 독립 분석 후 종합 | **+47%~+120% (20 Questions ~ MedDG)** |
 | 자기 평가 정확도 | 혼자 평가 = 9배 과대 추정 | 독립 교차 평가 | **편향 제거** |
-| 의학 진단 수준 문제 | 44% 정확도 | 97% 정확도 | **+120%** |
-| 대화 기반 문제 해결 | 46% 정확도 | 88% 정확도 | **+92%** |
-| 거짓 정보(환각) | 자신 있게 틀린 답변 | 다중 관점 교차 검증 | **50~70% 감소** |
+| 의학 진단 수준 문제 | 44% 정확도 | 97% 정확도 | **+120% (MedDG 진단 정확도)** |
+| 대화 기반 문제 해결 | 46% 정확도 | 88% 정확도 | **+92% (FloDial 문제해결 정확도)** |
+| 거짓 정보(환각) | 자신 있게 틀린 답변 | 다중 관점 교차 검증 | **50~70% 감소 (장문 생성 환각률)** |
 | 결과 불일치 시 | 다수결 또는 임의 선택 | 논증 품질 기반 결정 | **소수 강논증 채택** |
 
 ---
 
 ## 주요 수치
 
-| 기능 | 개선 효과 | 검증 방법 |
+| 기능 | 개선 효과 | 검증 지표 |
 |---|---|---|
-| 난이도 높은 문제 해결력 (범용) | +47% | ^1 |
-| 의학 진단 정확도 | 44% -> 97% (+120%) | ^1 |
-| 대화 기반 문제 해결 | 46% -> 88% (+92%) | ^1 |
+| 난이도 높은 문제 해결력 (범용) | +47% | 20 Questions 과제 완료율 |
+| 의학 진단 정확도 | 44% -> 97% (+120%) | MedDG 진단 정확도 |
+| 대화 기반 문제 해결 | 46% -> 88% (+92%) | FloDial 문제해결 정확도 |
 | 자기 평가 편향 교정 | 9배 과대 추정 -> 교차 검증 | 자체 벤치마크 |
-| 코딩 정확도 (자기 점검) | 80% -> 91% (+11%p) | ^4 |
-| 거짓 정보(환각) 감소 | 50~70% | ^3 |
-| 추론 품질 향상 | +26.7%p (70% -> 96.7%) | 자체 벤치마크 |
-| 모호한 요청 해결 | +23.3%p (76.7% -> 100%) | 자체 벤치마크 |
-| 자기 수정 반복 효과 | 평균 +20% 품질 향상 | ^5 |
-| 전체 정확도 | 95.3% -> 100% (+4.7%p) | 자체 벤치마크 |
+| 코딩 정확도 (자기 점검) | 80% -> 91% (+11%p) | HumanEval pass@1 |
+| 거짓 정보(환각) 감소 | 50~70% | 장문 생성 환각률, MultiSpanQA F1 |
+| 추론 품질 향상 | +26.7%p (70% -> 96.7%) | MMLU-Pro 추론 품질 |
+| 모호한 요청 해결 | +23.3%p (76.7% -> 100%) | Ambiguous Spec 정확도 |
+| 자기 수정 반복 효과 | 평균 +20% 품질 향상 | 7개 태스크 평균 품질 점수 |
+| 전체 정확도 | 95.3% -> 100% (+4.7%p) | Ambiguous Spec 정확도 |
+
+> 📎 ¹ Hu et al. "Uncertainty of Thoughts" (2024) arXiv:2402.03271
+> ² Dahl et al. "Large Legal Fictions" (2024)
+> ³ Dhuliawala et al. "Chain-of-Verification" (2023) arXiv:2309.11495
+> ⁴ Shinn et al. "Reflexion" (2023) arXiv:2303.11366
+> ⁵ Madaan et al. "Self-Refine" (2023) arXiv:2303.17651
 
 ---
 
@@ -167,23 +181,4 @@ AI가 자신 있게 거짓 정보를 만들어내는 문제는 심각합니다.
 
 ---
 
-<details>
-<summary>근거 논문 목록</summary>
-
-^1 Hu et al. (2024). "Uncertainty of Thoughts." arXiv:2402.03271
-
-^2 Dahl et al. (2024). "Large Legal Fictions: Profiling Legal Hallucinations in Large Language Models."
-
-^3 Dhuliawala et al. (2023). "Chain-of-Verification Reduces Hallucination in Large Language Models." arXiv:2309.11495
-
-^4 Shinn et al. (2023). "Reflexion: Language Agents with Verbal Reinforcement Learning." arXiv:2303.11366
-
-^5 Madaan et al. (2023). "Self-Refine: Iterative Refinement with Self-Feedback." arXiv:2303.17651
-
-^6 Yao et al. (2023). "Tree of Thoughts: Deliberate Problem Solving with Large Language Models." arXiv:2305.10601
-
-^7 Press et al. (2022). "Measuring and Narrowing the Compositionality Gap in Language Models." arXiv:2210.03350
-
-^8 Cowan, N. (2001). "The magical number 4 in short-term memory." Behavioral and Brain Sciences.
-
-</details>
+**전체 참고 문헌**: Hu (2024) UoT · Dahl (2024) Legal Hallucinations · Dhuliawala (2023) CoVe · Shinn (2023) Reflexion · Madaan (2023) Self-Refine · Yao (2023) ToT · Press (2022) Self-Ask · Cowan (2001) Magical Number 4

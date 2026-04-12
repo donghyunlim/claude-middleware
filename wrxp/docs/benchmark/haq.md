@@ -31,8 +31,10 @@
 | 높은 모호성 / 고위험 | `/haqq` 이상 권장 | 이 명령어의 범위 초과 |
 
 실제로 음성 비서 사용 데이터를 분석한 연구에 따르면,
-요청의 **77%는 추가 질문 없이도 의도를 정확히 파악**할 수 있었습니다.
+요청의 **77%는 추가 질문 없이도 의도를 정확히 파악 (음성 비서 의도 파악 Top-1 정확도)**할 수 있었습니다.
 대부분의 일상 작업은 질문이 필요 없다는 뜻입니다.
+
+> 📎 Amazon Alexa Intent Recognition Research (industry study)
 
 ### 2단계: 질문이 필요하면, 가장 중요한 것만 물어봅니다
 
@@ -41,8 +43,10 @@
 질문 순서를 최적화합니다.
 
 이 정보 가치 기반 정렬 방식은
-무작위로 질문할 때보다 **1.5~2.7배 적은 질문**으로
-같은 수준의 정보를 얻는 것으로 나타났습니다.^1
+무작위로 질문할 때보다 **1.5~2.7배 적은 질문 (질문 수 절감률)**으로
+같은 수준의 정보를 얻는 것으로 나타났습니다.
+
+> 📎 Mukherjee et al. "Optimal Question Ordering Based on EVPI" (2025) arXiv:2511.08798
 
 결과적으로 질문은 **0개~4개**. 진짜 필요한 것만 묻습니다.
 
@@ -54,8 +58,10 @@
 **물어볼 게 없으면 안 물어보는 것**이 이 명령어의 핵심 설계입니다.
 
 단순한 요청에 불필요한 사고 과정을 거치면
-**19~42초가 낭비**된다는 연구 결과도 있습니다.^2
+**19~42초가 낭비**된다는 연구 결과도 있습니다.
 `/haq`는 이 낭비를 제거합니다.
+
+> 📎 Chen et al. "Stop Overthinking" (2025) arXiv:2503.16419
 
 ### 4단계: 질문이 끝나면, 전체 실행 파이프라인으로 진입합니다
 
@@ -75,26 +81,31 @@
 
 | 상황 | 기존 AI | `/haq` 사용 시 | 개선 |
 |---|---|---|---|
-| 간단한 요청 | 불필요한 질문 후 실행 | 바로 실행 | **질문 77% 스킵** |
-| 질문 순서 | 무작위로 이것저것 물어봄 | 가장 중요한 것부터 | **1.5~2.7배 질문 절감** |
+| 간단한 요청 | 불필요한 질문 후 실행 | 바로 실행 | **77% 스킵 (음성 비서 의도 파악 Top-1 정확도)** |
+| 질문 순서 | 무작위로 이것저것 물어봄 | 가장 중요한 것부터 | **1.5~2.7배 절감 (질문 수 절감률)** |
 | 단순 작업 소요 시간 | 질문-답변에 시간 소모 | 즉시 시작 | **19~42초 절약** |
-| 사용자 피로도 | 긴 질문 목록에 지침 | 최대 4개, 보통 0~2개 | **완료율 85.7% 유지** |
+| 사용자 피로도 | 긴 질문 목록에 지침 | 최대 4개, 보통 0~2개 | **완료율 85.7% (설문 응답 완주율)** |
 | 실행 품질 | 질문 안 해서 추측 실행 | 필요할 때만 정확히 질문 | **치명적 오류 방지** |
 
 ---
 
 ## 주요 수치
 
-| 기능 | 개선 효과 | 검증 방법 |
+| 기능 | 개선 효과 | 검증 지표 |
 |---|---|---|
-| 불필요한 질문 제거 | 최대 63% (1.5~2.7배 감소) | ^1 |
-| 바로 실행 가능한 요청 비율 | 77% | Amazon 음성 비서 연구 |
-| 간단 요청 시간 절약 | 19~42초 | ^2 |
-| 사용자 완료율 (0~4개 질문) | 85.7% | Survicate 설문 연구 |
-| 사용자 완료율 (6~10개 질문) | 73.6% (비교 대상) | Survicate 설문 연구 |
-| 인지 부하 기준 | 4개 이내 = 기억 한계 이내 | ^3 |
-| 하위 질문 분해 정확도 | +42.4%p (17.6% -> 60%) | ^4 |
-| 전체 정확도 | 95.3% -> 100% (+4.7%p) | 자체 벤치마크 |
+| 불필요한 질문 제거 | 최대 63% (1.5~2.7배 감소) | 질문 수 절감률 |
+| 바로 실행 가능한 요청 비율 | 77% | 음성 비서 의도 파악 Top-1 정확도 |
+| 간단 요청 시간 절약 | 19~42초 | 추론 지연 시간 |
+| 사용자 완료율 (0~4개 질문) | 85.7% | 설문 응답 완주율 |
+| 사용자 완료율 (6~10개 질문) | 73.6% (비교 대상) | 설문 응답 완주율 |
+| 인지 부하 기준 | 4개 이내 = 기억 한계 이내 | 단기 기억 용량 |
+| 하위 질문 분해 정확도 | +42.4%p (17.6% -> 60%) | Bamboogle 정확도 |
+| 전체 정확도 | 95.3% -> 100% (+4.7%p) | Ambiguous Spec 정확도 |
+
+> 📎 ¹ Mukherjee et al. "Optimal Question Ordering Based on EVPI" (2025) arXiv:2511.08798
+> ² Chen et al. "Stop Overthinking" (2025) arXiv:2503.16419
+> ³ Cowan "The magical number 4 in short-term memory" (2001)
+> ⁴ Press et al. "Measuring and Narrowing the Compositionality Gap" (2022) arXiv:2210.03350
 
 ---
 
@@ -171,21 +182,4 @@
 
 ---
 
-<details>
-<summary>근거 논문 목록</summary>
-
-^1 Mukherjee et al. (2025). "Optimal Question Ordering Based on Expected Value of Perfect Information." arXiv:2511.08798
-
-^2 Chen et al. (2025). "Stop Overthinking: A Survey on Efficient Reasoning for LLMs." arXiv:2503.16419
-
-^3 Cowan, N. (2001). "The magical number 4 in short-term memory." Behavioral and Brain Sciences.
-
-^4 Press et al. (2022). "Measuring and Narrowing the Compositionality Gap in Language Models." arXiv:2210.03350
-
-^5 Miller, G.A. (1956). "The magical number seven, plus or minus two." Psychological Review.
-
-^6 Amazon Alexa Intent Recognition Research (industry study, 77% top-intent accuracy).
-
-^7 Survicate. "Survey Completion Rate vs. Question Count" (industry report).
-
-</details>
+**전체 참고 문헌**: Mukherjee (2025) EVPI · Chen (2025) Stop Overthinking · Cowan (2001) Magical Number 4 · Press (2022) Self-Ask · Miller (1956) Magical Number 7 · Amazon Alexa Intent Recognition · Survicate Survey Completion

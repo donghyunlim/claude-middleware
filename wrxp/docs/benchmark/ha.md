@@ -42,7 +42,7 @@ AI가 먼저 **"이 문제를 어떻게 풀어야 하지?"** 하고
 - **쉬운 부분부터 점진적으로**: 작은 문제를 먼저 풀고, 그 결과를 활용해 큰 문제 해결
 
 이 사전 추론 과정만으로 추론 품질(깊이, 구조, 검증)이
-**+26.7%p** 향상되는 것으로 나타났습니다.
+**+26.7%p (MMLU-Pro 추론 품질)** 향상되는 것으로 나타났습니다.
 
 ### 3단계: 결과를 내놓기 전에 "이거 맞나?" 자기 점검을 합니다
 
@@ -62,8 +62,10 @@ AI가 먼저 **"이 문제를 어떻게 풀어야 하지?"** 하고
 | 분석/리서치 | 출처 및 논리 검증 |
 
 이 자기 점검 기법은 코딩 벤치마크에서 정확도를
-**80% -> 91%**로 끌어올린 것으로 검증되었습니다.^1
-거짓 정보(환각)도 **50-70%** 줄어듭니다.^2
+**80% -> 91% (HumanEval pass@1)**로 끌어올린 것으로 검증되었습니다.
+거짓 정보(환각)도 **50-70% 감소 (장문 생성 환각률, MultiSpanQA F1)** 합니다.
+
+> 📎 Shinn et al. "Reflexion" (2023) arXiv:2303.11366 · Dhuliawala et al. "Chain-of-Verification" (2023) arXiv:2309.11495
 
 ### 4단계: 점검에서 문제를 발견하면? 자동으로 다시 시도합니다
 
@@ -87,7 +89,7 @@ AI가 **알아서 추측하고 진행하는 대신**
 모호한 부분을 명시적으로 식별하고 해결합니다.
 
 이 한 가지 기능만으로
-모호한 요청의 정확도가 **76.7% -> 100%** (+23.3%p)로 올라갔습니다.
+모호한 요청의 정확도가 **76.7% -> 100% (+23.3%p, Ambiguous Spec 정확도)**로 올라갔습니다.
 
 ---
 
@@ -95,28 +97,35 @@ AI가 **알아서 추측하고 진행하는 대신**
 
 | 상황 | 기존 AI | `/ha` 사용 시 | 개선 |
 |---|---|---|---|
-| 모호한 요청 해석 | 알아서 추측하고 진행 | 빠진 정보 파악 후 확인 | **+23.3%p 정확도** |
-| 복잡한 추론 문제 | 얕은 답변, 핵심 누락 | 구조화된 사고 후 실행 | **+26.7%p 품질** |
-| 코드 작성 후 오류 | 한 번 만들고 끝 | 자기 점검 + 자동 수정 | **+11%p 정확도** |
-| 거짓 정보(환각) | 자신 있게 틀린 답변 | 검증 체인으로 사전 차단 | **50-70% 감소** |
+| 모호한 요청 해석 | 알아서 추측하고 진행 | 빠진 정보 파악 후 확인 | **+23.3%p (Ambiguous Spec 정확도)** |
+| 복잡한 추론 문제 | 얕은 답변, 핵심 누락 | 구조화된 사고 후 실행 | **+26.7%p (MMLU-Pro 추론 품질)** |
+| 코드 작성 후 오류 | 한 번 만들고 끝 | 자기 점검 + 자동 수정 | **+11%p (HumanEval pass@1)** |
+| 거짓 정보(환각) | 자신 있게 틀린 답변 | 검증 체인으로 사전 차단 | **50-70% 감소 (장문 생성 환각률)** |
 | 작업 유형 혼동 | 모든 요청을 같은 방식으로 처리 | 9가지 유형별 전문 대응 | 질적 개선 |
 
 ---
 
 ## 주요 수치
 
-| 기능 | 개선 효과 | 검증 방법 |
+| 기능 | 개선 효과 | 검증 지표 |
 |---|---|---|
-| 모호한 요청 해석 | 정확도 76.7% -> 100% (+23.3%p) | 자체 30문제 벤치마크 |
-| 사전 추론 후 실행 | 추론 품질 +26.7%p (70% -> 96.7%) | 자체 벤치마크 |
-| 자기 점검 + 재검토 | 코딩 정확도 80% -> 91% (+11%p) | ^1 |
-| 거짓 정보(환각) 감소 | 50-70% 감소 | ^2 |
-| 자기 수정 반복 | 평균 +20% 품질 향상 | ^3 |
-| 하위 질문 분해 추론 | 정확도 17.6% -> 60% (+42.4%p) | ^4 |
-| 다단계 분기 탐색 추론 | 정확도 4% -> 74% (+70%p) | ^5 |
-| 점진적 해결 | 정확도 16% -> 99.7% (+83.7%p) | ^6 |
+| 모호한 요청 해석 | 정확도 76.7% -> 100% (+23.3%p) | Ambiguous Spec 정확도 |
+| 사전 추론 후 실행 | 추론 품질 +26.7%p (70% -> 96.7%) | MMLU-Pro 추론 품질 |
+| 자기 점검 + 재검토 | 코딩 정확도 80% -> 91% (+11%p) | HumanEval pass@1 |
+| 거짓 정보(환각) 감소 | 50-70% 감소 | 장문 생성 환각률, MultiSpanQA F1 |
+| 자기 수정 반복 | 평균 +20% 품질 향상 | 7개 태스크 평균 품질 점수 |
+| 하위 질문 분해 추론 | 정확도 17.6% -> 60% (+42.4%p) | Bamboogle 정확도 |
+| 다단계 분기 탐색 추론 | 정확도 4% -> 74% (+70%p) | Game of 24 성공률 |
+| 점진적 해결 | 정확도 16% -> 99.7% (+83.7%p) | SCAN 정확도 |
 | 자동 작업 유형 감지 | 9가지 유형 분류 | 1.1M건 사용 데이터 기반 |
-| 전체 정확도 | 95.3% -> 100% (+4.7%p) | 자체 벤치마크 |
+| 전체 정확도 | 95.3% -> 100% (+4.7%p) | Ambiguous Spec 정확도 |
+
+> 📎 ¹ Shinn et al. "Reflexion" (2023) arXiv:2303.11366
+> ² Dhuliawala et al. "Chain-of-Verification" (2023) arXiv:2309.11495
+> ³ Madaan et al. "Self-Refine" (2023) arXiv:2303.17651
+> ⁴ Press et al. "Measuring and Narrowing the Compositionality Gap" (2022) arXiv:2210.03350
+> ⁵ Yao et al. "Tree of Thoughts" (2023) arXiv:2305.10601
+> ⁶ Zhou et al. "Least-to-Most Prompting" (2022) arXiv:2205.10625
 
 ---
 
@@ -166,25 +175,4 @@ AI가 **알아서 추측하고 진행하는 대신**
 
 ---
 
-<details>
-<summary>근거 논문 목록</summary>
-
-^1 Shinn et al. (2023). "Reflexion: Language Agents with Verbal Reinforcement Learning." arXiv:2303.11366
-
-^2 Dhuliawala et al. (2023). "Chain-of-Verification Reduces Hallucination in Large Language Models." arXiv:2309.11495
-
-^3 Madaan et al. (2023). "Self-Refine: Iterative Refinement with Self-Feedback." arXiv:2303.17651
-
-^4 Press et al. (2022). "Measuring and Narrowing the Compositionality Gap in Language Models." arXiv:2210.03350
-
-^5 Yao et al. (2023). "Tree of Thoughts: Deliberate Problem Solving with Large Language Models." arXiv:2305.10601
-
-^6 Zhou et al. (2022). "Least-to-Most Prompting Enables Complex Reasoning in Large Language Models." arXiv:2205.10625
-
-^7 Wang et al. (2023). "Plan-and-Solve Prompting." arXiv:2305.04091
-
-^8 Hu et al. (2024). "Uncertainty of Thoughts." arXiv:2402.03271
-
-^9 Dahl et al. (2024). "Large Legal Fictions: Profiling Legal Hallucinations in Large Language Models."
-
-</details>
+**전체 참고 문헌**: Shinn (2023) Reflexion · Dhuliawala (2023) CoVe · Madaan (2023) Self-Refine · Press (2022) Self-Ask · Yao (2023) ToT · Zhou (2022) Least-to-Most · Wang (2023) Plan-and-Solve · Hu (2024) UoT · Dahl (2024) Legal Hallucinations

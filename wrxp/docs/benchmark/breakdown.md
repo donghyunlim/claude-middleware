@@ -23,11 +23,13 @@
 
 이 원리가 얼마나 강력한지 보여주는 수치입니다:
 
-| 문제 유형 | 분해 전 | 분해 후 | 변화 |
-|---|---|---|---|
-| 복잡한 명령어 조합 | 16% | 99.7% | **+84%p** |
-| 다단계 추론 | 4% | 74% | **+70%p** |
-| 다중 단계 질문 응답 | 17.6% | 60% | **+42.4%p** |
+| 문제 유형 | 분해 전 | 분해 후 | 변화 | 검증 지표 |
+|---|---|---|---|---|
+| 복잡한 명령어 조합 | 16% | 99.7% | **+84%p** | SCAN 정확도 |
+| 다단계 추론 | 4% | 74% | **+70%p** | Game of 24 성공률 |
+| 다중 단계 질문 응답 | 17.6% | 60% | **+42.4%p** | Bamboogle 정확도 |
+
+> 📎 Zhou et al. "Least-to-Most Prompting" (2022) arXiv:2205.10625 · Yao et al. "Tree of Thoughts" (2023) arXiv:2305.10601 · Press et al. "Self-Ask" (2022) arXiv:2210.03350
 
 `/breakdown`은 이 분해 원리를 **프로젝트 규모**로 확장합니다.
 여러분의 요청을 재귀적으로 분해하여,
@@ -111,8 +113,8 @@
 
 | 상황 | 기존 AI | `/breakdown` 사용 시 | 개선 |
 |---|---|---|---|
-| 복잡한 문제 | 통째로 풀려다 실패 | 작은 조각으로 나눠 해결 | **+84%p (16%->99.7%)** |
-| 다단계 추론 | 중간에 길을 잃음 | 단계별 분해 후 정복 | **+70%p (4%->74%)** |
+| 복잡한 문제 | 통째로 풀려다 실패 | 작은 조각으로 나눠 해결 | **+84%p (SCAN 정확도)** |
+| 다단계 추론 | 중간에 길을 잃음 | 단계별 분해 후 정복 | **+70%p (Game of 24 성공률)** |
 | 대규모 프로젝트 | 한 번에 하나씩 순차 처리 | 독립 작업 동시 실행 | **실행 시간 단축** |
 | AI 역할 배정 | 범용 AI가 전부 처리 | 작업별 전문 AI 배정 | **작업 품질 향상** |
 | 실행 중 실패 | 무한 재시도 또는 포기 | 자동 에스컬레이션 | **안전한 실패 처리** |
@@ -122,15 +124,21 @@
 
 ## 주요 수치
 
-| 기능 | 개선 효과 | 검증 방법 |
+| 기능 | 개선 효과 | 검증 지표 |
 |---|---|---|
-| 복잡한 문제 분해 후 정확도 | 16% -> 99.7% (+84%p) | ^1 |
-| 다단계 추론 정확도 | 4% -> 74% (+70%p) | ^2 |
-| 다중 단계 질문 응답 | 17.6% -> 60% (+42.4%p) | ^3 |
-| 모호한 요청 해결 | 76.7% -> 100% (+23.3%p) | 자체 벤치마크 |
-| 거짓 정보(환각) 감소 | 50~70% | ^4 |
-| 계획 수립 후 실행 | +3%p 추론 정확도 | ^5 |
-| 전체 정확도 | 95.3% -> 100% (+4.7%p) | 자체 벤치마크 |
+| 복잡한 문제 분해 후 정확도 | 16% -> 99.7% (+84%p) | SCAN 정확도 |
+| 다단계 추론 정확도 | 4% -> 74% (+70%p) | Game of 24 성공률 |
+| 다중 단계 질문 응답 | 17.6% -> 60% (+42.4%p) | Bamboogle 정확도 |
+| 모호한 요청 해결 | 76.7% -> 100% (+23.3%p) | Ambiguous Spec 정확도 |
+| 거짓 정보(환각) 감소 | 50~70% | 장문 생성 환각률, MultiSpanQA F1 |
+| 계획 수립 후 실행 | +3%p 추론 정확도 | GSM8K 정확도 |
+| 전체 정확도 | 95.3% -> 100% (+4.7%p) | Ambiguous Spec 정확도 |
+
+> 📎 ¹ Zhou et al. "Least-to-Most Prompting" (2022) arXiv:2205.10625
+> ² Yao et al. "Tree of Thoughts" (2023) arXiv:2305.10601
+> ³ Press et al. "Self-Ask" (2022) arXiv:2210.03350
+> ⁴ Dhuliawala et al. "Chain-of-Verification" (2023) arXiv:2309.11495
+> ⁵ Wang et al. "Plan-and-Solve Prompting" (2023) arXiv:2305.04091
 
 ---
 
@@ -183,19 +191,4 @@
 
 ---
 
-<details>
-<summary>근거 논문 목록</summary>
-
-^1 Zhou et al. (2022). "Least-to-Most Prompting Enables Complex Reasoning in Large Language Models." arXiv:2205.10625
-
-^2 Yao et al. (2023). "Tree of Thoughts: Deliberate Problem Solving with Large Language Models." arXiv:2305.10601
-
-^3 Press et al. (2022). "Measuring and Narrowing the Compositionality Gap in Language Models." arXiv:2210.03350
-
-^4 Dhuliawala et al. (2023). "Chain-of-Verification Reduces Hallucination in Large Language Models." arXiv:2309.11495
-
-^5 Wang et al. (2023). "Plan-and-Solve Prompting." arXiv:2305.04091
-
-^6 Dahl et al. (2024). "Large Legal Fictions: Profiling Legal Hallucinations in Large Language Models."
-
-</details>
+**전체 참고 문헌**: Zhou (2022) Least-to-Most · Yao (2023) ToT · Press (2022) Self-Ask · Dhuliawala (2023) CoVe · Wang (2023) Plan-and-Solve · Dahl (2024) Legal Hallucinations

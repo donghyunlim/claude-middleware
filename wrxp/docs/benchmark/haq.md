@@ -100,7 +100,7 @@
 | 사용자 완료율 (6~10개 질문) | 73.6% (비교 대상) | 설문 응답 완주율 |
 | 인지 부하 기준 | 4개 이내 = 기억 한계 이내 | 단기 기억 용량 |
 | 하위 질문 분해 정확도 | +42.4%p (17.6% -> 60%) | Bamboogle 정확도 |
-| 전체 정확도 | 95.3% -> 100% (+4.7%p) | Ambiguous Spec 정확도 |
+| 전체 정확도 | 72.7% -> 100% (+27.3%p) | 5개 벤치마크 종합 |
 
 > 📎 ¹ Mukherjee et al. "Optimal Question Ordering Based on EVPI" (2025) arXiv:2511.08798
 > ² Chen et al. "Stop Overthinking" (2025) arXiv:2503.16419

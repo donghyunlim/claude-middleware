@@ -7,3 +7,9 @@ group_id: p_middleware
 schemas:
   rules: '0.1'
   context: '0.1'
+queries:
+  architecture: "아키텍처 원칙 설계"
+  constraints: "제약사항 금지"
+  decisions: "설계 결정 근거"
+  dependencies: "모듈 의존성 스킬 플러그인"
+  domain: "도메인 지식 배포 프로세스"

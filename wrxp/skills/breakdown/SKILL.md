@@ -24,16 +24,15 @@ level: 4
 
 ### 1-1. 프로젝트 컨텍스트 수집
 
-**`.middleware/` 존재 시** (Middleware Mode):
-1. `.middleware/features.yaml` 스캔 — 요청과 관련된 feature/module만 선택적으로 읽기
-2. 관련 feature의 `domain_knowledge`, `design_decisions` 추출 (Do 중심)
-   - **주입 대상**: features purpose/status, domain_knowledge topic+summary, design_decisions title+decision+rationale (accepted만)
-3. 필요하면 언제든 전체 스캔으로 확대 (과감하게)
+> 이 단계는 `middleware-ref` 스킬의 절차를 따른다.
+> middleware-ref가 백엔드(Graphiti/YAML/CodeSearch)를 자동 감지하고 표준 컨텍스트 포맷으로 반환한다.
 
-**`.middleware/` 부재 시** (Code Search Mode):
-1. `git log --oneline -30`으로 프로젝트 히스토리 파악
-2. 프로젝트 루트 구조 확인 (디렉토리, 설정 파일)
-3. explore 에이전트로 관련 코드를 직접 탐색 (비용 증가 허용)
+1. `.middleware/manifest.yaml`을 읽어 백엔드를 감지한다.
+2. `middleware-ref` 스킬의 절차에 따라 프로젝트 컨텍스트를 수집한다.
+   - **Graphiti Mode**: manifest.yaml의 `queries` 섹션을 참조하여 Graphiti KG에서 검색
+   - **YAML Mode**: features.yaml + context.yaml 직접 읽기 (레거시)
+   - **Code Search Mode**: git log + 코드 구조 탐색 (폴백)
+3. 수집된 표준 컨텍스트(아키텍처 원칙, 제약, 설계 결정, 의존성, 도메인 지식)를 이후 단계에 반영한다.
 
 ### 1-2. 의도 명확화
 

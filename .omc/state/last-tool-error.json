@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"grep version /home/donny/.claude/plugins/marketplaces/donghyunlim/wrxp/package.json && python3 -c \\\"import json; d=json.load(open('/home/donny/.claude/plugins/marketplaces/donghyunlim/.cla...",
+  "error": "Exit code 1",
+  "timestamp": "2026-04-12T13:39:10.544Z",
+  "retry_count": 4
+}

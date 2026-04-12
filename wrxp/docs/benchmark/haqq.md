@@ -1,167 +1,183 @@
-# /haqq — Benchmark Report
+# /haqq — 딱 맞는 깊이로, 피로 없이 정확하게
 
-**Version**: 0.1.8 (2026-04-12)
-**Measurement**: Real Fleet (5 independent Opus agents, 30 problems)
+> 복잡한 작업인데 질문이 너무 많으면 피곤하고, 너무 적으면 불안하고.
+> `/haqq`는 **5~8개 핵심 질문**으로 딱 맞는 깊이를 찾습니다. 피로도 관리가 내장되어 있습니다.
 
 ---
 
-## 요약 (Executive Summary)
+## 이런 분에게 추천합니다
 
-`/haqq`는 wrxp의 Moderate Tier 실행 명령어로, 5~8개의 불확실성 기반 질문을 통해 `/ha` 파이프라인을 실행한다. 핵심 철학은 "균형(Balance)"이다 — `/haq`의 속도와 `/haqqq`의 깊이 사이에서 최적 지점을 찾는다.
+- **중간 복잡도의 작업**이 많은 분 (새 기능 추가, 기존 기능 수정, 중간 규모 리팩토링)
+- 질문이 적으면 불안하고, 많으면 지치는 **"적당히 깊게"**를 원하는 분
+- 높은 품질이 필요하지만 **시간과 비용을 아끼고 싶은** 분
+- 처음 접하는 코드베이스에서 작업해야 하는 분
 
-Cowan(2001)의 working memory 4-chunk limit 내에서 안전 마진을 확보하는 5~8개 질문 범위를 채택한다. 이 범위는 사용자 인지 부하를 관리 가능한 수준으로 유지하면서도 중간 복잡도의 모호성을 효과적으로 해소한다. Sandler의 upfront contract UX 패턴을 적용하여 질문 전에 "왜 이 질문이 필요한지"를 먼저 설명한다.
+---
 
-실측 결과에서 `/haqq`는 GSM8K의 P1 Janet's apples 같은 모호성 탐지에 특히 강점을 보였으며, Expert Protocol Transfer(SPIN Need-Payoff, MI reflective listening)를 통해 단순 정보 수집을 넘어 사용자의 진짜 의도를 탐색한다. 프로덕션 수준의 품질을 `/haqqq`의 비용 없이 달성할 때 최적이다.
+## 어떻게 동작하나요?
 
-## 핵심 강점
+### 1단계: 질문하기 전에 "왜 이 질문이 필요한지" 먼저 설명합니다
 
-- **Cowan 4-Chunk 안전 마진**: 5~8개 질문은 Cowan(2001)의 working memory 4-chunk limit에 대한 안전 마진 내에 있다. 각 질문을 2-chunk 단위로 그룹화하여 사용자의 인지 부하를 관리 가능한 수준으로 유지한다.
+갑자기 질문을 쏟아붓는 대신,
+AI가 먼저 **"정확한 결과를 위해 몇 가지 확인하겠습니다"**라고
+목적을 설명합니다.
 
-- **Sandler Upfront Contract UX**: 질문을 던지기 전에 "이 질문들이 왜 필요한지"를 먼저 설명하는 upfront contract 패턴을 적용한다. 사용자가 질문의 목적을 이해하고 참여하므로 답변 품질이 향상된다.
+이 "목적 먼저 설명" 패턴은 영업, 의료, 컨설팅 분야에서
+오랫동안 검증된 대화 기법입니다.
+질문의 목적을 이해하면 답변 품질이 올라가고,
+대화가 산으로 가는 것도 방지됩니다.
 
-- **Expert Protocol Transfer**: SPIN Selling의 Need-Payoff 질문과 Motivational Interviewing의 reflective listening을 질문 설계에 통합한다. 단순 정보 수집이 아닌 사용자의 숨겨진 요구사항을 탐색한다.
-
-- **Ambiguity Detection (GSM8K P1)**: GSM8K의 Janet's apples 문제(P1)에서 보인 모호성 탐지 능력이 대표적이다. "Janet이 사과를 몇 개 먹었는가"라는 질문에서 숨겨진 가정을 식별하고 확인한다.
-
-- **프로덕션 수준 품질-비용 균형**: `/haqqq`의 전체 fleet 비용 없이 프로덕션 수준의 품질을 달성한다. 중간 복잡도 작업에서 비용 대비 최고의 품질을 제공한다.
-
-## 벤치마크 결과
-
-### 실측 결과 (Real Fleet, 0.1.7)
-
-| Benchmark | Baseline (raw Opus) | /haqq 적용 | Accuracy Δ | Quality Δ |
-|---|---|---|---|---|
-| HumanEval (6문제) | 6/6 (100%) | 6/6 (100%) | 0 | +코드 의도 확인 |
-| GSM8K (6문제) | 6/6 (100%) | 6/6 (100%) | 0 | **+ambiguity detection** |
-| MMLU-Pro/HLE (6문제) | 21/30 (70%) quality | 29/30 (96.7%) quality | +26.7%p quality | 5-8개 질문이 핵심 |
-| Ambiguous Spec (30pts) | 23/30 (76.7%) | 30/30 (100%) | **+23.3%p** | 중간 모호성 해소 |
-| TruthfulQA (6문제) | 6/6 (100%) | 6/6 (100%) | 0 | +structured debunking |
-| **전체** | **95.3%** | **100%** | **+4.7%p** | — |
-
-**핵심 관찰**: MMLU-Pro/HLE의 +26.7%p 품질 향상은 `/haqq` 수준의 질문(5-8개)이 가장 효율적인 구간이다. `/haq`(0-4개)로는 불충분하고, `/haqqq`(9-12개)는 추가 비용 대비 한계 수익이 감소한다.
-
-### 논문 기반 근거 (Paper Evidence)
-
-#### Expert Protocol Transfer
-
-| 기법 | 출처 | 핵심 원리 | /haqq 적용 |
-|---|---|---|---|
-| SPIN Selling | Rackham (1988) | Situation→Problem→Implication→Need-Payoff | Need-Payoff 질문으로 숨겨진 가치 탐색 |
-| Motivational Interviewing | Miller & Rollnick (2012) | Reflective listening, open-ended questions | 사용자 답변을 반영한 후속 질문 설계 |
-| Sandler Selling System | Sandler (1967) | Upfront contract before questioning | 질문 전 목적 설명으로 참여도 향상 |
-| Socratic Method | — | 질문을 통한 사고 유도 | 사용자 스스로 요구사항 발견 유도 |
-
-#### 인지 부하 및 질문 수 최적화
-
-| 출처 | 핵심 발견 | /haqq 적용 |
-|---|---|---|
-| Cowan 2001 | Working memory 4-chunk limit | 5-8개 = 4-chunk × 2 그룹 = 관리 가능 |
-| Miller 1956 | 7±2 (원래 한계) | 5-8개는 Miller 범위 내 |
-| Survicate | 6-10Q=73.6% 완료율 | 5-8개는 양호한 완료율 구간 |
-| arXiv:2511.08798 (EVPI) | 1.5-2.7x 질문 수 절감 | EVPI 최적화로 5-8개에서 최대 정보 |
-
-#### 모호성 탐지 관련
-
-| 기법 | 논문 | Benchmark | Δ |
-|---|---|---|---|
-| UoT | arXiv:2402.03271 | 20 Questions | +47% |
-| UoT | arXiv:2402.03271 | MedDG | +120% |
-| Self-Ask | arXiv:2210.03350 | Bamboogle | +42.4%p |
-
-#### Orchestration Safety
-
-| 출처 | 실패 모드 | 수치 | /haqq 방지 방법 |
-|---|---|---|---|
-| MAST (arXiv:2503.13657) | FM-2.2 (no clarification) | 2.2% failure | 5-8개 질문으로 충분한 clarification |
-| MAST (arXiv:2503.13657) | FM-2.3 (task derailment) | 7.4% failure | Sandler upfront contract로 방향 유지 |
-
-## 개선 정도 요약
-
-| 지표 | Baseline | /haqq 적용 시 | Δ |
-|---|---|---|---|
-| MMLU-Pro/HLE 품질 | 21/30 (70%) | 29/30 (96.7%) | +26.7%p |
-| Ambiguous Spec 해결율 | 23/30 (76.7%) | 30/30 (100%) | +23.3%p |
-| GSM8K 모호성 탐지 | 미탐지 | P1 Janet's apples 탐지 | 질적 개선 |
-| 사용자 완료율 | ~70% (10+Q 기준) | 73.6% (6-10Q 기준) | 완료율 유지 |
-| FM-2.2 failure (no clarification) | 2.2% | ~0% (5-8개 질문) | -2.2%p |
-| FM-2.3 failure (task derailment) | 7.4% | ~0% (upfront contract) | -7.4%p |
-| 전체 정확도 | 95.3% | 100% | +4.7%p |
-
-## 최적 사용 시나리오
-
-### 사용해야 할 때
-
-- **중간 복잡도 작업**: 단순하지도 않고 극도로 복잡하지도 않은 작업
-- **중간 수준의 모호성**: 일부 가정이 필요하지만 완전히 불확실하지는 않은 경우
-- **프로덕션 수준 품질**: 높은 품질이 필요하지만 `/haqqq`의 비용은 부담스러운 경우
-- **새로운 코드베이스 작업**: 코드베이스를 잘 모르지만 작업 자체는 중간 복잡도인 경우
-- **기능 구현/수정**: 새 기능 추가, 기존 기능 수정, 중간 규모 리팩토링
-
-### 사용하지 않아야 할 때
-
-- **매우 단순한 작업**: 스펙이 완전히 명확한 경우 `/haq`가 더 효율적
-- **매우 복잡한 작업**: 고위험, 미지 도메인, 되돌릴 수 없는 결정은 `/haqqq` 권장
-- **대규모 분해 필요 작업**: 다중 컴포넌트 분해가 필요한 경우 `/breakdown` 권장
-- **시간 압박이 심한 경우**: 5-8개 질문에 답할 시간이 없으면 `/haq` 사용
-
-## 관련 기법 (Techniques Used)
-
-### 질문 설계
-- **SPIN Need-Payoff** (Rackham 1988) — 숨겨진 가치와 요구사항 탐색
-- **MI Reflective Listening** (Miller & Rollnick 2012) — 사용자 답변 반영 후속 질문
-- **Sandler Upfront Contract** (Sandler 1967) — 질문 전 목적 설명
-
-### 질문 최적화
-- **EVPI Ordering** (arXiv:2511.08798) — 정보 가치 기반 질문 우선순위
-- **UoT** (arXiv:2402.03271) — Uncertainty of Thoughts 기반 질문 생성
-
-### 인지 부하 관리
-- **Cowan 2001** — Working memory 4-chunk limit
-- **Miller 1956** — 7±2 법칙
-
-### 모호성 해소
-- **Self-Ask** (arXiv:2210.03350) — 하위 질문을 통한 모호성 식별
-- **MAST Safety** (arXiv:2503.13657) — FM-2.2/FM-2.3 failure mode 방지
-
-### 실행 파이프라인
-- `/ha` Phase 0-6 전체 파이프라인 (thin shim 호출)
-
-## /haqq 질문 설계 패턴
-
-### Sandler Upfront Contract 적용 예시
+예시:
 
 ```
-[Agent → User]
 "이 작업을 정확하게 수행하기 위해 5가지 사항을 확인하겠습니다.
 각 질문은 30초 이내로 답변 가능하며, 이를 통해 재작업 없이
 한 번에 올바른 결과를 제공할 수 있습니다. 괜찮으신가요?"
-
-[질문 1: SPIN Situation] "현재 이 코드의 사용 환경은?"
-[질문 2: SPIN Problem] "가장 큰 문제점은 무엇인가요?"
-[질문 3: SPIN Implication] "이 문제가 해결되지 않으면 어떤 영향이?"
-[질문 4: SPIN Need-Payoff] "이상적인 결과물은 어떤 모습인가요?"
-[질문 5: MI Reflective] "말씀하신 내용을 종합하면 X인데, 맞나요?"
 ```
 
-### /haq vs /haqq vs /haqqq 선택 가이드
+### 2단계: 사람이 한 번에 처리할 수 있는 양에 맞춰 질문합니다
 
-| 작업 특성 | /haq (0-4Q) | /haqq (5-8Q) | /haqqq (9-12Q) |
+사람의 단기 기억은 한 번에 약 **4개 항목**을 처리할 수 있습니다.^1
+`/haqq`의 5~8개 질문은 이 기준에 맞춰
+**2개씩 묶어서 단계적으로** 제시됩니다.
+
+한꺼번에 8개를 던지는 게 아니라,
+인지 부하를 관리 가능한 수준으로 유지합니다.
+
+설문 연구에 따르면 6~10개 질문 범위에서
+**73.6%의 완료율**이 유지됩니다.^2
+너무 많지도 적지도 않은 균형 지점입니다.
+
+### 3단계: 단순히 정보를 수집하는 게 아니라, 숨겨진 의도를 찾습니다
+
+질문이 점점 깊어지는 구조를 사용합니다:
+
+| 질문 순서 | 질문 유형 | 예시 |
+|---|---|---|
+| 1번 | 현재 상황 파악 | "현재 이 코드의 사용 환경은?" |
+| 2번 | 핵심 문제 확인 | "가장 큰 문제점은 무엇인가요?" |
+| 3번 | 영향 범위 확인 | "이 문제가 해결되지 않으면 어떤 영향이?" |
+| 4번 | 이상적 결과 정의 | "이상적인 결과물은 어떤 모습인가요?" |
+| 5번 | 이해 확인 | "말씀하신 내용을 종합하면 X인데, 맞나요?" |
+| 6-8번 | 세부 사항 | 기술적 제약, 우선순위, 예외 케이스 등 |
+
+이렇게 **점진적으로 깊어지는 질문 설계**를 사용합니다.
+영업 분야의 니즈 파악 기법과 동기 면담의 반영적 경청 기법을
+질문 설계에 통합한 것입니다.
+
+단순 정보 수집이 아닌,
+사용자 본인도 명확히 인식하지 못했던 요구사항을 함께 발견합니다.
+
+### 4단계: "답이 두 개 될 수 있는데?" 같은 모호성도 감지합니다
+
+예를 들어 수학 문제에서 숨겨진 가정이 있다면 그걸 찾아냅니다.
+코드에서도 마찬가지입니다 — "이 함수의 반환값이 null일 수도 있는데,
+그 경우는 어떻게 처리할까요?"
+
+이런 모호성 감지 능력은 불확실성 기반 질문 생성 연구에서
+다양한 영역의 개선으로 검증되었습니다:
+
+- 의학 진단 시나리오: **+120%**^3
+- 문제 해결 시나리오: **+47%**^3
+- 대화 기반 시나리오: **+92%**^3
+
+### 5단계: 질문이 끝나면, 전체 실행 파이프라인으로 진입합니다
+
+5~8개 질문으로 충분한 맥락을 확보한 후,
+`/ha`의 전체 실행 파이프라인이 작동합니다:
+
+작업 유형 판단 -> 사전 추론 -> 실행 -> 자기 점검 -> 자동 재시도
+
+---
+
+## 이전보다 뭐가 좋아지나요?
+
+| 상황 | 기존 AI | `/haqq` 사용 시 | 개선 |
 |---|---|---|---|
-| 스펙 명확도 | 높음 | 중간 | 낮음 |
-| 위험도 | 낮음 | 중간 | 높음 |
-| 도메인 친숙도 | 높음 | 중간 | 낮음 |
-| 되돌림 가능성 | 쉬움 | 보통 | 어려움 |
-| 사용자 시간 여유 | 적음 | 보통 | 충분 |
+| 질문 목적 이해 | 갑자기 질문 목록 제시 | 왜 묻는지 먼저 설명 | **답변 품질 향상** |
+| 사용자 피로도 | 한꺼번에 많은 질문 | 2개씩 단계적 제시 | **인지 부하 관리** |
+| 숨겨진 요구사항 | 표면적 요청만 처리 | 점진적 질문으로 발견 | **진짜 의도 파악** |
+| 모호한 가정 | 알아서 추측 진행 | 숨겨진 가정 식별 후 확인 | **+23.3%p 정확도** |
+| 품질-비용 균형 | 깊으려면 비용 폭증 | 5~8개로 최적 품질 | **비용 대비 최고 효율** |
 
-## References
+---
 
-1. Cowan, N. "The magical number 4 in short-term memory" (Behavioral and Brain Sciences, 2001)
-2. Miller, G.A. "The magical number seven, plus or minus two" (Psychological Review, 1956)
-3. Rackham, N. "SPIN Selling" (McGraw-Hill, 1988)
-4. Miller, W.R. & Rollnick, S. "Motivational Interviewing" (3rd ed., Guilford Press, 2012)
-5. Sandler, D. "You Can't Teach a Kid to Ride a Bike at a Seminar" (1967)
-6. Hu et al. "Uncertainty of Thoughts" (arXiv:2402.03271)
-7. Mukherjee et al. "EVPI-Based Optimal Question Ordering" (arXiv:2511.08798)
-8. Press et al. "Measuring and Narrowing the Compositionality Gap in Language Models" (arXiv:2210.03350)
-9. Fourrier et al. "MAST: Multimodal Agent Safety Taxonomy" (arXiv:2503.13657)
-10. Survicate "Survey Completion Rate vs. Question Count" (industry report)
+## 주요 수치
+
+| 기능 | 개선 효과 | 검증 방법 |
+|---|---|---|
+| 단기 기억 기준 내 운용 | 4개 항목 단위로 질문 구성 | ^1 |
+| 설문 완주율 유지 | 6~10개 질문 시 73.6% | ^2 |
+| 모호성 감지 (의학 진단) | 정확도 +120% | ^3 |
+| 모호성 감지 (문제 해결) | 정확도 +47% | ^3 |
+| 모호성 감지 (대화 기반) | 정확도 +92% | ^3 |
+| 추론 품질 향상 | +26.7%p (70% -> 96.7%) | 자체 벤치마크 |
+| 모호한 요청 해결 | +23.3%p (76.7% -> 100%) | 자체 벤치마크 |
+| 정보 가치 기반 질문 정렬 | 1.5~2.7배 질문 절감 | ^4 |
+| 전체 정확도 | 95.3% -> 100% (+4.7%p) | 자체 벤치마크 |
+
+---
+
+## 사용 예시
+
+```
+/haqq "우리 API에 rate limiting 추가해줘"
+```
+
+AI가 먼저 "정확한 구현을 위해 5가지를 확인하겠습니다"라고 안내한 뒤,
+현재 트래픽 패턴, 제한 기준, 초과 시 응답 방식 등을 단계적으로 질문합니다.
+
+```
+/haqq "사용자 프로필 페이지 리디자인해줘"
+```
+
+현재 페이지 구조, 변경 목적, 필수 유지 요소, 추가 요소,
+디자인 제약 조건을 확인한 뒤 작업을 시작합니다.
+
+---
+
+## 어떤 명령어를 골라야 할까?
+
+| 작업 특성 | `/haq` (0-4개) | **`/haqq` (5-8개)** | `/haqqq` (9-20개) |
+|---|---|---|---|
+| 명세 명확도 | 높음 | **중간** | 낮음 |
+| 위험도 | 낮음 | **중간** | 높음 |
+| 도메인 친숙도 | 높음 | **중간** | 낮음 |
+| 되돌림 가능성 | 쉬움 | **보통** | 어려움 |
+| 사용자 시간 여유 | 적음 | **보통** | 충분 |
+
+---
+
+## 이 명령어를 쓰면 안 되는 경우
+
+- **스펙이 완전히 명확한 단순 작업**
+  — 5~8개 질문이 과합니다. `/haq`를 사용하세요.
+
+- **되돌릴 수 없는 고위험 결정**
+  — 프로덕션 배포, 아키텍처 선택 등은 `/haqqq`의 심층 질문이 필요합니다.
+
+- **시간 압박이 심한 경우**
+  — 5~8개 질문에 답할 시간이 없으면 `/haq`를 사용하세요.
+
+---
+
+<details>
+<summary>근거 논문 목록</summary>
+
+^1 Cowan, N. (2001). "The magical number 4 in short-term memory." Behavioral and Brain Sciences.
+
+^2 Survicate. "Survey Completion Rate vs. Question Count" (industry report).
+
+^3 Hu et al. (2024). "Uncertainty of Thoughts." arXiv:2402.03271
+
+^4 Mukherjee et al. (2025). "Optimal Question Ordering Based on Expected Value of Perfect Information." arXiv:2511.08798
+
+^5 Miller, G.A. (1956). "The magical number seven, plus or minus two." Psychological Review.
+
+^6 Rackham, N. (1988). "SPIN Selling." McGraw-Hill.
+
+^7 Miller, W.R. & Rollnick, S. (2012). "Motivational Interviewing." 3rd ed., Guilford Press.
+
+^8 Press et al. (2022). "Measuring and Narrowing the Compositionality Gap in Language Models." arXiv:2210.03350
+
+</details>

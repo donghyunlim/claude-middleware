@@ -9,10 +9,10 @@
     {
       "name": "middleware",
       "description": "Read .middleware/ project knowledge to amplify user intent",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "source": "./",
       "category": "productivity",
-      "tags": ["context", "planning", "middleware", "knowledge"]
+      "tags": ["context", "planning", "middleware", "knowledge", "graphiti"]
     },
     {
       "name": "wrxp",

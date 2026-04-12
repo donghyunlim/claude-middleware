@@ -14,45 +14,115 @@ claude plugin add github:donghyunlim/claude-middleware
 
 When you work in a project with a `.middleware/` directory, the plugin automatically:
 1. Detects `.middleware/` on every message via a `UserPromptSubmit` hook
-2. Spawns a Sonnet relay agent to read and curate project knowledge
-3. Injects relevant context (features, constraints, anti-patterns, rules) into Claude's reasoning
+2. Injects relevant project context into Claude's reasoning
+3. Auto-installs git post-commit hook (if `scripts/middleware/post_commit_graphiti.py` exists)
 4. You get better answers without any extra interaction
 
-### Deep Mode (`/middleware:context`)
+### Two Backends
 
-For complex tasks, invoke the deep analysis workflow:
+| Backend | Storage | Context Injection | Auto-update |
+|---------|---------|-------------------|-------------|
+| **YAML** (v1) | `.middleware/features.yaml` | Sonnet relay agent reads YAML | Manual or LLM extraction |
+| **Graphiti KG** (v2) | Graphiti knowledge graph | `/middleware:mw` queries KG | Post-commit hook auto-ingestion |
 
+The backend is determined by `manifest.yaml`:
+```yaml
+# v1 (YAML)
+backend: yaml
+
+# v2 (Graphiti KG)
+backend: graphiti
+group_id: commercial_insight
 ```
-/middleware:context "Add OAuth2 to the auth system"
-```
-
-This triggers a 5-phase workflow:
-1. **Context Gathering** — Sonnet relay reads `.middleware/` and produces a briefing
-2. **Selective Code Reading** — Reads relevant code files based on feature modules
-3. **Counter-Questioning** — 1-20 targeted questions to clarify intent and catch oversights
-4. **Plan Synthesis** — Structured work plan incorporating all gathered context
-5. **Writing Plans** — Transitions to detailed implementation planning
-
-## What is `.middleware/`?
-
-A structured knowledge directory maintained by the [middleware server](https://github.com/donghyunlim/middleware):
-
-- `features.yaml` — Feature definitions with anti-patterns, constraints, design decisions, domain knowledge
-- `rules.yaml` — Code protection rules (locked/guarded/open paths)
-- `context.yaml` — Project context (architecture, tech stack, constraints, conventions)
-- `manifest.yaml` — Phase tracking and schema versions
-- `history/` — Execution and extraction history
 
 ## Skills
 
-| Skill | Invocation | Purpose |
-|---|---|---|
-| context | `/middleware:context` | Deep analysis: relay + selective code reading + counter-questioning (1-20) + plan synthesis + writing-plans transition |
+| Skill | Invocation | Backend | Purpose |
+|---|---|---|---|
+| context | `/middleware:context` | YAML | Deep analysis: relay + counter-questioning + plan synthesis |
+| **mw** | `/middleware:mw` | **Graphiti** | **KG context injection + conflict detection** |
+
+### `/middleware:mw` (Graphiti KG backend)
+
+```bash
+# Bootstrap: load project architecture principles + constraints
+/middleware:mw
+
+# Context + conflict detection for a specific task
+/middleware:mw "Add new API endpoint for CSV download"
+```
+
+**What it does:**
+1. Queries Graphiti KG for architecture principles, constraints, design decisions
+2. Searches for related modules and dependencies
+3. Detects conflicts between your intent and existing design decisions
+4. Injects ~3KB of targeted context (vs 580KB full YAML)
+
+**Conflict detection** — automatically warns when your request conflicts with:
+- `IS_PROHIBITED_IN` — forbidden patterns
+- `MUST_VIA` — mandatory routing (e.g., all LLM calls must go through ClaudeClient)
+- `REQUIRES_NOT_MODIFY` — locked files/paths
+- `REQUIRES_FILTER` — mandatory data filters
+
+### `/middleware:context` (YAML backend)
+
+For projects still using the YAML backend:
+```bash
+/middleware:context "Add OAuth2 to the auth system"
+```
+
+5-phase workflow: Context Gathering -> Selective Code Reading -> Counter-Questioning -> Plan Synthesis -> Writing Plans
+
+## Knowledge Cycle
+
+```
+/middleware:mw               git commit
+  (read from KG)              (write to KG)
+       |                           |
+       v                           v
+  Claude Code  ----coding---->  post-commit hook
+  gets context                  sends to Graphiti
+       ^                           |
+       |                           v
+       +---- next session <--- KG enriched
+```
+
+The post-commit hook is **auto-installed** by the plugin when:
+- `.middleware/manifest.yaml` has `backend: graphiti`
+- `scripts/middleware/post_commit_graphiti.py` exists in the project
+
+### Two-tier ingestion (post-commit)
+
+| Tier | Content | LLM required | Failure rate |
+|------|---------|--------------|--------------|
+| **Tier 1** | git metadata, changed files, import diffs | No | 0% |
+| **Tier 2** | diff summary, intent extraction | Yes (optional) | ~25% (graceful) |
+
+Tier 1 always succeeds. Tier 2 failure doesn't block Tier 1 data.
+
+## What is `.middleware/`?
+
+A structured knowledge directory for your project:
+
+```
+.middleware/
+├── manifest.yaml    # Phase, backend type, group_id
+├── context.yaml     # Architecture, constraints, conventions (human-readable)
+├── rules.yaml       # Code protection rules (locked/guarded/open)
+├── hooks/           # pre-commit protection hook
+├── plans/           # Work plan tracking
+└── skills/          # Project-local skill overrides
+```
+
+**v1 (YAML)** also includes `features.yaml` (auto-extracted from commits) and `history/`.
+
+**v2 (Graphiti KG)** replaces `features.yaml` and `history/` with the Graphiti knowledge graph, keeping `context.yaml` and `rules.yaml` as human-readable references.
 
 ## Requirements
 
 - Claude Code CLI
-- A project with `.middleware/` initialized via the middleware server
+- A project with `.middleware/` initialized
+- For Graphiti backend: Graphiti MCP server connected
 
 ## License
 

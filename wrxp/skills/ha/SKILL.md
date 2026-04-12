@@ -24,103 +24,444 @@ This skill can be invoked in two ways:
 
 1. **Direct invocation (`/ha ...`)**: defaults to `depth_budget: 0`, meaning Phase 2 (Questioning) is **skipped** unless Phase 1 detects HIGH uncertainty. This honors the principle that 77% of requests already have a clear top-intent (Amazon Alexa research) and that simple queries waste 19-42 seconds on unnecessary reasoning (Stop Overthinking, arXiv:2503.16419).
 
-2. **Thin-shim invocation (`/haq`, `/haqq`, `/haqqq`)**: prepends a config block with `depth_budget: 0-4`, `5-8`, or `9-12` respectively, before the user's $ARGUMENTS.
-
-### Recognized Config Fields
-
-The following fields in the prepended block (or defaults) control Phase behavior:
+2. **Tier shim invocation (`/haq`, `/haqq`, `/haqqq`)**: a config block is passed in via `$ARGUMENTS`. Parse the following keys at the top of the requirements:
 
 ```
-depth_budget: 0 | 0-4 | 5-8 | 9-12-up-to-20
-question_rounds: 1 | 2 | 3-5
-max_budget: 0 | 4 | 8 | 20
-tier: direct | haq | haqq | haqqq
-fleet_mode: off | on
-fleet_tier: mid-upper | upper | top
-fleet_upper_bound: 5 | 8 | 12
-fleet_max_critical: 20
-budget: standard | expanded | unlimited
+depth_budget: <0-4 | 5-8 | 9-12-up-to-20>
+question_rounds: <1 | 2 | 3-5>
+max_budget: <4 | 8 | 20>
+tier: <haq | haqq | haqqq | direct>
+```
+
+If no config block is present, treat as direct invocation. When config is present, the depth budget governs Phase 2's question count ceiling. Phase 1's uncertainty detection still has the final say — uncertainty=LOW always skips Phase 2 regardless of caller tier.
+
+---
+
+## Phase 0 — Context & Task-Type Detection
+
+This phase establishes the work environment, identifies the task type, gathers task-specific context, and reserves a verification plan. It is mandatory and non-skippable.
+
+### 0-1. Task Type Table (9 types)
+
+| Task Type | 특징 | 산출물 형태 |
+|---|---|---|
+| `code` | 코드 작성/수정/리팩토링/디버깅 | 파일별 구현 명세 |
+| `writing` | 글 작성 (문서/이메일/보고서/에세이) | 섹션별 개요 + 본문 |
+| `planning` | 계획/일정/로드맵/이벤트 준비 | 단계별 타임라인 |
+| `research` | 조사/문헌 리뷰/요약 | 소스 목록 + 합성 |
+| `analysis` | **데이터 분석/패턴 발견/판단/평점/이미지 분석** | 분석 보고서 + 결론 |
+| `decision` | 의사결정 지원/트레이드오프 분석 | 기준 + 대안 매트릭스 |
+| `creative` | 창작 (디자인/스토리/시/브레인스토밍) | 장면/스탠자/패널 분해 |
+| `learning` | 학습 계획/커리큘럼/스터디 설계 | 세션별 커리큘럼 |
+| `other` | 위에 해당 없음 | 자유 형식 |
+
+**`analysis` 타입이 신규 추가된 이유** (NBER 1.5M ChatGPT 대화 분석): NBER 분류체계는 `data_analysis`와 `analyze_an_image`를 독립 leaf로 가지며, 기존 code/research/other에 흩어져 있던 "데이터 보고 판단/등급/패턴 발견" 요청을 하나의 명확한 카테고리로 통합한다. 데이터 무결성과 통계적 적절성이 핵심 검증 축이 된다.
+
+### 0-2. Two-Stage Detection Cascade
+
+Single-model routing for all complexity levels is the top anti-pattern in orchestrator literature. Use a two-stage cascade.
+
+**Stage 1 — Cheap Signals (always run)**
+
+CWD cues:
+
+| 신호 | Task Type 후보 |
+|---|---|
+| `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `build.gradle`, `composer.json`, `Gemfile`, `pubspec.yaml`, `*.csproj` | code |
+| `.obsidian/`, 다수의 `.md`, `docs/`, `vault/`, `notes/` | writing 또는 research |
+| `*.csv`, `*.parquet`, `*.ipynb`, `*.tsv`, `*.xlsx`, `data/` | **analysis** |
+| 일정 파일, ical, calendar | planning |
+| `references/`, `bib*`, `papers/` | research |
+| 위 어디에도 해당 없음 | 요청 텍스트로 판단 |
+
+요청 키워드:
+
+| 키워드 | Task Type |
+|---|---|
+| 구현/리팩토링/버그/코드/함수/클래스/API | code |
+| 써줘/작성/글/이메일/문서/보고서/에세이 | writing |
+| 계획/일정/준비/로드맵/타임라인 | planning |
+| 조사/요약/리서치/문헌 | research |
+| **분석해줘/패턴/등급/평점/판단해줘/이미지 분석/이 데이터** | **analysis** |
+| 비교/선택/결정/어느 것/vs | decision |
+| 그려줘/만들어줘/디자인/로고/아이디어/브레인스토밍 | creative |
+| 배우고 싶어/공부/학습/강의/커리큘럼 | learning |
+
+**Stage 2 — Internal Classification (only if Stage 1 confidence < 0.85)**
+
+Opus가 직접 task type을 분류한다. NBER hybrid rule을 적용: "여러 능력이 동시에 적용될 경우, **마지막 사용자 메시지와 가장 관련있는 단일 primary tag** 하나만 선택한다."
+
+**Stage 3 — User Fallback (only if internal classification still ambiguous)**
+
+`AskUserQuestion` 도구로 task type 4지선다 제시. 사용자가 직접 결정하게 한다.
+
+### 0-3. Task-Type-Specific Context Collection
+
+| Task Type | 수집 대상 |
+|---|---|
+| code | 프로젝트 루트, stack, 주요 디렉토리, 의존성, linter 설정 (아래 표 참조) |
+| writing | 관련 이전 글/초안, 스타일 가이드, 타겟 매체, `docs/`, `**/*.md` |
+| planning | 명시 제약 (날짜/예산/인원), 기존 일정/캘린더, 이해관계자 |
+| research | 기존 자료, 노트, 참고 문헌, `.obsidian/`, `notes/`, `references/`, `bib*` |
+| **analysis** | **데이터 소스 (파일/DB/API), 스키마, 행/열 수, 사용 가능 도구 (pandas/SQL/spreadsheet), 분석 목적, 산출물 형태 (보고서/시각화/요약), 데이터 품질 단서** |
+| decision | 대안 후보, 평가 기준, 시간/리스크 제약, 이전 논의 |
+| creative | 레퍼런스, 스타일/톤 가이드, 타겟 오디언스, 권리 제약 |
+| learning | 현재 수준, 목표 수준, 가용 시간, 선호 방식 |
+| other | `AskUserQuestion`으로 직접 질문 |
+
+Code stack 감지표:
+
+| File | Stack | Linter |
+|---|---|---|
+| pyproject.toml | Python | mypy / ruff |
+| package.json | Node/TS | tsc --noEmit / eslint |
+| Cargo.toml | Rust | cargo clippy |
+| go.mod | Go | go vet / staticcheck |
+| pom.xml | Java Maven | - |
+| build.gradle | Java Gradle | - |
+| composer.json | PHP | - |
+| Gemfile | Ruby | rubocop |
+| pubspec.yaml | Dart/Flutter | dart analyze |
+| *.csproj | C#/.NET | - |
+
+### 0-4. Phase 6 Verification Plan Reservation (preview)
+
+Phase 6에서 사용할 검증 방법을 Phase 0에서 미리 선택한다. 실제 검증 절차의 상세는 Phase 6에 정의되어 있고, 여기서는 어떤 verification recipe를 쓸지만 결정한다.
+
+| Task Type | 검증 recipe (preview) |
+|---|---|
+| code | 감지된 linter + 테스트 러너 |
+| writing | atomic claim extraction + temporal disclosure + fact-flagging |
+| planning | Critical Path + cycle detection + arithmetic validation |
+| research | 🔴 **CRITICAL** — DOI/citation verification + CRAAP test |
+| **analysis** | **데이터 무결성 + 통계 방법 적절성 + 결론-증거 일관성** |
+| decision | 🔴 **CRITICAL** — alternatives audit (≥3) + assumption surfacing + bias check |
+| creative | constraint compliance + style consistency + rights check |
+| learning | source anchoring + temporal disclosure + outdated-practice flag |
+| other | 사용자 수용 기준 직접 확인 |
+
+### 0-5. Phase 0 Output Format
+
+```
+🔍 Context 감지 중...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📂 작업 경로: [CWD]
+🏷️ Task Type: [9개 중 하나] (감지 단계: Stage [1|2|3], 신뢰도 [0.0-1.0])
+📁 관련 Artifact: [task-type-specific context 요약]
+🎯 Task 특성: [요약]
+✅ Phase 6 검증 계획 (예약): [recipe 이름]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
 
-## 7-Phase Pipeline (Phase 0–6)
+## Reasoning Framework (MANDATORY Before Every Action)
 
-### Phase 0: Dispatch Detection
+> **Canonical source**: `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md`
+> Before ANY action, Read the shared reasoning framework and apply all 9 principles:
+> 1. Logical Dependencies and Constraints  2. Risk Assessment  3. Abductive Reasoning and Hypothesis Exploration
+> 4. Outcome Evaluation and Adaptability  5. Information Availability  6. Precision and Grounding
+> 7. Completeness  8. Persistence and Patience  9. Response Inhibition ← reasoning 완료 전 행동 금지
 
-Determine task category and route to appropriate design template. All 9 categories below trigger Phase 1 Pre-Q Deep Reasoning; categories with **confidence >= 95%** may optionally skip to Phase 3 (Design) if Phase 1 gate agrees.
-
-**9 Task Types** (auto-detected from $ARGUMENTS):
-
-1. **code** – write, debug, refactor, optimize code; technical architecture; API design
-2. **writing** – blog, article, letter, proposal, documentation, creative content
-3. **planning** – project planning, strategy, timeline, roadmap, sprint planning
-4. **research** – literature review, synthesis, data exploration, hypothesis formation
-5. **analysis** – data analysis, business intelligence, metrics, statistical/qualitative interpretation
-6. **decision** – comparison, trade-off analysis, recommendation, go/no-go, multi-criteria ranking
-7. **creative** – story, art concept, music, game design, experiential ideas
-8. **learning** – how-to, skill development, concept explanation, curriculum design
-9. **other** – anything else; calls user for clarification if dispatch confidence < 60%
-
-### Phase 1: Pre-Q Deep Reasoning (Opus via Skill tool)
-
-**Goal**: Detect uncertainty (epistemic, aleatoric, pragmatic) from $ARGUMENTS alone, before asking the user.
-
-**Input**: Raw $ARGUMENTS + detected task_type from Phase 0.
-
-**Output**: A structured `ambiguity_ledger` dict with scores:
-- `epistemic`: 0–100 (missing knowledge, factual gaps)
-- `aleatoric`: 0–100 (inherent randomness, unknowable trade-offs)
-- `pragmatic`: 0–100 (unclear success criteria, conflicting goals)
-- `overall_uncertainty`: max(epistemic, aleatoric, pragmatic)
-- `detection_rationale`: brief explanation
-
-**Gate Logic**:
-- `overall_uncertainty < 20` → LOW (Phase 2 skipped, go to Phase 3 Design directly)
-- `overall_uncertainty 20–60` → MEDIUM (Phase 2 proceeds with 1–4 questions, task-dependent)
-- `overall_uncertainty > 60` → HIGH (Phase 2 proceeds with full depth_budget)
-- Special: If user explicitly says "I'm sure" / "definitely" / "no questions needed", override to LOW
-
-**Example** (code):
-```
-ambiguity_ledger:
-  epistemic: 15  (user gave clear requirements, maybe missing edge cases)
-  aleatoric: 5   (deterministic task)
-  pragmatic: 35  (success criteria partially vague: "optimize" but no metrics given)
-  overall_uncertainty: 35  → MEDIUM
-  detection_rationale: |
-    User request is mostly clear (function signature, I/O examples given).
-    Primary uncertainty is around performance targets and acceptance criteria.
-    Phase 2 will ask 2–3 clarifying questions on metrics and constraints.
-```
+Read `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md` and apply all 9 principles defined there before proceeding to any Phase.
 
 ---
 
-### Phase 2: Uncertainty-Driven Questioning (Opus via Skill tool)
+## Fleet Dispatching — Quality Tier Policy (Cross-Cutting)
 
-**Prerequisite**: Phase 1 gate is MEDIUM or HIGH (otherwise skip to Phase 3).
+This cross-cutting policy governs how **Phase 1 (Pre-Q / Situation Analysis)**, **Phase 5 (Execution Delegation)**, and **Phase 6 (Task-Type-Aware Verification)** spawn parallel specialized subagents. It combines tier-based quality targets with runtime agent detection and task-complexity-aware sizing.
 
-**Goal**: Reduce ambiguity ledger entries via targeted follow-up questions.
+Reasoning Framework (위 9 원칙)가 "어떻게 생각할 것인가"를 정의한다면, 이 정책은 "어떤 규모의 함대로 생각·실행·검증할 것인가"를 정의한다. 두 정책은 독립적으로 작동하지만 함께 적용된다.
 
-**Key Principles**:
-- **EVPI ordering**: Ask questions that change the execution plan most → lowest impact last.
-- **Stop Overthinking (arXiv:2503.16419)**: If user's answers drop uncertainty to LOW, stop asking. Don't ask all 0-4 / 5-8 / 9-12 if 2–3 suffice.
-- **Fatigue detection (arXiv:2511.08798)**: User response length drop-off > 40%, monosyllabic replies, explicit "skip" → auto-stop Phase 2.
-- **Cowan memory limits**: Max 4 questions per round. Break into multiple rounds if needed.
+### Quality Tier Targets
 
-**Mechanics**:
+| Tier | 품질 수준 | Per-phase 함대 상한 | 3-Phase 총합 상한 | Budget Policy |
+|---|---|---|---|---|
+| **/ha (default)** | 중상급 (mid-upper) | 5 agents | 15 | Standard |
+| **/haq** | 중상급 (mid-upper) | 5 agents | 15 | Standard |
+| **/haqq** | 상급 (upper) | 8 agents | 24 | Expanded |
+| **/haqqq** | 최상급 (top) | 12 agents (up to 20 if critical) | 36-60 | **Unlimited** |
 
-#### Phase 2-0: Skip Condition Check
+> **Benchmark**: 9개 병렬 리서치 에이전트 dispatch가 /haqqq 표준 동작 수준. 유저가 명시적으로 이 수준을 "최상급"의 기준으로 지정했다.
+
+### Dynamic Agent Detection (Runtime)
+
+**Never hardcode the agent list.** Claude Code의 available subagent types는 시간에 따라 변할 수 있다 (플러그인 추가/제거, 버전 업데이트, worktree 환경 차이). 매 실행마다:
+
+1. **Enumerate** — Agent tool의 `subagent_type` parameter에서 available한 모든 type을 나열 (system prompt의 skill list 및 subagent catalogue 참조)
+2. **Describe** — 각 agent의 description을 읽어 전문 분야 파악
+3. **Filter** — 현재 task type (Phase 0 결과) 및 현재 phase (1/5/6)에 적합한 agent만 선별
+4. **Diversify** — 중복 전문성 배제 (같은 역할 agent 2개 이상 금지, 예: code-reviewer 2개)
+5. **Rank** — task complexity와 fleet 상한에 맞춰 top-N 선택
+
+Pseudo-implementation:
+
 ```
-if overall_uncertainty < 20:
-  return SKIP, go to Phase 3
-elif overall_uncertainty 20–60:
-  q_budget = min(2, depth_budget // 2)  # e.g., 0-4 budget → ask up to 2
-elif overall_uncertainty > 60:
-  q_budget = min(depth_budget, 4 * question_rounds)  # e.g., 0-4 → 4; 5-8 → 8; 9-12 → 12
+available = list_subagent_types()                              # runtime enumeration
+filtered = [a for a in available
+            if matches_task_and_phase(a.description, task_type, phase)]
+diversified = remove_duplicate_specialties(filtered)
+ranked = rank_by_relevance(diversified, task_complexity)
+fleet = ranked[:effective_fleet_size(tier, complexity, phase)]
 ```
 
-#### Phase 2-1: Question Pool Construction (per task_type)
+이 pseudo-flow는 Opus가 Phase 1/5/6 진입 시점에 내부적으로 실행하는 선별 과정이다. 매뉴얼한 하드코딩 agent 리스트가 존재하지 않음을 보장한다.
+
+### Complexity-Aware Fleet Sizing
+
+실제 함대 수 = `min(tier_upper_bound, complexity_derived_count)` per phase.
+
+**Complexity score** (Phase 0에서 계산):
+
+| 차원 | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| **Scope** | N/A | 단일 artifact | multi-module | cross-system |
+| **Risk** | 되돌릴 수 있음 | semi-reversible | 되돌릴 수 없음 | — |
+| **Familiarity** | well-known | novel domain | unknown | — |
+| **Stakes** | low | medium | high | — |
+
+Total complexity score (0-9 범위) → 실제 함대 수:
+
+| Complexity | /ha·/haq | /haqq | /haqqq |
+|---|---|---|---|
+| **Trivial (0-2)** | 1-2 | 2-3 | 3-5 |
+| **Simple (3-4)** | 2-3 | 3-5 | 5-8 |
+| **Moderate (5-6)** | 3-4 | 5-7 | 8-12 |
+| **Complex (7-8)** | 4-5 | 7-8 | 10-15 |
+| **Critical (9+)** | 5 | 8 | 12-20 |
+
+**규칙**: Task 복잡도가 낮으면 tier가 높아도 과잉 dispatch 금지. Trivial task에 /haqqq를 호출해도 3-5개 agents로 충분하며, 그 이상은 noise만 증가시킨다. 반대로 /ha라도 critical task이면 tier 상한(5)까지 전부 사용한다.
+
+### Per-Phase Agent Candidate Mapping
+
+> **Note**: 아래 매핑은 **참고용**이다. 실제 선택은 runtime에 dynamic detection으로 결정. 하드코딩하지 말고, 이 표는 "이런 종류의 agent를 찾아라"는 힌트로만 사용.
+
+**Phase 1 — Situation Analysis / Pre-Q Research** (탐색·분석·문서 조회):
+
+| Task Type | Agent candidate hints |
+|---|---|
+| code | explore류 (Explore, oh-my-claudecode:explore), architect, tracer |
+| writing | document-specialist, analyst |
+| planning | planner, analyst, architect |
+| research | document-specialist, scientist, analyst |
+| analysis | scientist, analyst, document-specialist |
+| decision | analyst, planner, critic |
+| creative | designer, document-specialist |
+| learning | document-specialist, analyst |
+| other | Explore, general-purpose |
+
+**Phase 5 — Execution Delegation** (실제 작업 수행):
+
+| Task Type | Agent candidate hints |
+|---|---|
+| code | executor, debugger, code-simplifier, general-purpose |
+| writing | writer, writer-memory, general-purpose |
+| planning | planner, general-purpose |
+| research | scientist, document-specialist |
+| analysis | scientist, analyst |
+| decision | planner, analyst |
+| creative | designer, writer, general-purpose |
+| learning | writer, general-purpose |
+| other | general-purpose |
+
+**Phase 6 — Verification** (비판·리뷰·검증):
+
+| Task Type | Agent candidate hints |
+|---|---|
+| code | code-reviewer, superpowers:code-reviewer, test-engineer, security-reviewer, debugger, verifier |
+| writing | critic, writer |
+| planning | critic, verifier, analyst |
+| research | critic, verifier, document-specialist |
+| analysis | scientist, critic, verifier |
+| decision | critic, verifier, analyst |
+| creative | critic |
+| learning | critic, verifier |
+| other | critic, verifier |
+
+### Parallelism Rules
+
+1. **Single-message dispatch** — 한 메시지에 여러 Agent tool call을 동시에 보내 병렬 실행 (Claude Code native parallelism). 여러 메시지로 쪼개면 sequential이 되어 fleet 이득이 사라진다.
+2. **Independent briefs** — 각 agent는 독립된 작업 지시서 수신, shared state 없음. Opus는 각 brief를 self-contained로 작성한다.
+3. **Synthesis** — 모든 agent 반환 후 Opus가 결과를 통합하여 다음 phase로 전달. Synthesis는 Opus의 책임이며 해당 phase의 output artifact에 수렴된다.
+4. **Tie-breaker (haqqq only)** — agent 결과가 충돌하면 추가 critic agent 1개를 소환하여 adjudicate. 일반 tier는 Opus가 직접 결정.
+5. **Budget warning (haqqq)** — 총 병렬 agent 수가 20을 초과하면 사용자에게 경고 후 진행. 무제한 예산이어도 사용자 confirmation 한 번은 거쳐야 한다.
+
+### Fleet Anti-Patterns
+
+- **중복 전문성**: 같은 phase에서 code-reviewer 2개 — redundant, 제거하고 다른 specialty 투입.
+- **Wrong-phase dispatch**: test-engineer를 Phase 1 (research) 에 보내기 — 그 agent는 Phase 6 용이다.
+- **Sequential pretending parallel**: 여러 Agent 호출을 다른 메시지로 나누기 — 반드시 단일 메시지로 묶어야 fleet 효과 발생.
+- **Oversize on trivial**: README 오타 수정에 /haqqq 12개 agents 파견 — complexity 점수 확인 후 축소.
+- **Tier 무시**: /haq가 10개 agents dispatch — tier upper bound 준수, 초과 시 /haqq 이상을 명시적으로 호출하도록 안내.
+- **Candidate blindness**: "mapping 표에 없는 agent라서 skip" — 매핑은 힌트일 뿐, runtime에 새로 발견된 유용한 agent는 적극 편입한다.
+
+### Fleet Mode Toggle
+
+- **Default**: /ha가 직접 호출되고 config가 없으면 fleet mode ON, tier=중상급으로 동작한다.
+- **Shim-driven**: /haq/haqq/haqqq가 /ha를 호출할 때 `tier` config를 명시하여 해당 tier로 fleet mode ON.
+- **Fleet bypass** (rare): 유저가 명시적으로 `no_fleet: true`를 지정하면 Phase 1/5/6 모두 single-agent fallback (Phase 5는 단일 Haiku, Phase 1/6는 Opus 단독)으로 실행된다 — 레거시 호환 및 debug 목적.
+- **Forced downgrade**: /haqqq 호출이어도 complexity=trivial이면 fleet 크기가 3-5로 축소된다. Tier는 *상한*이지 *하한*이 아니다.
+
+---
+
+## Phase 1 — Pre-Q Deep Reasoning
+
+This phase produces two typed artifacts — **IntentDraft** and **AmbiguityLedger** — BEFORE any user questioning or execution. It applies the 9 reasoning principles above to the request gathered in Phase 0. Conditional on the result, Phase 2 is either entered or skipped.
+
+### 1-1. Purpose
+
+Deep reasoning at this stage replaces the common anti-pattern of "ask first, think later." The aim is to enumerate every plausible interpretation, every dependency, and every information gap before deciding whether to bother the user.
+
+Core techniques applied:
+
+- **Self-Ask gate** (arXiv:2210.03350): explicit `Are follow-up questions needed here? Yes/No` decision at the end of this phase.
+- **Least-to-Most decomposition** (SCAN 16% → 99.7%): "To solve X, we need to first resolve A, B, C, ..."
+- **Plan-and-Solve PS+** (GSM8K +3%): "Extract relevant variables and their values" — name what is known and what is missing.
+- **Uncertainty-of-Thoughts** (UoT, arXiv:2402.03271): simulate how plausible answers branch the plan. 20Q accuracy 48.6% → 71.2%, Medical Diagnosis +120%.
+
+### 1-2. Sub-Steps
+
+**1-2-1. Lightweight Artifact Exploration**
+
+Use Grep, Glob, Read on the artifacts surfaced in Phase 0. Goal: understand existing patterns, conventions, dependencies. Do NOT execute the work yet — only observe enough to reason about ambiguity.
+
+> **Fleet dispatching**: Per "Fleet Dispatching — Quality Tier Policy" (위 cross-cutting 섹션), 이 단계에서 parallel research fleet을 dispatch한다. Tier-based upper bound × complexity-derived count로 fleet 크기 결정, task-type 매핑 표에서 후보를 runtime detect. 단일 Opus가 혼자 탐색하는 대신 specialized agents (예: code→Explore/architect/tracer, research→document-specialist/scientist/analyst)가 병렬로 Situation Analysis를 수행하고 Opus가 결과를 synthesize한다. Trivial complexity일 때는 Opus가 직접 Grep/Glob만 수행해도 된다 (1-2 agent 수준).
+
+**1-2-2. IntentDraft Construction**
+
+Draft a typed object with these fields:
+
+```
+IntentDraft:
+  goal: [one sentence: what the user wants]
+  primary_artifact: [the deliverable]
+  inferred_constraints: [what we've inferred from CWD/keywords/context]
+  explicit_constraints: [what the user explicitly said]
+  task_type: [from Phase 0]
+  confidence: [0.0 - 1.0]
+```
+
+**1-2-3. Ambiguity Enumeration (Least-to-Most)**
+
+List EVERY plausible ambiguity. Do not prematurely prune. For each ambiguity, write:
+
+- **What** is unclear
+- **Why** it matters (which downstream decisions depend on it)
+- **Plausible answers** (2-4 candidates)
+
+**1-2-4. EVPI Scoring per Ambiguity**
+
+For each ambiguity, simulate: "If I assumed each plausible answer, would the resulting plan differ materially?"
+
+- **Hi severity**: different answers → fundamentally different plan (different files, different audience, different output form). Worth asking.
+- **Med severity**: different answers → different details but same overall plan. Maybe ask if budget allows.
+- **Low severity**: all plausible answers lead to the same plan. Do NOT ask. Pick the most likely default and state it.
+
+**1-2-5. Hypothesis Generation**
+
+For unresolved questions where no user input is available, list 2-3 hypotheses (most likely first). These will be re-tested in Phase 6.
+
+**1-2-6. Source / Evidence Inventory**
+
+What sources will be needed? For research/analysis/decision, list candidate sources. For code/writing, list reference files.
+
+**1-2-7. Uncertainty Level Decision**
+
+Aggregate the AmbiguityLedger:
+
+| Uncertainty | Hi count | Med count | Action |
+|---|---|---|---|
+| **LOW** | 0 | ≤2 | **Skip Phase 2**, go directly to Phase 4 with default assumptions stated |
+| **MEDIUM** | 1-3 | 3-5 | Enter Phase 2, /haq or /haqq range applies |
+| **HIGH** | ≥4 | ≥6 | Enter Phase 2, /haqq or /haqqq range applies |
+
+The caller's `depth_budget` is a CEILING, not a floor. If the caller is /haqqq but the actual uncertainty is LOW, you still skip Phase 2. This is the **Stop Overthinking** principle (arXiv:2503.16419) operationalized.
+
+### 1-3. Self-Ask Gate
+
+End Phase 1 with a single explicit gate:
+
+```
+Are follow-up questions needed here? [Yes / No]
+Reason: [if Yes — reference highest-EVPI items; if No — state which defaults will be used]
+```
+
+If `No` → jump to Phase 4. If `Yes` → proceed to Phase 2.
+
+### 1-4. Phase 1 Output Format
+
+```
+🧠 Pre-Q Deep Reasoning 결과
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 Logical Dependencies:
+[순서/의존/제약 분석]
+
+⚠️ Risk Assessment:
+[리스크 항목]
+
+🔬 Hypotheses:
+[현재 문제에 대한 가설들]
+
+📚 Sources / Evidence Needed:
+[참고 자료 후보]
+
+🎯 IntentDraft:
+- Goal: ...
+- Primary Artifact: ...
+- Inferred Constraints: ...
+- Explicit Constraints: ...
+- Confidence: 0.XX
+
+🎯 AmbiguityLedger:
+| # | What | Why | Plausible Answers | EVPI |
+|---|---|---|---|---|
+| 1 | ... | ... | ... | Hi / Med / Low |
+
+🚦 Uncertainty Level: [LOW / MEDIUM / HIGH]
+   - Hi: N, Med: N, Low: N
+   - Caller depth_budget: [0-4 / 5-8 / 9-12 / direct]
+   - Effective decision: [SKIP Phase 2 / ENTER Phase 2 with budget X]
+
+🚪 Self-Ask Gate: Are follow-up questions needed here? [Yes / No]
+   Reason: ...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Response Inhibition reminder (principle #9)**: Phase 1의 reasoning이 모두 끝난 후에만 Phase 2 또는 Phase 4로 진입한다. 중간에 미리 코드를 쓰거나 결과를 만들지 않는다.
+
+---
+
+## Phase 2 — Uncertainty-Driven Questioning (Conditional)
+
+This phase asks the user clarifying questions, but only when warranted by Phase 1's uncertainty level. It enforces the user's existing **Uncertainty-Driven Questioning** principle and adds EVPI ordering, fatigue detection, and a Sandler upfront contract.
+
+### 2-0. Skip Condition (CHECK FIRST)
+
+**Skip Phase 2 entirely** if any of these hold:
+
+1. `depth_budget == 0` (direct /ha invocation default)
+2. `uncertainty == LOW` (Phase 1 self-ask gate said No)
+3. The caller's max_budget is 0
+
+When skipping, state explicitly which assumptions you are adopting and why, then jump to Phase 4. Skipping is the **default behavior** for simple requests — 77% of top-intents in Amazon Alexa logs are correct on the first try without questioning, and Modeling Future Conversation Turns (arXiv:2410.13788) shows 61.9% correctness when LLMs choose "answer directly" over "ask first."
+
+### 2-1. Sandler Upfront Contract Preamble
+
+When entering Phase 2, open with an explicit contract to the user. This pattern (Sandler sales methodology) reduces drop-off and respects user agency:
+
+```
+📋 질문 단계 안내 (Upfront Contract)
+- 예상 질문 수: 약 [N]개 (최대 [max_budget]개)
+- 목적: [highest-EVPI 항목 1-2개 명시]
+- 모든 질문에 답할 필요 없습니다. "skip" 또는 "충분해" 라고 답하면 즉시 Phase 4로 진행합니다.
+- 답변 후 모호성이 해소되면 남은 질문은 자동 생략됩니다.
+```
+
+### Question Pool Construction (per task_type)
 
 Each task type has a prioritized question **category pool**. Tiers define how many categories participate:
 
@@ -144,7 +485,7 @@ Each task type has a prioritized question **category pool**. Tiers define how ma
 - haqq: {질문 구체화, 기존 지식, 자료 출처, 분석 방법, 결론 형식}
 - haqqq: {질문 구체화, 기존 지식, 자료 출처, 분석 방법, 편향 통제, 결론 형식, 재현 가능성, 후속 연구}
 
-**Analysis** (all tiers):
+**Analysis**:
 - haq: {분석 질문, 데이터 출처}
 - haqq: {분석 질문, 데이터 출처, 분석 방법, 가정, 해석·결론 형식}
 - haqqq: {분석 질문, 데이터 출처, 데이터 품질·전처리, 분석 방법, 가정, 엣지 케이스, 해석, 감도 분석, 표현·시각화, 재현성·동료 검토}
@@ -167,369 +508,765 @@ Each task type has a prioritized question **category pool**. Tiers define how ma
 **Other**:
 - All tiers: Negotiate directly with user for 2 / 5 / 9 priority questions.
 
-#### Phase 2-2: EVPI Ranking & Question Selection
+### 2-2. EVPI-Ordered Question Selection
 
-For each question category in the tier's pool:
-1. **Estimate EVPI** (Expected Value of Perfect Information):
-   - If we get a "yes" or "no" answer to this question, how much would it change the execution plan?
-   - Rank categories by EVPI (descending: plan-changing first).
-2. **Ask top-EVPI questions** up to q_budget per round.
-3. **Drop dominated questions** (same answer in all plausible scenarios → no new info → don't ask).
+Questions are NOT asked in arbitrary order. Use the AmbiguityLedger from Phase 1 and rank by EVPI (Expected Value of Perfect Information):
 
-#### Phase 2-3: Ask + Listen
+1. Highest-EVPI item first (Hi severity, biggest plan-change impact)
+2. Drop any question where all plausible answers lead to the same plan (Low severity)
+3. Group related Med-severity items into single multi-part questions where possible
+4. EVPI ordering yields 1.5-2.7x question reduction (arXiv:2511.08798)
 
-For each selected question:
-- Phrase in Korean, task-type friendly.
-- Wait for user reply.
-- Record answer + response_time.
+### 2-3. MANDATORY AskUserQuestion Tool Usage
 
-#### Phase 2-4: Update Ambiguity Ledger
+Use the **AskUserQuestion** tool. Do NOT inline questions in plain text — that bypasses the structured UI and loses user history.
 
-After each question:
-- Re-score epistemic, aleatoric, pragmatic in light of answer.
-- If overall_uncertainty drops to < 20, set Phase 2 gate = STOP (next round skipped).
+Example invocation:
 
-#### Phase 2-5: Fatigue Detection & Auto-Stop
-
-After each question, check:
-- **Response time**: > 60s without reply → warn "still here? take your time" once, then timeout to Phase 3.
-- **Response length**: Drop > 40% vs. previous response → possible fatigue signal.
-- **Monosyllabic replies**: "yes", "no", "ok" only, multiple rounds → fatigue.
-- **Explicit stop signals**: user says "skip", "enough", "just do it" → break Phase 2.
-
-If any detected, exit Phase 2 after current question, proceed to Phase 3.
-
-#### Phase 2-6: Multi-Round Logic
-
-If `question_rounds > 1` and ambiguity not yet resolved:
-- **Between rounds**: Re-evaluate ambiguity_ledger.
-  - If uncertainty < 20, stop (don't do Round 2).
-  - Otherwise, re-rank EVPI pool for remaining uncertainties.
-- **Cowan working memory rule**: Never ask > 4 questions in a single prompt; split into 2+ rounds for 5+ questions.
-
-**Example (haqq, 5-8 question budget)**:
 ```
-Round 1:
-  - Q1 (EVPI=highest): "What data sources will you use?"
-  - Q2 (EVPI=high): "What is the primary success metric?"
-  - Q3 (EVPI=medium): "Any sensitive/proprietary data concerns?"
-  - Q4 (EVPI=medium-low): "Timeline for analysis?"
-  
-  User answers; ambiguity drops from MEDIUM (45) to LOW-MEDIUM (30).
-  
-Round 2:
-  - Check: Still < 20? No, stay at 30.
-  - Re-rank EVPI for remaining 4 categories.
-  - Q5, Q6: ask top 2, user answers.
-  - Ambiguity now 18 → STOP (don't do more rounds).
+AskUserQuestion tool parameters:
+- questions: [
+    {
+      "question": "이 분석의 1차 독자는 누구입니까?",
+      "header": "독자",
+      "multiSelect": false,
+      "options": [
+        {"label": "경영진/임원", "description": "요약 중심, 의사결정 지원"},
+        {"label": "동료 분석가", "description": "방법론 중심, 재현 가능"},
+        {"label": "외부 클라이언트", "description": "전문성 표현"},
+        {"label": "본인 학습용", "description": "탐색적, 노트 중심"}
+      ]
+    }
+  ]
 ```
 
----
+각 질문에 대해 4개 정도의 옵션을 제공하되, 사용자가 옵션 외 답변도 자유롭게 입력할 수 있다.
 
-### Phase 3: Design Template Assembly (Opus via Skill tool)
+### 2-4. Question Round Management
 
-**Prerequisite**: Phase 2 complete (or skipped).
+The caller's `question_rounds` controls batching:
 
-**Input**: $ARGUMENTS + ambiguity_ledger + Phase 2 answers (if any).
+- `question_rounds: 1` (haq) — 한 라운드에 모든 질문, 최대 4개
+- `question_rounds: 2` (haqq) — 라운드당 4개씩 최대 2라운드
+- `question_rounds: 3-5` (haqqq) — 라운드당 4개씩, 기본 3라운드, 필요 시 최대 5라운드
 
-**Goal**: Assemble a task-specific design template that Phase 4 will convert to executable sub-task delegation.
+각 라운드 종료 후 AmbiguityLedger를 재평가한다. 해소된 항목이 많아 잔여 모호성이 LOW가 되면 즉시 Phase 3로 진행한다 (조기 종료).
 
-**Output**: A structured **Design Document** with:
-- Task summary (1-2 sentences)
-- Success criteria (measurable, from ambiguity_ledger + Phase 2 answers)
-- Subtasks (logical decomposition)
-- Constraints (time, resources, format)
-- Dependencies (if parallel execution intended)
-- Assumptions (default for aleatoric items; explicit for epistemic)
-- Quality bar (Haiku tier, reasoning depth)
+### 2-5. Fatigue Detection (Early Termination)
 
-**Per Task Type**:
+다음 신호 중 2개 이상이 감지되면 즉시 Phase 3로 종료한다:
 
-**Code**:
-- Module/function signature.
-- Input/output schema.
-- Constraints (performance, memory, language idioms).
-- Error handling categories (from Phase 2 or defaults).
-- Testing approach (unit, integration, edge cases).
-- Delegation: code-writer (Haiku), code-reviewer (Haiku), test-engineer (Haiku).
+- **Answer-length decline**: 사용자 답변 길이가 라운드를 거듭할수록 40% 이상 감소
+- **Monosyllabic answers**: "응", "yes", "ok" 같은 1-2 단어 답변이 구조화된 답변 뒤에 등장
+- **Explicit stop cues**: "skip", "충분해", "그냥 해줘", "enough", "just do it"
+- **Inattention markers**: 무의미한 반복, 첫 옵션 자동 선택, 답변 모순
 
-**Writing**:
-- Audience (from Phase 2 or inferred).
-- Tone (from Phase 2 or inferred).
-- Structure (sections, flow, length).
-- Quality bar (draft, polished, publication-ready).
-- Delegation: writer (Haiku), editor (Haiku).
+User Drop-off Cliff (Survicate): 1Q 85.7% → 6-10Q 73.6% → 21-40Q 70.5%. 너무 많은 질문은 답변 품질 자체를 떨어뜨린다.
 
-**Planning**:
-- Goal statement + success criteria.
-- Key milestones + timeline.
-- Resource allocation.
-- Risk register (from Phase 2 or standard risks).
-- Stakeholder communication plan (if applicable).
-- Delegation: planner (Haiku), risk-analyst (Haiku), reviewer (Haiku).
+### 2-6. Stopping Criteria (Event-Driven, Not Count-Driven)
 
-**Research**:
-- Research question(s) (refined from Phase 2).
-- Scope (what's in, what's out).
-- Source priorities (academic, industry, user data, etc.).
-- Synthesis plan (how to combine sources).
-- Bias control (peer review, source diversity, caveats).
-- Delegation: researcher (Haiku), source-validator (Haiku), synthesizer (Haiku).
+Expert discovery protocols (MI commitment language, SPIN explicit need, aporia resolution) say: stop when the user's answers express commitment / explicit need / resolved aporia, NOT when a count threshold is hit. If the AmbiguityLedger reaches all-RESOLVED or all-INFERABLE, stop immediately even if budget remains.
 
-**Analysis**:
-- Analysis question (from Phase 2).
-- Data source(s) + quality notes.
-- Methodology (statistical, visual, qualitative).
-- Assumptions + sensitivity plan.
-- Output format (charts, tables, narrative, all).
-- Delegation: analyst (Haiku), data-engineer (Haiku), visualization-designer (Haiku).
+### 2-7. Phase 2 Output Format
 
-**Decision**:
-- Alternatives (from Phase 2 or generated).
-- Evaluation criteria (from Phase 2).
-- Weighting (if multi-criteria).
-- Reversibility & downside risk.
-- Communication plan (how to explain decision).
-- Delegation: comparator (Haiku), recommender (Haiku), communicator (Haiku).
+```
+❓ Phase 2 — Uncertainty-Driven Questioning
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Creative**:
-- Core idea / theme (from Phase 2).
-- Target audience + emotional tone.
-- Style / references (from Phase 2).
-- Constraints (length, format, rights).
-- Revision plan (iteration, feedback).
-- Delegation: creator (Haiku), critic (Haiku), refiner (Haiku).
+📋 Upfront Contract: [N개 예상, 최대 M개, skip 가능]
 
-**Learning**:
-- Skill / concept (from Phase 2).
-- Current level → target level.
-- Available time + preferred modality.
-- Assessment method.
-- Support needs (feedback, accountability).
-- Delegation: instructor (Haiku), assessor (Haiku), mentor (Haiku).
+🎯 라운드 1 (EVPI 순서로 [k]개)
+[AskUserQuestion 호출 결과]
 
----
+(필요 시) 🎯 라운드 2 ...
+(필요 시) 🎯 라운드 3 ...
 
-### Phase 4: Fleet Dispatching – Agent Matching & Parallel Execution
+⏱️ Fatigue 신호: [없음 / 답변 길이 감소 / 모노실래빅 / 명시 stop]
+🛑 종료 사유: [모호성 해소 / 예산 소진 / fatigue / 사용자 stop]
 
-**Goal**: Map design template sub-tasks to available specialist Haiku agents (subagents), dispatch in parallel, collect results.
-
-#### Approach: Dynamic Detection (not hardcoded)
-
-Instead of a static mapping table, **Phase 4 uses runtime detection**:
-
-1. **Enumerate** available subagents in current Claude Code environment (via `/omc:team` or similar introspection).
-2. **Filter** by task_type + phase (e.g., code reviewers for code tasks, only if Phase 1/5/6).
-3. **Diversify** (avoid duplicate roles; prefer complementary expertise).
-4. **Rank** by predicted fit (task complexity, agent specialization, user feedback).
-5. **Dispatch** top N (N = tier_upper_bound, scaled by task complexity).
-
-#### Quality Tier Policy
-
-**Tier** → **Per-phase agent upper bound** → **3-phase total** → **Budget** → **Runtime scaling**
-
-| Tier | Per-phase | 3-phase total | Budget | Complexity scaling | Notes |
-|---|---|---|---|---|---|
-| direct (depth=0) | 1 | 1 | standard | Trivial: 1; Simple: 1 | Minimal; direct Opus output or single Haiku. |
-| haq (depth=0-4) | 5 | 15 | standard | Trivial: 1–2; Simple: 2–3; Moderate: 3–5 | Fast iteration. 5 parallel Haiku writers/reviewers. |
-| haqq (depth=5-8) | 8 | 24 | expanded | Trivial: 3–5; Simple: 4–5; Moderate: 5–7; Complex: 7–8 | Mid-tier resource. 8 agents per phase. |
-| haqqq (depth=9-12+) | 12 (or 20 critical) | 36–60 | unlimited | Trivial: 5–6; Simple: 6–8; Moderate: 8–10; Complex/Critical: 10–12 (or up to 20) | Top tier. Aggressive parallelization. |
-
-**Budget warning**: If total parallel agents > 20, warn user before Phase 5. (haqqq can override if user confirms "unlimited budget".)
-
-#### Task Complexity Auto-Detection
-
-Per task_type, estimate complexity from:
-- $ARGUMENTS length (< 100 words → trivial; 100–300 → simple; 300–1000 → moderate; > 1000 → complex)
-- Ambiguity_ledger overall_uncertainty (< 20 → trivial; 20–60 → simple/moderate; > 60 → complex)
-- Number of sub-tasks from design template (1 → trivial; 2–3 → simple; 4–6 → moderate; 7+ → complex)
-
-#### Phase 1 / Phase 5 / Phase 6 Scope
-
-Agents are **only** dispatched in Phase 1, Phase 5, and Phase 6:
-- **Phase 1**: Specialization detection agents (e.g., "code-complexity-analyzer", "writing-target-detector") may assist Opus in detecting uncertainty.
-- **Phase 5**: Execution verification agents (e.g., "code-reviewer", "writing-quality-checker", "test-engineer") run in parallel on Haiku outputs.
-- **Phase 6**: Refinement agents (e.g., "style-guide-checker", "accessibility-reviewer") polish outputs.
-
-Phases 2, 3, 4 are **Opus solo** (no agent dispatch).
-
-#### Agent Invocation Pattern
-
-```python
-# Pseudocode
-agents_needed = get_design_template_subtasks()
-tier_upper_bound = fleet_upper_bound  # e.g., 5 for haq, 8 for haqq
-complexity = estimate_task_complexity(arguments, ambiguity_ledger, design)
-
-available_agents = enumerate_subagents()  # e.g., [code-writer, code-reviewer, test-engineer, ...]
-filtered = [a for a in available_agents if a.phase in [1, 5, 6] and a.task_type == current_task_type]
-diversified = rank_and_diversify(filtered, avoid_duplicates=True)
-ranked = rank_by_fit(diversified, complexity, design, tier_upper_bound)
-
-num_to_dispatch = min(tier_upper_bound, complexity_scaled(tier, complexity))
-dispatch_list = ranked[:num_to_dispatch]
-
-for agent in dispatch_list (parallel):
-    result[agent.name] = invoke_haiku_agent(agent, design_subtask, tier_config)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-#### Fleet Dispatching Output
+---
 
-Collect parallel Haiku agent results into a dict:
+## Phase 3 — Post-Q Integration Reasoning
+
+This phase reconciles user answers with the IntentDraft and AmbiguityLedger from Phase 1. It detects contradictions, resolves the ledger, and may trigger a loop-back to Phase 1 if reconciliation surfaces new ambiguity.
+
+### 3-1. Purpose
+
+Without integration, Phase 2 answers risk being treated as raw inputs into Phase 4 — which loses the chance to detect contradictions between answers, between an answer and an inferred constraint, or between an answer and the original IntentDraft. Reflexion (arXiv:2303.11366) showed verbal reflection lifts HumanEval 80% → 91%; Chain-of-Verification (CoVe, arXiv:2309.11495) showed independent verification questions reduce hallucinations 50-70%; Self-Refine added +20% across 7 tasks via "localize problem + give fix instruction."
+
+### 3-2. Sub-Steps
+
+**3-2-1. Map Answers to AmbiguityLedger**
+
+For each item in the ledger, classify:
+
+- **RESOLVED** — user's answer directly answers it
+- **INFERABLE** — user's answer plus context allows confident inference
+- **STILL_OPEN** — answer was ambiguous, user skipped, or fatigue terminated
+
+**3-2-2. Reflexion-Style Contradiction Detection**
+
+Look for contradictions across:
+
+- Answer ↔ Answer (e.g. user wants "fast" and "comprehensive" both top priority)
+- Answer ↔ IntentDraft (e.g. user said audience is novice but goal implies expert)
+- Answer ↔ Phase 0 inferred constraints (e.g. user said no Python but project is pyproject.toml-based)
+
+For each contradiction, write a reconciliation strategy (which side wins, or how both can be honored).
+
+**3-2-3. CoVe-Style Verification Questions (research/decision/analysis)**
+
+For research/decision/analysis tasks, draft 3-5 verification questions that the final output must withstand. These are NOT asked to the user — they are answered INDEPENDENTLY in Phase 6. Example for research: "Does claim X have a primary source published after 2020?" Example for decision: "Have at least 3 alternatives been considered?"
+
+CoVe key insight: verification questions answered in isolation reduce hallucinations 50-70% vs verification done as part of the original generation.
+
+**3-2-4. Aleatoric vs Epistemic Classification**
+
+If a STILL_OPEN item has survived 2 rounds of questioning, treat it as **aleatoric** (genuinely uncertain in the world, not resolvable by more questions). Pick the most defensible default and state it explicitly in the IntegratedIntent.
+
+If a STILL_OPEN item is **epistemic** (resolvable in principle but not yet resolved) and EVPI is high, this triggers **Loop-Back Rule #1**: return to Phase 1 to enumerate the new ambiguity, then re-enter Phase 2 (subject to circuit breaker).
+
+**3-2-5. Build Integrated Intent**
+
+Produce the final consolidated intent that Phase 4 will design from:
+
 ```
-{
-  "code_writer": "<Haiku output>",
-  "code_reviewer": "<Haiku output>",
-  "test_engineer": "<Haiku output>",
-  ...
-}
+IntegratedIntent:
+  goal: [refined from IntentDraft + answers]
+  task_type: [from Phase 0, possibly refined]
+  hard_constraints: [must-have from answers + inferred]
+  soft_preferences: [nice-to-have]
+  default_assumptions: [stated assumptions for STILL_OPEN aleatoric items]
+  verification_questions: [3-5 CoVe questions for Phase 6]
+  loopback_needed: [true|false, with reason]
 ```
 
-Pass to Phase 5 for verification & synthesis.
+### 3-3. Phase 3 Output Format
+
+```
+🔁 Post-Q Integration Reasoning
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Ledger Resolution:
+| # | Item | Status | Resolution |
+|---|---|---|---|
+| 1 | ... | RESOLVED | 답변: ... |
+| 2 | ... | INFERABLE | 추론: ... |
+| 3 | ... | STILL_OPEN (aleatoric) | 기본값: ... |
+
+⚠️ Contradictions Detected:
+[항목별 + 화해 전략]
+
+🔬 CoVe Verification Questions (Phase 6용):
+1. ...
+2. ...
+3. ...
+
+🔄 Loop-back Needed: [No / Yes — to Phase 1, reason: ...]
+
+🎯 Final Integrated Intent:
+- Goal: ...
+- Task Type: ...
+- Hard Constraints: ...
+- Soft Preferences: ...
+- Default Assumptions: ...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ---
 
-### Phase 5: Execution Verification & Synthesis (Opus via Skill tool)
+## Phase 4 — Task-Type-Aware Design Document
 
-**Input**: Design template + parallel Haiku agent results from Phase 4.
+This phase produces a design document that Haiku can execute without further reasoning. The template is selected by task type. There are 9 templates (one per task type, including the new `analysis` type).
 
-**Goal**: Verify quality, reconcile conflicts, synthesize final output.
+### 4-1. Design Principles
 
-**Key Verification Recipes** (per task_type):
+- **Specific enough for Haiku**: Haiku는 추가 reasoning 없이 실행 가능해야 한다. 모호한 지시는 금지된다.
+- **Positive framing over negative** (arXiv 2025): "Do Y" > "Don't do X" — 항상 무엇을 해야 하는지를 적시한다.
+- **Evidence-cited decisions**: 모든 결정은 Phase 0/1/3에서 수집한 근거를 인용한다.
+- **No-Placeholder rule**: `[TBD]`, `...`, `(TODO)` 같은 placeholder를 남기지 않는다. 모르는 것은 default assumption으로 명시한다.
 
-**Code**:
-- Does output compile / have syntax errors?
-- Does it match design template (signature, I/O, constraints)?
-- Test coverage (unit, integration)?
-- Performance + memory within constraints?
-- Reviewer feedback: logic flaws, style, security?
+### 4-2. Templates (9)
 
-**Writing**:
-- Audience tone match (from design)?
-- Structure coherence?
-- Fact-check + source accuracy (if applicable)?
-- Copy-editing (grammar, readability)?
+**[code] — File-by-File Implementation Spec**
 
-**Planning**:
-- Milestone logic (dependencies honored)?
-- Resource/timeline feasibility?
-- Risk register completeness?
-- Stakeholder alignment?
+```
+## Design Document
+### Requirements
+- Core functionality: ...
+- Scope of impact: ...
+- Constraints: ...
 
-**Research**:
-- Source diversity + bias control?
-- Synthesis coherence?
-- Citation accuracy?
-- Conclusion support (data-backed)?
+### Reasoning Evidence
+- Legacy reference: ...
+- Current codebase analysis: ...
+- Dependency analysis: ...
+- Alternative approaches considered: ...
 
-**Analysis**:
-- Methodology sound?
-- Assumptions explicit + reasonable?
-- Sensitivity analysis present?
-- Visualization clarity?
-- Reproducibility (can others repeat steps)?
+### File-by-File Implementation Spec
+#### [File Path]
+- Purpose: ...
+- Implementation: [Class/method signatures and core logic]
+- Dependencies: ...
 
-**Decision**:
-- All alternatives fairly evaluated?
-- Criteria weighting transparent?
-- Downside risks acknowledged?
-- Communication clear + persuasive?
+### Implementation Order
+1. [File1] — Reason: ...
+2. [File2] — Reason: ...
 
-**Creative**:
-- Core idea compelling?
-- Tone/style consistent?
-- Constraints honored?
-- Originality / freshness?
+### Risk Factors and Mitigation
+- [Risk]: [Mitigation]
+```
 
-**Learning**:
-- Content level-appropriate?
-- Modality match (video, text, etc.)?
-- Progression logical?
-- Assessment valid?
+**[writing] — Section-by-Section Outline**
 
-**Conflict Resolution**:
-- If code reviewer and code writer disagree on approach, Opus decides based on ambiguity_ledger + design.
-- If multiple writers produce conflicting facts, flag for Phase 6 research.
-- haqqq tier: Summon a tie-breaker critic agent (additional Haiku) to arbitrate; others use Opus judgment.
+```
+## Design Document
+### Requirements
+- Purpose: ...
+- Audience: ...
+- Format/Length: ...
+- Tone/Style: ...
+
+### Reasoning Evidence
+- Reference material: ...
+- Tone consistency: ...
+- Key messages: ...
+- Alternative framings considered: ...
+
+### Section-by-Section Outline
+#### [Section Title]
+- Purpose: ...
+- Key Points: ...
+- Evidence/Examples: ...
+- Transition to next: ...
+
+### Drafting Order
+1. [Section] — Reason: ...
+
+### Risk Factors and Mitigation
+- [Risk, e.g., fact accuracy]: [Mitigation]
+```
+
+**[planning] — Step-by-Step Timeline**
+
+```
+## Design Document
+### Requirements
+- Goal: ...
+- Success criteria: ...
+- Constraints (date/budget/resource): ...
+
+### Reasoning Evidence
+- Prior similar plans: ...
+- Dependencies: ...
+- Stakeholders: ...
+- Alternative sequences considered: ...
+
+### Step-by-Step Timeline
+#### Step [N]: [Action]
+- Start: [Date or trigger]
+- Duration: ...
+- Prerequisites: [Step IDs]
+- Deliverable: ...
+- Owner: ...
+
+### Critical Path
+[Identified critical-path step IDs]
+
+### Risk Factors and Mitigation
+- [Risk]: [Contingency]
+```
+
+**[research] — Sources + Synthesis Plan**
+
+```
+## Design Document
+### Requirements
+- Research question: ...
+- Output form: ...
+- Depth/scope: ...
+- Constraints: ...
+
+### Reasoning Evidence
+- Existing knowledge: ...
+- Key sources identified: ...
+- Gaps to fill: ...
+- Alternative framings: ...
+
+### Sources + Synthesis Plan
+#### Source [N]: [Reference (with DOI/URL when available)]
+- Relevance: ...
+- Key claims: ...
+- Synthesis contribution: ...
+
+### Synthesis Order
+1. Source 1 — Reason: ...
+
+### CoVe Verification Questions (carried from Phase 3)
+1. ...
+2. ...
+
+### Risk Factors and Mitigation
+- [Bias/gap]: [Mitigation]
+```
+
+**[analysis] — Data + Method Plan (NEW)**
+
+```
+## Design Document
+### Requirements
+- Analysis question: ...
+- Output form: [report / chart / summary table / classification]
+- Audience: ...
+- Decision the analysis supports: ...
+
+### Reasoning Evidence
+- Data source(s): [file path / DB / API]
+- Schema: [columns, types, expected ranges]
+- Expected row count / size: ...
+- Known data quality issues: ...
+- Tools available: [pandas / SQL / spreadsheet / vision model]
+
+### Data + Method Plan
+| Step | Input | Method | Expected Output | Validation |
+|---|---|---|---|---|
+| 1 | [raw data] | [load + sanity check] | [shape, dtypes] | [null %, range check] |
+| 2 | [...] | [transform: ...] | [...] | [...] |
+| 3 | [...] | [analysis: ...] | [...] | [test/check] |
+| 4 | [...] | [synthesis] | [report section] | [claim-evidence link] |
+
+### Statistical / Methodological Choices
+- [Choice]: [Reason — appropriate because ...]
+- Assumptions: [stated explicitly]
+- Alternatives considered: [...]
+
+### CoVe Verification Questions (carried from Phase 3)
+1. ...
+2. ...
+
+### Risk Factors and Mitigation
+- [Data quality risk]: [Mitigation]
+- [Statistical pitfall]: [Mitigation]
+- [Interpretation bias]: [Mitigation]
+```
+
+**[decision] — Criteria + Options Matrix**
+
+```
+## Design Document
+### Requirements
+- Decision to make: ...
+- Reversibility: ...
+- Time constraint: ...
+
+### Reasoning Evidence
+- Alternatives considered (≥3 mandatory): ...
+- Criteria (weighted): ...
+- Data sources: ...
+- Assumptions surfaced: ...
+
+### Criteria + Options Matrix
+| Option | C1 (w=?) | C2 | C3 | Total |
+|---|---|---|---|---|
+| A | ... | ... | ... | ... |
+| B | ... | ... | ... | ... |
+| C | ... | ... | ... | ... |
+
+### Recommendation Order
+1. Tentative rank — Reason: ...
+
+### Sensitivity Notes
+- If [criterion] weight changes by ±20%, ranking [does/does not] flip.
+
+### CoVe Verification Questions (carried from Phase 3)
+1. ...
+
+### Risk Factors and Mitigation
+- [Regret/reversibility]: [Mitigation]
+```
+
+**[creative] — Scene/Stanza/Panel Breakdown**
+
+```
+## Design Document
+### Requirements
+- Medium: ...
+- Theme/mood: ...
+- Style/references: ...
+- Length/format: ...
+- Rights/constraints: ...
+
+### Reasoning Evidence
+- Reference works: ...
+- Audience expectation: ...
+- Alternative directions: ...
+
+### Scene/Stanza/Panel Breakdown
+#### Unit [N]
+- Setting/Mood: ...
+- Action/Content: ...
+- Style Note: ...
+
+### Creation Order
+1. Unit 1 — Reason: ...
+
+### Risk Factors and Mitigation
+- [Style drift]: [Mitigation]
+- [Rights]: [Mitigation]
+```
+
+**[learning] — Session-by-Session Curriculum**
+
+```
+## Design Document
+### Requirements
+- Current level: ...
+- Target level: ...
+- Available time: ...
+- Preferred mode: ...
+
+### Reasoning Evidence
+- Baseline assessment: ...
+- Similar learners outcome: ...
+- Resources available: ...
+- Knowledge cutoff disclosure: [as of YYYY-MM-DD]
+
+### Session-by-Session Curriculum
+#### Session [N]
+- Duration: ...
+- Objective: ...
+- Material: ...
+- Exercise: ...
+- Success metric: ...
+
+### Sequence Order
+1. Session 1 — Reason: ...
+
+### Risk Factors and Mitigation
+- [Burnout/pace]: [Mitigation]
+- [Outdated practice]: [Flag + replacement]
+```
+
+**[other]** — 사용자에게 적합한 산출물 형태를 물어본 후 그 형태로 자유 양식 design을 작성한다.
+
+### 4-3. Reasoning Verification Checklist
+
+Before declaring the design done, verify ALL items:
+
+- [ ] **Logical Dependencies**: 작업 순서가 모든 의존성을 존중하는가?
+- [ ] **Risk Assessment**: 기존 산출물/결정을 깨뜨리지 않는가?
+- [ ] **Hypothesis Validation**: 현 상태 분석이 충분한가?
+- [ ] **Information Completeness**: 누락된 요건이 있는가?
+- [ ] **Precision**: 구체 artifact/패턴을 증거로 인용했는가?
+- [ ] **Adaptability**: 대안 접근을 고려했는가?
+- [ ] **No-Placeholder**: 모든 [TBD]/...가 default assumption으로 대체되었는가?
+
+체크리스트 중 하나라도 fail이면 **Loop-Back Rule #2**를 트리거한다 (Phase 4 → Phase 3, 최대 2회).
 
 ---
 
-### Phase 6: Final Refinement & Polish (Opus + Optional Specialist Agents)
+## Phase 5 — Execution Delegation
 
-**Input**: Opus-verified output from Phase 5 + design template.
+This phase delegates the work to a specialized execution fleet (or, for trivial tasks / `no_fleet` bypass, a single Haiku subagent) via the Task tool. The selected agents execute the design exactly as written.
 
-**Goal**: Apply final styling, accessibility, brand guidelines, etc.
+> **Fleet dispatching**: Per "Fleet Dispatching — Quality Tier Policy" (위 cross-cutting 섹션), 복잡한 task는 Phase 5에서 **single Haiku 대신 parallel execution fleet**을 dispatch한다. Task-type별 후보 (예: code→executor/debugger/code-simplifier/general-purpose, writing→writer/writer-memory/general-purpose)를 runtime detection으로 선별하고 tier 상한 × complexity count만큼 parallel Agent 호출을 **단일 메시지**에 묶어 발송한다. 각 agent는 independent brief를 받고, 반환 후 Opus가 결과를 synthesize한다. Trivial task이거나 `no_fleet: true`이면 legacy single-Haiku 경로 (아래 5-1 ~ 5-5)로 fallback한다.
 
-**Standard Refinements**:
+### 5-1. Task Tool Invocation
 
-**Code**:
-- Lint / format (PEP 8, Prettier, etc.).
-- Comments + docstrings.
-- README / usage examples.
+```
+Task tool parameters:
+- subagent_type: "general-purpose"
+- model: "haiku"
+- prompt: (use Work Execution Directive template below)
+```
 
-**Writing**:
-- Brand voice consistency.
-- Accessibility (alt text, screen reader compatibility).
-- SEO (if applicable).
+### 5-2. Work Execution Directive Template
 
-**Planning**:
-- Formatting + template consistency.
-- Gantt / dependency visualization.
-- Stakeholder sign-off prep.
+```
+# Work Execution Directive
 
-**Research**:
-- Bibliography formatting (APA, Chicago, etc.).
-- Supplementary materials organization.
-- Peer review readiness.
+Your role is to execute the work exactly as designed. Do not add scope, do not improvise, and do not invent requirements that are not in the design document.
 
-**Analysis**:
-- Chart accessibility (color-blind safe, alt text).
-- Data table formatting.
-- Legend + axis clarity.
+## Task Type
+[code / writing / planning / research / analysis / decision / creative / learning / other]
 
-**Decision**:
-- Executive summary (1-page).
-- Presentation slide outline (if requested).
-- FAQ or risk mitigation plan.
+## Context
+- Working directory: [CWD]
+- Relevant artifacts: [Phase 0 detected context]
+- Task characteristics: [summary]
+- Default assumptions to honor: [from Phase 3 IntegratedIntent]
 
-**Creative**:
-- Peer critique integration.
-- Revision notes for next iteration.
+## Work Content
 
-**Learning**:
-- Curriculum roadmap.
-- Progress checklist.
+[Paste the task-type-specific section of the Phase 4 design document here verbatim]
 
----
+## Execution Order
+1. [Unit 1]
+2. [Unit 2]
+...
 
-### Phase 7: Return Final Output
+## Output Expectations
+- All deliverables in Korean unless the design specifies otherwise.
+- Use the file types listed in the design (no surprise extensions).
+- When complete, output "Work Complete" followed by a list of artifacts created/modified.
 
-Deliver polished, verified output to user in requested format (text, code, JSON, etc.).
+## Blocker Reporting (if you cannot proceed)
+If a step is underspecified, blocked, or you find a contradiction, DO NOT ask the user. Instead, return a structured blocker report and stop:
 
-Include a short meta-summary:
-- Which tier was invoked (direct, haq, haqq, haqqq)?
-- How many Phase 2 questions asked + ambiguity before/after?
-- How many parallel agents dispatched (Phase 1/5/6)?
-- Quality bar achieved (draft, polished, publication-ready).
+BLOCKER: [one-sentence description of the gap]
+CONTEXT: [what information is missing or contradictory]
+REQUIRED: [what Opus must clarify or decide before you can proceed]
 
----
+The Opus controller will classify the blocker and loop back to the appropriate phase per the Loop-Back Rules.
+```
 
-## 8 Loop-Back Rules + Global Circuit Breaker
+### 5-3. Task-Type Behavior Hints for Haiku
 
-If any phase detects a failure mode, apply loop-back:
+| Task Type | Haiku 동작 |
+|---|---|
+| code | 파일 편집/생성 (Edit, Write tool), linter/test 실행 가능 |
+| writing | markdown/txt 파일 작성 |
+| planning | 일정표/체크리스트 (markdown 표) 생성 |
+| research | 문서 요약/합성, 인용 마커 유지 |
+| analysis | 데이터 로드 + 변환 + 보고서 작성 (각 단계 결과 명시) |
+| decision | 매트릭스 + 권장안 작성 |
+| creative | 구조화된 창작물 작성 |
+| learning | 커리큘럼 문서 작성 |
+| other | 사용자가 원한 형태 |
 
-| Rule | Trigger | Action |
+### 5-4. Blocker Classification (Opus side)
+
+If Haiku returns a BLOCKER, Opus classifies it and triggers the appropriate loop-back:
+
+| Blocker type | Trigger | Loop-back |
 |---|---|---|
-| **LB1: Ambiguity Spiral** | Phase 2 questions increase ambiguity instead of reducing it. | Return to Phase 3 Design with explicit assumption statements (stop asking). |
-| **LB2: Verification Fail** | Phase 5 detects critical errors in Haiku output (compile fail, logic flaw). | Dispatch a corrector agent; if 2x retries fail, escalate to Opus rewrite. |
-| **LB3: Scope Creep** | Design template subtasks exceed 50% of initial estimate. | User consent required before Phase 4 dispatch (offer scope reduction). |
-| **LB4: Data Unavailable** | Research/analysis can't access required data source. | List alternatives; ask user (Phase 2 gate); proceed with proxy or note limitation. |
-| **LB5: Complexity Underestimate** | Haiku output quality below bar; complexity > tier capability. | Raise tier (if user accepts) or revert to Opus direct rewrite. |
-| **LB6: Reviewer Deadlock** | Phase 5 verification agents in persistent disagreement. | Haiku debate round (2 agents argue, Opus decides); if unresolved, mark as "POV-dependent" in output. |
-| **LB7: Token Exhaustion** | Approaching context limit during Phase 4/5. | Abort parallel dispatch; consolidate to essential subtasks only. |
-| **LB8: User Timeout** | No response > 60s in Phase 2 questioning. | Auto-advance to Phase 3 with best-effort assumptions. |
+| Design underspec (the design itself is missing detail) | Rule 3 | 5 → 4 (max 1) |
+| Transient failure (network, file lock, retryable error) | Rule 4 | 5 → 5 retry (max 2) |
+| Contradiction with IntegratedIntent | Rule 7 | 6 → 3 (max 1) |
 
-**Global Circuit Breaker**: If > 2 loop-backs trigger in a single invocation, pause and report to user: "This request is hitting complexity limits. Would you like to break it into smaller tasks or escalate to a human specialist?"
+### 5-5. Phase 5 Output Format
+
+```
+🚀 Phase 5 — Delegating to Haiku
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📤 Task tool 호출 (subagent_type: general-purpose, model: haiku)
+[Work Execution Directive 요약]
+
+📥 Haiku 응답:
+[Work Complete / BLOCKER report]
+
+(if BLOCKER) 🔄 Loop-back classification: [Rule N → Phase X]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## Phase 6 — Task-Type-Aware Verification
+
+This phase verifies the Phase 5 execution output against task-type-specific quality criteria. It is the last line of defense against hallucinations, structural defects, and silently-skipped requirements. Findings are classified into 4 buckets that map to loop-back rules.
+
+> **Fleet dispatching**: Per "Fleet Dispatching — Quality Tier Policy" (위 cross-cutting 섹션), Phase 6 verification은 **단일 linter/checker 실행이 아니라 critic fleet**으로 수행된다. Task-type별 후보 (예: code→code-reviewer + superpowers:code-reviewer + test-engineer + security-reviewer + debugger + verifier; research→critic + verifier + document-specialist; decision→critic + verifier + analyst)를 runtime detection으로 선별하여 tier 상한 내에서 parallel 호출한다. 각 critic은 독립적으로 6-1의 verification recipe 중 자기 전문 영역을 담당하고, Opus가 findings를 통합해 6-4 classification bucket으로 매핑한다. Trivial task이거나 `no_fleet: true`이면 Opus가 직접 6-1 recipe를 단독 수행한다.
+
+### 6-1. Verification Recipes (per task type)
+
+**[code]**
+
+- 감지된 linter 실행 (mypy / tsc --noEmit / ruff / cargo clippy / go vet 등 Phase 0 detection 결과)
+- 감지된 test runner 실행 (pytest / jest / cargo test / go test 등)
+- 영향 받는 다른 모듈 grep 확인
+- 발견된 오류 → 수정 위임
+
+**[writing]**
+
+- **Atomic claim extraction**: 본문의 모든 사실 주장을 1문장 단위로 추출
+- **Fact-flagging**: 검증되지 않은 통계/숫자/인용/날짜에 `[STAT UNVERIFIED]` 등 마커 자동 주입 (6-3 참조)
+- **Temporal disclosure**: 시점 의존 정보에 "as of [date]" 추가
+- 톤 일관성, 구조, 문법 자체 점검
+- (선택) LanguageTool 류 외부 도구 가능 시 사용
+
+**[planning]**
+
+- **Critical Path 검증**: 각 단계의 prerequisite가 실제로 선행 단계에 포함되는가
+- **Cycle detection**: dependency 그래프에 사이클이 없는가
+- **Arithmetic validation**: duration 합계, 예산 합계가 제약과 일치하는가
+- 자원 경합 (같은 owner가 동시에 두 단계 담당하는가) 확인
+
+**[research] 🔴 CRITICAL**
+
+법률 분야에서 LLM hallucination rate는 39-88%에 이른다. Research task는 다른 어떤 task type보다도 강한 검증이 필요하다.
+
+- **Mandatory DOI/citation verification**: 모든 인용에 대해 WebFetch로 1차 출처 접근 (실패 시 `[CITATION UNVERIFIED]` 마킹)
+- **CRAAP test**: Currency / Relevance / Authority / Accuracy / Purpose 5축 점검
+- **CoVe verification questions**: Phase 3에서 만든 검증 질문에 INDEPENDENTLY 답함 (원래 본문을 보지 않고)
+- **Bias check**: 한쪽 관점만 인용했는지 확인
+- 해소 불가한 인용 → `[UNVERIFIED]` 라벨로 명시 + 사용자에게 알림
+
+**[analysis] (NEW)**
+
+- **데이터 무결성**: row count, null %, dtype, 중복, outlier 분포 확인
+- **통계 방법 적절성**: 사용된 방법이 데이터 분포/표본 크기/측정 수준에 맞는가
+- **결론-증거 일관성**: 결론이 데이터에서 실제로 도출 가능한가, 과잉 일반화 없는가
+- **대안 해석 탐색**: "다르게 해석할 수 있는가?" 최소 1개 대안 시나리오 검토
+- **Sample size disclosure**: 표본 크기/대표성 명시
+- 결과 시각화 (있는 경우) — 축, 범례, 단위 누락 확인
+
+**[decision] 🔴 CRITICAL**
+
+Clinical decision support에서 83% error echo rate가 보고되어 있다. Decision task도 research와 동급의 위험을 가진다.
+
+- **Alternatives audit**: 최소 3개 대안이 매트릭스에 있는가 (없으면 즉시 fail)
+- **Assumption surfacing**: 암묵 가정이 명시되어 있는가
+- **Bias audit**: 가능하면 different-model judge 사용 (LLM-as-judge는 same-model self-evaluation은 신뢰 불가)
+- **Sensitivity flagging**: 가중치 ±20% 변화 시 순위 뒤집힘 여부 명시
+- **Reversibility statement**: 결정의 되돌림 가능성 명시
+
+**[creative]**
+
+- **Constraint compliance**: 사용자 명시 제약 (길이/포맷/금지어) 충족 여부
+- **Style consistency**: 톤/시점/시제 일관성
+- **Rights check**: 저작권 우려가 있는 직접 인용/모방 없음
+- **Originality flag**: 잘 알려진 작품과 과도한 유사성 경고
+
+**[learning]**
+
+- **Source anchoring**: 학습 자료에 출처가 있는가 (위키피디아 vs 1차 자료)
+- **Temporal disclosure**: "as of [date]" — 빠르게 변하는 분야 (frameworks, APIs, regulations)
+- **Outdated-practice flag**: 더 이상 권장되지 않는 패턴이 포함되었는지
+- **Pedagogical coherence**: 선행 세션이 후행 세션의 prerequisite을 충족하는가
+- **Realistic time budget**: 세션 시간이 실제 학습 가능한 양인가
+
+**[other]**
+
+- 사용자 수용 기준 직접 확인
+- 산출물 형태가 사용자가 원한 것과 일치하는가
+
+### 6-2. Severity Rank (R9 evidence)
+
+Hallucination 위험 severity ranking:
+
+```
+Research (CRITICAL, 39-88% fabricated citations)
+> Decision (CRITICAL, 83% error echo in clinical)
+> Learning
+> Writing
+> Analysis
+> Planning
+> Creative
+> Code (linter/test catches most)
+```
+
+CRITICAL 등급 task type의 검증은 절대 생략하지 않는다.
+
+### 6-3. Confidence Disclosure Auto-Injection
+
+Final output에 다음 마커들을 자동 주입한다:
+
+| Marker | When to inject |
+|---|---|
+| `[STAT UNVERIFIED]` | 검증되지 않은 통계/숫자 |
+| `[QUOTE UNVERIFIED]` | 1차 출처에서 확인 불가한 직접 인용 |
+| `[CITATION UNVERIFIED]` | DOI/URL 접근 실패 인용 |
+| `[HIGH-STAKES ADVICE]` | 의학/법률/재무 등 결과 영향 큰 권고 |
+| `[KNOWLEDGE CUTOFF: YYYY-MM]` | 모델 cutoff 이후 가능성 있는 사실 |
+| `[LOW CONFIDENCE]` | Phase 1 confidence < 0.6 |
+| `[ASSUMED DEFAULT]` | Phase 3 STILL_OPEN aleatoric로 default 사용된 부분 |
+
+### 6-4. Findings Classification → Loop-Back Mapping
+
+| Finding | Severity | Loop-back rule |
+|---|---|---|
+| 통과 (검증 OK) | — | 종료 |
+| 사소한 수정 (typo, formatting, 부분 fact 미흡) | minor | Rule 5: 6 → 5 (재실행, 최대 3회) |
+| 구조적 결함 (design 자체가 잘못됨) | structural | Rule 6: 6 → 4 (재설계, 최대 1회) |
+| 요구사항 누락 (사용자가 말한 것이 빠짐) | requirements gap | Rule 7: 6 → 3 (Integrated Intent 갱신, 최대 1회) |
+
+### 6-5. Phase 6 Output Format
+
+```
+✅ Phase 6 — Verification
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 Verification recipe: [task type별 recipe 이름]
+
+검증 결과:
+- [Item 1]: PASS / FAIL — [상세]
+- [Item 2]: PASS / FAIL — [상세]
+- [Item 3]: PASS / FAIL — [상세]
+
+🔬 CoVe answers (research/decision/analysis):
+1. Q: ... | Independent answer: ...
+2. ...
+
+💡 Confidence markers injected: [STAT UNVERIFIED, KNOWLEDGE CUTOFF, ...]
+
+📊 Findings classification:
+- pass / minor fix (rule 5) / structural (rule 6) / requirements gap (rule 7)
+
+🔄 Loop-back action: [None / Rule N → Phase X]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## Loop-Back Rules
+
+The 7 phases above are not strictly linear. Loop-backs are allowed under explicit rules with hard caps. A global circuit breaker triggers user escalation if too many loop-backs accumulate.
+
+### 8 Loop-Back Rules
+
+| # | Trigger | From → To | Max | Notes |
+|---|---|---|---|---|
+| 1 | Post-Q reconciliation surfaces NEW ambiguity or contradiction Phase 2 cannot resolve | Phase 3 → Phase 1 | 2 | Re-enumerate ambiguities, may re-enter Phase 2 |
+| 2 | Phase 4 design fails the verification checklist (underspec, missing evidence, placeholder leak) | Phase 4 → Phase 3 | 2 | Tighten the IntegratedIntent first |
+| 3 | Phase 5 Haiku BLOCKER — design underspec | Phase 5 → Phase 4 | 1 | Rewrite the relevant design section |
+| 4 | Phase 5 transient failure (retryable error) | Phase 5 → Phase 5 | 2 retry | Same Haiku call, no design change |
+| 5 | Phase 6 fixable finding (minor) | Phase 6 → Phase 5 | 3 | Re-execute with corrected scope |
+| 6 | Phase 6 structural issue (design itself wrong) | Phase 6 → Phase 4 | 1 | Redesign and re-execute |
+| 7 | Phase 6 requirements gap (Integrated Intent missed something) | Phase 6 → Phase 3 | 1 | Re-integrate, possibly re-design and re-execute |
+| 8 | **Global Circuit Breaker** | * → ABORT | 3 total | Loop-backs across all phases ≥ 3 → ABORT and escalate to user |
+
+### Circuit Breaker Detail (Rule #8)
+
+Loop-back count is summed across ALL rules. If the running total reaches 3, treat this as evidence that the architecture or assumption is wrong, NOT that "one more loop will fix it." Sunk-cost fallacy avoidance.
+
+When the circuit breaker fires:
+
+1. STOP all execution.
+2. Print the loop-back history (which rule fired when, why).
+3. State the suspected root cause (most common: ambiguity in Phase 0 task type detection, or contradictory user constraints).
+4. Print the **User Escalation** message:
+   ```
+   ⛔ Circuit Breaker triggered (3 loop-backs)
+   Architecture or assumption is likely wrong. Halting to ask:
+   - 가장 흔한 원인: [task type 오감지 / 모순된 제약 / 데이터 부족]
+   - 확인이 필요한 항목: [3개 이내]
+   - 다음 행동 제안: [restart with /haqq, clarify constraint X, provide data Y]
+   ```
+5. Wait for user direction before any further work.
+
+The circuit breaker is intentional and non-negotiable. Skipping it leads to MAST FM-3.1 (premature termination of debugging followed by hallucinated success claims).
+
+---
+
+## Anti-Patterns to Avoid
+
+This skill explicitly avoids the following failure modes (drawn from MAST + KAIST 2025 + arXiv prompt engineering meta-studies):
+
+- **MAST FM-2.2** — Failing to ask for clarification when needed: addressed by Phase 1 Self-Ask gate.
+- **MAST FM-2.3** — Task derailment: addressed by Phase 0 task type lock + Phase 5 "do not add scope" directive.
+- **MAST FM-3.1** — Premature termination: addressed by Phase 6 verification + circuit breaker.
+- **MAST FM-1.2** — Disobeying role: addressed by Work Execution Directive's strict scope clause.
+- **Persona-prompt anti-pattern (KAIST 2025)** — "You are a senior X" hurts factual accuracy on MMLU. This skill uses purpose framing instead.
+- **Negative-instruction anti-pattern** — "Don't do X" underperforms "Do Y." This skill uses positive framing throughout.
+- **Stop Overthinking (arXiv:2503.16419)** — Wasting 19-42s on simple queries. Addressed by Phase 2-0 Skip Condition + Phase 1 LOW uncertainty path.
+- **Single-model routing anti-pattern** — Addressed by Phase 0 two-stage detection cascade.
 
 ---
 
@@ -550,152 +1287,6 @@ Purpose framing:
 
 ---
 
-## Example Walkthrough: Code Task
-
-**User Input**:
-```
-/ha Write a Python function that takes a CSV file path and returns a Pandas DataFrame
-with outliers removed. Use IQR method.
-```
-
-**Phase 0**: Dispatch = "code" ✓
-
-**Phase 1 (Opus)**: Pre-Q Deep Reasoning
-```
-ambiguity_ledger:
-  epistemic: 25 (user wants IQR, but didn't specify columns or how to define outliers)
-  aleatoric: 5 (deterministic)
-  pragmatic: 20 (no success criteria; "removed" is vague)
-  overall_uncertainty: 25 → MEDIUM
-  gate: Proceed to Phase 2.
-```
-
-**Phase 2 (Opus)**: Questioning (depth_budget=0, skips Phase 2 by default)
-→ Phase 1 says MEDIUM, so check gate: `depth_budget=0` and uncertainty=25.
-→ Direct invocation, no phase 2 questions. Go to Phase 3.
-
-*(If user had called `/haq`, depth_budget=0-4, so we'd ask ~2 questions here.)*
-
-**Phase 3 (Opus)**: Design Template
-```
-Design:
-  - Function name: remove_outliers_iqr
-  - Inputs: csv_path (str), columns (list, optional: auto-detect all numeric)
-  - Outputs: DataFrame (rows with outliers removed)
-  - IQR threshold: default Q1 - 1.5*IQR, Q3 + 1.5*IQR (parameterized)
-  - Success criteria:
-    - Runs without errors on typical CSVs (< 1M rows).
-    - Handles missing values gracefully (skip or impute, configurable).
-    - Documentation + docstring clear.
-  - Subtasks:
-    1. Read CSV safely (encoding, NA handling).
-    2. Detect numeric columns.
-    3. Compute IQR per column.
-    4. Filter rows outside bounds.
-    5. Return cleaned DataFrame.
-  - Quality bar: Haiku (simple task), single pass + review.
-```
-
-**Phase 4 (Opus)**: Fleet Dispatch
-```
-complexity = estimate_task_complexity(...) = "simple" (single function, 5 lines)
-tier_upper_bound = 1 (direct invocation, depth=0)
-num_to_dispatch = 1
-
-Dispatch:
-  - code_writer (Haiku): Write the function per design.
-```
-
-**Haiku (code_writer)**:
-```python
-import pandas as pd
-
-def remove_outliers_iqr(csv_path, columns=None):
-    """
-    Remove rows with outliers (IQR method) from a CSV file.
-    
-    Args:
-        csv_path: Path to CSV file.
-        columns: List of numeric columns to check. If None, auto-detect.
-    
-    Returns:
-        DataFrame with outlier rows removed.
-    """
-    df = pd.read_csv(csv_path)
-    if columns is None:
-        columns = df.select_dtypes(include=['number']).columns.tolist()
-    
-    for col in columns:
-        Q1 = df[col].quantile(0.25)
-        Q3 = df[col].quantile(0.75)
-        IQR = Q3 - Q1
-        lower = Q1 - 1.5 * IQR
-        upper = Q3 + 1.5 * IQR
-        df = df[(df[col] >= lower) & (df[col] <= upper)]
-    
-    return df
-```
-
-**Phase 5 (Opus)**: Verification
-```
-Checks:
-  ✓ Code runs without syntax errors.
-  ✓ Matches design (inputs, outputs, IQR logic).
-  ✓ Handles edge cases (empty DataFrame, no numeric cols → empty list, no filtering).
-  ✗ Missing: docstring example.
-  ✓ Simple, readable (no performance concerns for typical data).
-
-Refinement needed: Add usage example to docstring.
-```
-
-**Phase 6 (Opus)**: Polish
-```
-Refined code:
-```python
-import pandas as pd
-
-def remove_outliers_iqr(csv_path, columns=None):
-    """
-    Remove rows with outliers (IQR method) from a CSV file.
-    
-    Args:
-        csv_path (str): Path to CSV file.
-        columns (list, optional): Numeric columns to check. If None, auto-detect.
-    
-    Returns:
-        pd.DataFrame: DataFrame with outlier rows removed.
-    
-    Example:
-        df = remove_outliers_iqr("data.csv", columns=["age", "income"])
-        print(f"Removed {len(original) - len(df)} rows.")
-    """
-    df = pd.read_csv(csv_path)
-    if columns is None:
-        columns = df.select_dtypes(include=['number']).columns.tolist()
-    
-    for col in columns:
-        Q1 = df[col].quantile(0.25)
-        Q3 = df[col].quantile(0.75)
-        IQR = Q3 - Q1
-        lower = Q1 - 1.5 * IQR
-        upper = Q3 + 1.5 * IQR
-        df = df[(df[col] >= lower) & (df[col] <= upper)]
-    
-    return df
-```
-
-**Phase 7**: Return
-```
-🎚️ Tier: direct (depth=0, auto-skip Phase 2)
-📊 Ambiguity: MEDIUM (25) → addressed via design defaults
-🚀 Agents: 1 (code-writer)
-✅ Quality: polished
-
-[code above]
-```
-
----
-
 ## Notes
 
 - **Output language**: All user-facing output (design summaries, questions, explanations) is in **Korean**.
@@ -703,3 +1294,41 @@ def remove_outliers_iqr(csv_path, columns=None):
 - **No re-implementation**: /haq/haqq/haqqq are thin shims; they never redefine Phase 0–6 logic. They only set config + category hints.
 - **Agent autonomy**: Haiku agents receive task descriptions + design template, not role personas. They are purpose-driven, not identity-driven.
 - **Transparency**: Every phase outputs intermediate results, ambiguity scores, agent dispatch decisions, verification notes. User can always see why decisions were made.
+- **Reasoning Framework**: 9원칙은 `shared/reasoning-framework.md`에 canonical source로 정의. ha와 decompose 모두 동일 파일을 Read하여 drift를 방지한다.
+
+---
+
+## Output Format (Combined View)
+
+```
+🔍 Phase 0 — Context 감지
+[Phase 0 output block]
+
+🧠 Phase 1 — Pre-Q Deep Reasoning
+[Phase 1 output block, ending with Self-Ask gate]
+
+❓ Phase 2 — Uncertainty-Driven Questioning   (skipped if uncertainty=LOW or depth_budget=0)
+[Phase 2 output block — or "SKIPPED: reason"]
+
+🔁 Phase 3 — Post-Q Integration Reasoning   (skipped if Phase 2 was skipped)
+[Phase 3 output block — or "SKIPPED: defaults from Phase 1 used"]
+
+📐 Phase 4 — Design Document (task type: [type])
+[Phase 4 template filled]
+
+🚀 Phase 5 — Delegating to Haiku
+[Phase 5 output block]
+
+✅ Phase 6 — Verification
+[Phase 6 output block]
+
+📊 Final Status:
+- Task type: [type]
+- Uncertainty: [LOW / MEDIUM / HIGH]
+- Phase 2 entered: [Yes / No]
+- Loop-backs: [count] / 3 (circuit breaker)
+- Artifacts created: N
+- Artifacts modified: N
+- Verification result: [PASS / partial / FAIL]
+- Confidence markers injected: [list]
+```

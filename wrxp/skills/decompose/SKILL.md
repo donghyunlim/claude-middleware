@@ -48,53 +48,23 @@ middleware가 없는 프로젝트에서는 코드 서치 모드로 전환한다.
 
 유저 요청에서 모호한 부분을 식별하고 질문으로 제거한다. 이 Step은 **Pre-Q Deep Reasoning → AskUserQuestion 강제 질문 → Post-Q Integration Reasoning** 의 세 서브스텝으로 구성된다.
 
-### Step 2A — Pre-Q Deep Reasoning (Gemini-style)
+### Step 2A — Pre-Q Deep Reasoning
 
-> 질문을 생성하기 전에 반드시 아래 9가지 원칙으로 의도를 심층 분석한다. 이 reasoning이 완료되기 전에는 **절대 질문을 생성하지 않는다** (Response Inhibition).
+> **Canonical source**: `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md`
+> 질문을 생성하기 전에 반드시 9가지 원칙으로 의도를 심층 분석한다. 이 reasoning이 완료되기 전에는 **절대 질문을 생성하지 않는다** (Response Inhibition).
 
-**9가지 원칙** (의도 정제 맥락으로 재작성):
+Read `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md` and apply all 9 principles to the user's request in the context of intent clarification:
 
-1. **Logical Dependencies & Constraints** — 요청의 암묵적 전제조건과 실행 순서를 분석한다
-   - 정책/컨벤션 규칙 (프로젝트 architecture)
-   - 작업 순서 (A가 B를 막으면 안 됨)
-   - 필수 선행 정보/행동
-   - 유저가 명시한 제약사항
+1. Logical Dependencies & Constraints  2. Risk Assessment  3. Abductive Reasoning & Hypothesis Exploration
+4. Outcome Evaluation & Adaptability  5. Information Availability  6. Precision & Grounding
+7. Completeness  8. Persistence & Patience  9. Response Inhibition ← reasoning 완료 전 행동 금지
 
-2. **Risk Assessment** — 의도를 잘못 해석했을 때의 파급효과를 평가한다
-   - 탐색형 질문은 LOW risk
-   - 되돌릴 수 없는 행동은 HIGH risk → 사전 질문 필수
-   - 기존 정보로 추론 가능하면 질문보다 추론 우선
-
-3. **Abductive Reasoning & Hypothesis Exploration** — 유저가 명시하지 않은 숨은 의도를 가설로 세운다
-   - 표면적 요청 너머의 실제 목표를 추정
-   - 여러 해석이 가능하면 각각을 가설로 기록
-   - 낮은 확률 가설도 성급히 버리지 않음
-
-4. **Outcome Evaluation & Adaptability** — 중간 발견에 따라 계획을 수정한다
-   - 초기 가설이 반증되면 즉시 새 가설 생성
-   - 이해를 지속적으로 정제
-
-5. **Information Availability** — 사용 가능한 모든 정보원을 총동원한다
-   - Step 1에서 수집한 프로젝트 컨텍스트
-   - `.middleware/` 지식 (존재 시)
-   - 대화 히스토리
-   - 유저 질문은 최후의 수단
-
-6. **Precision & Grounding** — 모호성 주장마다 구체적 증거를 인용한다
-   - "애매해 보인다"가 아니라 "파일 X의 Y 함수가 이 동작을 한다"
-   - 정책/규칙 참조 시 정확히 인용
-
-7. **Completeness** — 요건·제약·옵션·선호를 빠짐없이 고려한다
-   - 충돌 시 원칙 1(Logical Dependencies)의 우선순위 사용
-   - 복수 해석 가능성 존재 시 성급한 결론 금지
-
-8. **Persistence & Patience** — 한두 번 애매하다고 포기하지 않는다
-   - 시간/복잡도에 구애받지 않음
-   - 일시 오류는 재시도, 다른 오류는 전략 변경
-
-9. **Response Inhibition** — 이 모든 reasoning이 완료된 후에야 질문 생성 단계로 진행한다
-   - 🚫 reasoning 없이 즉시 AskUserQuestion 호출 금지
-   - ✅ 위 8개 원칙의 산출물을 "모호성 목록"으로 도출한 뒤에만 질문 단계 진입
+각 원칙을 **의도 정제** 관점에서 적용한다:
+- Logical Dependencies → 요청의 암묵적 전제조건과 실행 순서
+- Risk Assessment → 의도 오해 시 파급효과 (되돌릴 수 없는 행동은 HIGH risk → 사전 질문 필수)
+- Abductive Reasoning → 숨은 의도 가설 수립 (표면 너머의 실제 목표)
+- Information Availability → 프로젝트 컨텍스트 + `.middleware/` + 대화 히스토리 (유저 질문은 최후의 수단)
+- Response Inhibition → 🚫 reasoning 없이 즉시 AskUserQuestion 호출 금지. ✅ 9원칙 산출물을 "모호성 목록"으로 도출한 뒤에만 질문 단계 진입
 
 **출력 형식:**
 

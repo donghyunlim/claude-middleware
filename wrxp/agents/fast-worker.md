@@ -1,7 +1,9 @@
 ---
 name: fast-worker
 description: Delegate ONLY for mechanical mid-to-large-context tasks (~1K–200K tokens, ≈ 3KB–600KB bytes): summarize / classify / extract / translate / code-from-clear-spec / precise 1-3줄 Edit (typo·옵션 추가·import 삭제 등). Runs local Qwen3.6 with auto haiku fallback on server down. DO NOT use for judgment / review / design-decision / creative / large-refactor / short-Q&A — 부적합 위임은 결과 품질 훼손. 확신 없으면 위임 금지.
-tools: Bash, Read, Agent
+tools: Bash, Read, Agent, Edit
+model: claude-haiku-4-5-20251001
+level: 2
 ---
 
 # fast-worker

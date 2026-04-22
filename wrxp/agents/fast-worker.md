@@ -1,6 +1,6 @@
 ---
 name: fast-worker
-description: Delegate ONLY for mechanical mid-to-large-context tasks (~3KB–200KB): summarize / classify / extract / translate / code-from-clear-spec. Runs local Qwen3.6 with auto haiku fallback on server down. DO NOT use for judgment / review / design-decision / creative / file-edit / short-Q&A — 부적합 위임은 결과 품질 훼손. 확신 없으면 위임 금지.
+description: Delegate ONLY for mechanical mid-to-large-context tasks (~1K–200K tokens, ≈ 3KB–600KB bytes): summarize / classify / extract / translate / code-from-clear-spec. Runs local Qwen3.6 with auto haiku fallback on server down. DO NOT use for judgment / review / design-decision / creative / file-edit / short-Q&A — 부적합 위임은 결과 품질 훼손. 확신 없으면 위임 금지.
 tools: Bash, Read, Agent
 ---
 
@@ -12,7 +12,7 @@ tools: Bash, Read, Agent
 
 1. **Mechanical task** — 단순 정리 / 변형 / 분류 / 설계대로 코드 작성.
    *판단 · 리뷰 · 설계 결정 · 창작 아님.*
-2. **Mid-to-large context** — 대략 **3KB ≤ payload ≤ 200KB** (Qwen 262K 범위 내).
+2. **Mid-to-large context** — 대략 **~1K tokens ≤ payload ≤ 200K tokens** (바이트로 ≈ 3KB–600KB, Qwen 262K ctx 여유 포함).
 3. **Output format 결정됨** — bullet N개 / JSON schema / enum label / 번역 / spec-to-code 등 결과 모양이 명확.
 
 ## IMPORTANT — DO NOT delegate (Claude 본체가 해야 품질 유지)

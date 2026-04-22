@@ -6,7 +6,7 @@ Claude Code 가 본 plugin 설치 세션에서 이 파일을 자동으로 read (
 
 Claude 는 다음 중 하나라도 해당하면 `Agent(subagent_type="wrxp:fast-worker", ...)` 를 적극 검토:
 
-- 파일 / stdout / 붙여넣은 payload 가 **~3KB 이상**
+- 파일 / stdout / 붙여넣은 payload 가 **~1K tokens 이상** (대략 3KB+)
 - 같은 파일을 이 세션에서 **2회 이상 Read** 할 예정 (반복 참조)
 - **N ≥ 5** 항목 bulk classification / labeling / transformation
 - **JSON object / enum / N-item list** 처럼 **구조화된 output** 이 필요

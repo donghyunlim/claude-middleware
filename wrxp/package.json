@@ -7,6 +7,9 @@
   "files": [
     "skills",
     "shared",
+    "agents",
+    "scripts",
+    "CLAUDE.md",
     "README.md"
   ]
 }

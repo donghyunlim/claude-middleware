@@ -1,6 +1,6 @@
 ---
 name: ha
-description: Knife-mode reasoning-and-execution pipeline — single-agent, single-thread, no fleet. Canonical engine for /haq, /haqq, /haqqq shims. Use when the problem is one clear branch of thought.
+description: Use when a request has one clear branch of thought and needs the knife-mode, sequential reasoning-and-execution pipeline.
 argument-hint: "[요청 내용]"
 level: 4
 ---
@@ -9,14 +9,14 @@ ultrathink.
 
 # /ha — Knife-Mode Reasoning & Execution Engine
 
-이 skill은 **"하나의 명확한 문제"**를 단일 사고의 갈래(single reasoning thread)로 끝까지 밀어붙이는 knife-mode engine이다. Fleet dispatching 없이 단일 agent로 Phase 1 → 2(조건부) → 3 → 5 → 6을 순차 수행한다. Phase 0(task-type cascade)과 Phase 4(design template)는 knife mode에서 생략되거나 경량화된다.
+이 skill은 **"하나의 명확한 문제"**를 단일 사고의 갈래(single reasoning thread)로 끝까지 밀어붙이는 knife-mode engine이다. Fleet dispatching 없이 Phase 0 → 1 → 2(조건부) → 3 → 5 → 6을 순차 수행한다. Phase 4(design template)는 knife mode에서 생략된다.
 
 /ha 는 **/cast의 knife 대칭 canonical engine**이다. 둘 다 `shared/reasoning-framework.md`의 9원칙을 공유하지만:
 
 - **/cast (team)**: Fleet ON — Phase 1/5/6 전 구간에서 병렬 specialized subagents dispatch. 다면 분석, 교차 검증, 여러 관점이 가치를 더하는 task.
 - **/ha (knife)**: Fleet OFF — 단일 agent, 단일 사고 흐름. 문제 경로가 한 갈래로 수렴하는 task.
 
-`/haq`, `/haqq`, `/haqqq`는 /ha를 호출하는 thin shim으로, 사용자에게 물을 수 있는 질문 수(AskUserQuestion 웹UI를 통한 brainstorming-style 선택형 질문)만 다르다.
+`/haq`, `/haqq`, `/haqqq`는 /ha를 호출하는 thin shim으로, 사용자에게 물을 수 있는 질문 수와 동률 해소용 `routing_bias`만 다르다.
 
 **Output all responses in Korean.**
 
@@ -39,13 +39,43 @@ question_rounds: <1 | 2 | 3-5>
 max_budget: <4 | 8 | 20>
 tier: <haq | haqq | haqqq | direct>
 fleet_mode: off     # knife family는 항상 off
+routing_bias: <cost-first | balanced | quality-first>
 ```
 
 If no config block is present, treat as direct invocation with `fleet_mode: off` (knife default). The depth budget governs Phase 2's AskUserQuestion count ceiling. Phase 1's uncertainty detection still has the final say — uncertainty=LOW always skips Phase 2 regardless of caller tier.
 
+`routing_bias`는 동률인 실행 후보를 고를 때만 쓴다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** tier, depth_budget, question_rounds는 controller 모델이나 관측 가능한 작업 속성에 따른 모델 분류를 바꾸지 않는다.
+
+## Model Routing Registry (single source of truth)
+
+이 registry는 `/ha`에만 둔다. `/haq`·`/haqq`·`/haqqq`는 질문 깊이와 `routing_bias`만 전달하며, 모델명을 재정의하지 않는다.
+
+| 역할 | Codex 5.6 | reasoning_effort | Claude Code 대응 | 담당 |
+|---|---|---|---|---|
+| controller | `gpt-5.6-sol` | `high` | opus | Phase 0~3의 큰 줄기·판단·계획·통합·blocker 분류 및 고위험 최종 판단 |
+| standard executor | `gpt-5.6-terra` | `medium` | sonnet | 표준 구현·디버깅·공식 문서 조사·테스트·보통의 글/분석 |
+| utility executor | `gpt-5.6-luna` | `low` | haiku | 결정론적 검색·목록화·포맷·명확한 1~3줄 기계 변경·기계 검사 |
+
+```yaml
+codex_model_registry:
+- role: controller
+  model: gpt-5.6-sol
+  reasoning_effort: high
+- role: standard_executor
+  model: gpt-5.6-terra
+  reasoning_effort: medium
+- role: utility_executor
+  model: gpt-5.6-luna
+  reasoning_effort: low
+```
+
+**Codex 위임 규칙**: 모든 Codex 위임에 `model`과 `reasoning_effort`를 함께 명시한다. runtime이 지원하지 않는 모델이면 registry 역할과 가장 가까운 가용 모델로 fallback하고, 최종 출력에 `요청 역할 / 실제 모델 / fallback 사유`를 공개한다. active controller가 Sol이 아니고 runtime이 모델 지정 위임을 지원하면, Phase 0~3 또는 blocker 판단을 Sol controller에 **순차 위임하고 결과를 기다린다**. 지원하지 않으면 active controller가 같은 절차를 수행하고 그 사실을 공개한다.
+
+**Claude Code 규칙**: controller/standard/utility를 각각 opus/sonnet/haiku로 대응한다. Claude Code 위임에는 지원되지 않는 `reasoning_effort` 필드를 강제하지 않는다.
+
 **Knife invariants (하드 제약, tier 무관):**
 
-- `fleet_mode: off` 고정. 어떤 tier 호출이든 Phase 1/5/6은 단일 agent로 실행된다.
+- `fleet_mode: off` 고정. 이는 **동시 fleet 금지**를 뜻한다. Phase별 worker 또는 verifier는 순차적으로, 한 번에 최대 한 명만 호출할 수 있다.
 - **Phase 4 (Design Template) skip**. Single deliverable이 전제이므로 9-종 task template은 생성하지 않는다. Phase 3 통합 추론이 곧 실행 명세가 된다.
 - **Phase 0 cascade 축소**. Stage 1 (cheap signals) + context collection만 실행. Stage 2 (internal classification) / Stage 3 (AskUserQuestion fallback)는 생략 — knife mode는 "task type이 이미 명확"을 전제한다. 애매하면 사용자를 `/cast` 쪽으로 유도한다.
 - **Phase 2 질문은 AskUserQuestion 웹UI를 통한 brainstorming-style 선택형(multi-choice) 포맷**을 기본으로 한다. prose 자유서술 질문은 지양.
@@ -54,7 +84,7 @@ If no config block is present, treat as direct invocation with `fleet_mode: off`
 
 ## Phase 0 — Context & Task-Type Detection
 
-This phase establishes the work environment, identifies the task type, gathers task-specific context, and reserves a verification plan. It is mandatory and non-skippable.
+This phase establishes the work environment, identifies the task type, gathers task-specific context, and reserves a verification plan. It is mandatory and non-skippable, and is owned by the controller.
 
 ### 0-1. Task Type Table (9 types)
 
@@ -156,7 +186,7 @@ Phase 6에서 사용할 검증 방법을 Phase 0에서 미리 선택한다. 실�
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📂 작업 경로: [CWD]
-🏷️ Task Type: [9개 중 하나] (감지 단계: Stage [1|2|3], 신뢰도 [0.0-1.0])
+🏷️ Task Type: [9개 중 하나] (감지 단계: Stage 1, 신뢰도 [0.0-1.0])
 📁 관련 Artifact: [task-type-specific context 요약]
 🎯 Task 특성: [요약]
 ✅ Phase 6 검증 계획 (예약): [recipe 이름]
@@ -168,13 +198,13 @@ Phase 6에서 사용할 검증 방법을 Phase 0에서 미리 선택한다. 실�
 
 ## Reasoning Framework (MANDATORY Before Every Action)
 
-> **Canonical source**: `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md`
+> **Canonical source**: Claude Code에서는 `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md`, 그 외 runtime(Codex 포함)에서는 이 `SKILL.md` 기준 `../../shared/reasoning-framework.md`
 > Before ANY action, Read the shared reasoning framework and apply all 9 principles:
 > 1. Logical Dependencies and Constraints  2. Risk Assessment  3. Abductive Reasoning and Hypothesis Exploration
 > 4. Outcome Evaluation and Adaptability  5. Information Availability  6. Precision and Grounding
 > 7. Completeness  8. Persistence and Patience  9. Response Inhibition ← reasoning 완료 전 행동 금지
 
-Read `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md` and apply all 9 principles defined there before proceeding to any Phase.
+먼저 현재 runtime에 맞는 위 경로의 `reasoning-framework.md`를 읽고 9원칙을 적용한다. `${CLAUDE_PLUGIN_ROOT}`가 확장되지 않으면 이를 literal path로 사용하지 말고 상대 경로 fallback을 사용한다.
 
 ---
 
@@ -182,13 +212,13 @@ Read `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md` and apply all 9 princ
 
 /ha 는 **fleet dispatching을 사용하지 않는다**. 이것이 /cast와의 구조적 차이이며, knife 정체성의 근간이다.
 
-Reasoning Framework(9원칙)가 "어떻게 생각할 것인가"를 정의한다면, 이 섹션은 "몇 개의 agent로 생각·실행·검증할 것인가"를 정의한다 — 답은 **하나**다.
+Reasoning Framework(9원칙)가 "어떻게 생각할 것인가"를 정의한다면, 이 섹션은 동시 작업을 몇 개 허용하는지 정의한다 — 답은 **한 번에 하나**다. controller, worker, verifier는 필요할 때만 순차적으로 교체될 수 있다.
 
 ### Why Single-Agent (본질)
 
 하나의 명확한 문제는 하나의 추론 갈래로 풀린다. 병렬 agent를 띄우는 순간 다음 4개 비용이 발생한다:
 
-1. **Synthesis overhead** — 여러 관점 산출물을 통합하는 Opus의 추가 작업
+1. **Synthesis overhead** — 여러 관점 산출물을 통합하는 controller의 추가 작업
 2. **Context bleed** — 각 agent가 서로 다른 state를 가정해 결론이 미묘하게 어긋남
 3. **Noise amplification** — 문제가 단일 갈래면 "다른 관점"이 noise로 작용
 4. **Latency tax** — 병렬이라도 느린 agent 하나에 전체가 묶임
@@ -199,10 +229,10 @@ Knife의 가치는 "한 화살이 정확히 꽂히는 것"이다. Fleet은 다�
 
 | Phase | /cast (team) | /ha (knife) |
 |---|---|---|
-| Phase 1 Pre-Q Reasoning | 복수 탐색/문서 조회 agent 병렬 | Opus 단독. Read/Grep/Glob만으로 IntentDraft + AmbiguityLedger 산출 |
-| Phase 2 Questioning | EVPI 카테고리 pool에서 텍스트 질문 | **AskUserQuestion 웹UI + brainstorming-style 선택형 질문**만 (depth_budget에 따라 0~20개) |
-| Phase 5 Execution | Fleet 3-20 agents 병렬 실행 | 단일 executor/worker (Haiku 또는 Opus 직접, task 성격에 따라) |
-| Phase 6 Verification | 복수 critic/reviewer/verifier 병렬 | 단일 verifier. 필요하면 Opus 자가 검증으로 대체 가능 |
+| Phase 1 Pre-Q Reasoning | 복수 탐색/문서 조회 agent 병렬 | controller 단독. Read/Grep/Glob만으로 IntentDraft + AmbiguityLedger 산출 |
+| Phase 2 Questioning | EVPI 카테고리 pool에서 텍스트 질문 | 구조화 질문 도구 또는 동일한 3~4지선다 메시지 fallback (depth_budget에 따라 0~20개) |
+| Phase 5 Execution | Fleet 3-20 agents 병렬 실행 | 관측 가능한 작업 속성에 맞춘 단일 executor/worker. 필요 시 controller가 직접 수행 |
+| Phase 6 Verification | 복수 critic/reviewer/verifier 병렬 | 단일 verifier를 순차 호출. 고위험 판단은 controller가 수행 |
 
 ### When `/ha` is Wrong and `/cast` is Right
 
@@ -240,7 +270,7 @@ Core techniques applied:
 
 Use Grep, Glob, Read on the artifacts surfaced in Phase 0. Goal: understand existing patterns, conventions, dependencies. Do NOT execute the work yet — only observe enough to reason about ambiguity.
 
-> **Single-agent (knife invariant)**: Per "Single-Agent Policy" (위 섹션), Phase 1 Pre-Q Reasoning은 Opus 단독으로 수행한다. Read/Grep/Glob 등 local tool만 사용해 IntentDraft + AmbiguityLedger를 산출한다. 어떤 subagent도 dispatch하지 않는다. 다면 탐색이 필요하다고 판단되면 `/cast`로 escalation 제안 후 중단 (Loop-Back Rule #5 knife 변형).
+> **Controller ownership**: Phase 1 Pre-Q Reasoning은 registry controller가 소유한다. Read/Grep/Glob 등 local tool만 사용해 IntentDraft + AmbiguityLedger를 산출한다. 어떤 worker도 dispatch하지 않는다. 다면 탐색이 필요하다고 판단되면 `/cast`로 escalation 제안 후 중단한다.
 
 **1-2-2. IntentDraft Construction**
 
@@ -286,7 +316,7 @@ Aggregate the AmbiguityLedger:
 
 | Uncertainty | Hi count | Med count | Action |
 |---|---|---|---|
-| **LOW** | 0 | ≤2 | **Skip Phase 2**, go directly to Phase 4 with default assumptions stated |
+| **LOW** | 0 | ≤2 | **Skip Phase 2**, go directly to Phase 3 with default assumptions stated |
 | **MEDIUM** | 1-3 | 3-5 | Enter Phase 2, /haq or /haqq range applies |
 | **HIGH** | ≥4 | ≥6 | Enter Phase 2, /haqq or /haqqq range applies |
 
@@ -301,7 +331,7 @@ Are follow-up questions needed here? [Yes / No]
 Reason: [if Yes — reference highest-EVPI items; if No — state which defaults will be used]
 ```
 
-If `No` → jump to Phase 4. If `Yes` → proceed to Phase 2.
+If `No` → jump to Phase 3. If `Yes` → proceed to Phase 2.
 
 ### 1-4. Phase 1 Output Format
 
@@ -344,7 +374,7 @@ If `No` → jump to Phase 4. If `Yes` → proceed to Phase 2.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**Response Inhibition reminder (principle #9)**: Phase 1의 reasoning이 모두 끝난 후에만 Phase 2 또는 Phase 4로 진입한다. 중간에 미리 코드를 쓰거나 결과를 만들지 않는다.
+**Response Inhibition reminder (principle #9)**: Phase 1의 reasoning이 모두 끝난 후에만 Phase 2 또는 Phase 3로 진입한다. 중간에 미리 코드를 쓰거나 결과를 만들지 않는다.
 
 ---
 
@@ -360,7 +390,7 @@ This phase asks the user clarifying questions, but only when warranted by Phase 
 2. `uncertainty == LOW` (Phase 1 self-ask gate said No)
 3. The caller's max_budget is 0
 
-When skipping, state explicitly which assumptions you are adopting and why, then jump directly to Phase 5 (knife mode skips Phase 4). Skipping is the **default behavior** for simple requests — 77% of top-intents in Amazon Alexa logs are correct on the first try without questioning, and Modeling Future Conversation Turns (arXiv:2410.13788) shows 61.9% correctness when LLMs choose "answer directly" over "ask first."
+When skipping, state explicitly which assumptions you are adopting and why, then complete Phase 3 with those defaults before entering Phase 5. Skipping is the **default behavior** for simple requests — 77% of top-intents in Amazon Alexa logs are correct on the first try without questioning, and Modeling Future Conversation Turns (arXiv:2410.13788) shows 61.9% correctness when LLMs choose "answer directly" over "ask first."
 
 ### 2-1. Sandler Upfront Contract Preamble
 
@@ -370,7 +400,7 @@ When entering Phase 2, open with an explicit contract to the user. This pattern 
 📋 질문 단계 안내 (Upfront Contract)
 - 예상 질문 수: 약 [N]개 (최대 [max_budget]개)
 - 목적: [highest-EVPI 항목 1-2개 명시]
-- 모든 질문에 답할 필요 없습니다. "skip" 또는 "충분해" 라고 답하면 즉시 Phase 4로 진행합니다.
+- 모든 질문에 답할 필요 없습니다. "skip" 또는 "충분해" 라고 답하면 즉시 Phase 3으로 진행합니다.
 - 답변 후 모호성이 해소되면 남은 질문은 자동 생략됩니다.
 ```
 
@@ -430,9 +460,9 @@ Questions are NOT asked in arbitrary order. Use the AmbiguityLedger from Phase 1
 3. Group related Med-severity items into single multi-part questions where possible
 4. EVPI ordering yields 1.5-2.7x question reduction (arXiv:2511.08798)
 
-### 2-3. MANDATORY AskUserQuestion Tool Usage (Brainstorming-Style 선택형)
+### 2-3. Structured Questioning (Brainstorming-Style 선택형)
 
-Knife 모드의 Phase 2 질문은 **AskUserQuestion 웹UI + brainstorming-style 선택형(multi-choice)** 포맷을 반드시 사용한다. Prose 자유서술 질문은 금지 — 사용자 피로도를 높이고 응답 구조화를 해친다.
+구조화 질문 도구가 있으면 Knife 모드의 Phase 2 질문은 **AskUserQuestion 웹UI + brainstorming-style 선택형(multi-choice)** 포맷을 사용한다. Codex 등 runtime에 해당 도구가 없으면 동일한 3~4지선다와 직접 입력 선택지를 일반 사용자 메시지로 제시하고 응답을 기다린다. 어느 경우에도 선택지 없이 장문의 자유서술 답변을 요구하지 않는다.
 
 **Why selection-style in knife mode**: 사용자 feedback "비주얼 컴패니언 선택형 질문 선호"와 NBER 6-10Q drop-off cliff (응답률 73.6%) 대응. 단일-갈래 문제에 prose answer를 요구하는 것은 user working memory(Cowan 4-chunk) 낭비다. 3-4지선다 + "직접 입력" 옵션이 knife의 속도와 brainstorming의 탐색성을 동시에 보존한다.
 
@@ -514,11 +544,11 @@ Expert discovery protocols (MI commitment language, SPIN explicit need, aporia r
 
 ## Phase 3 — Post-Q Integration Reasoning
 
-This phase reconciles user answers with the IntentDraft and AmbiguityLedger from Phase 1. It detects contradictions, resolves the ledger, and may trigger a loop-back to Phase 1 if reconciliation surfaces new ambiguity.
+This phase is owned by the controller. It reconciles user answers with the IntentDraft and AmbiguityLedger from Phase 1, detects contradictions, resolves the ledger, and may trigger a loop-back to Phase 1 if reconciliation surfaces new ambiguity.
 
 ### 3-1. Purpose
 
-Without integration, Phase 2 answers risk being treated as raw inputs into Phase 4 — which loses the chance to detect contradictions between answers, between an answer and an inferred constraint, or between an answer and the original IntentDraft. Reflexion (arXiv:2303.11366) showed verbal reflection lifts HumanEval 80% → 91%; Chain-of-Verification (CoVe, arXiv:2309.11495) showed independent verification questions reduce hallucinations 50-70%; Self-Refine added +20% across 7 tasks via "localize problem + give fix instruction."
+Without integration, Phase 2 answers risk being treated as raw inputs into Phase 5 — which loses the chance to detect contradictions between answers, between an answer and an inferred constraint, or between an answer and the original IntentDraft. Reflexion (arXiv:2303.11366) showed verbal reflection lifts HumanEval 80% → 91%; Chain-of-Verification (CoVe, arXiv:2309.11495) showed independent verification questions reduce hallucinations 50-70%; Self-Refine added +20% across 7 tasks via "localize problem + give fix instruction."
 
 ### 3-2. Sub-Steps
 
@@ -554,7 +584,7 @@ If a STILL_OPEN item is **epistemic** (resolvable in principle but not yet resol
 
 **3-2-5. Build Integrated Intent**
 
-Produce the final consolidated intent that Phase 4 will design from:
+Produce the final consolidated intent that Phase 5 will execute from:
 
 ```
 IntegratedIntent:
@@ -610,27 +640,37 @@ Phase 3의 Post-Q 통합 추론 결과(IntentDraft + AmbiguityLedger 해소분 +
 
 **Escalation trigger**: 만약 task가 multi-file / multi-section / multi-step 산출물을 본질적으로 요구한다면 knife 적합성을 재평가하고 `/cast`로 escalate 제안 후 중단한다 (Loop-Back Rule #5 knife 변형 — Complexity Underestimate).
 
-## Phase 5 — Execution Delegation
+## Phase 5 — Execution Routing & Delegation
 
-This phase delegates the work to a **단일 executor agent** (Haiku 또는 경량 task의 경우 Opus 직접) via the Task tool. Knife invariant에 따라 fleet dispatch 없이 한 화살로 Phase 3 directive를 실행한다.
+Phase 3의 Post-Q 통합 결과가 곧 실행 지시서다. `fleet_mode: off`이므로 fleet을 병렬로 띄우지 않는다. **작업 속성**을 관찰해 아래에서 하나만 고르고, 필요하면 이전 worker가 끝난 뒤 다음 worker를 순차 호출한다.
 
-> **Single-agent (knife invariant)**: Phase 3의 Post-Q 통합 결과가 곧 실행 지시서다. 이것을 **한 executor**에게 독립 brief로 전달한다. 여러 agent 간 synthesis overhead, context bleed, tie-breaker cost를 회피하는 것이 knife의 가치. Code task = executor 또는 Haiku worker 1개, writing = writer 1개, 분석 = scientist 1개 — task-type별 canonical choice 하나만 선택한다. 복수 관점이 필요하다고 판단되면 `/cast`로 escalation 후 중단.
+| 관찰 가능한 작업 속성 | 기본 경로 | 예시 |
+|---|---|---|
+| 결정론적이며 좁은 범위, 검색·목록화·포맷 또는 명확한 1~3줄 기계 변경 | utility executor | 파일 목록, 정확한 문자열 검색, 표 정렬, 명시된 한 줄 수정 |
+| 표준 구현·디버깅·공식 문서 조사·테스트·보통의 글/분석 | standard executor | 기능 구현, 재현 가능한 버그 수정, API 공식 문서 확인, 단위 테스트 |
+| 모호·비가역·보안·아키텍처·교차 범위 또는 하위 모델이 같은 분류에서 2회 실패 | controller 직접 또는 별도 controller pass | 권한 설계, 데이터 마이그레이션, 여러 모듈 계약 변경, 두 번 실패한 디버깅 |
 
-### 5-1. Task Tool Invocation
+`routing_bias`는 위 행이 동률일 때만 적용한다. `cost-first`는 utility 쪽, `balanced`는 standard 쪽, `quality-first`는 controller 검토 쪽으로 기울이되, 보안·비가역·아키텍처·교차 범위 조건을 낮추지 않는다.
+
+### 5-1. Delegation Invocation
+
+**Codex**에서는 모든 위임에 다음처럼 모델과 사고 수준을 모두 명시한다.
 
 ```
-Task tool parameters:
-- subagent_type: "general-purpose"
-- model: "haiku"
-- prompt: (use Work Execution Directive template below)
+subagent parameters:
+- model: "gpt-5.6-luna" | "gpt-5.6-terra" | "gpt-5.6-sol"
+- reasoning_effort: "low" | "medium" | "high"
+- prompt: (use Work Execution Directive below)
 ```
+
+**Claude Code**에서는 registry의 opus/sonnet/haiku 대응을 사용하고 `reasoning_effort` 필드를 붙이지 않는다. 실제 호출 모델이 fallback이면 controller가 그 사유를 기록한다.
 
 ### 5-2. Work Execution Directive Template
 
 ```
 # Work Execution Directive
 
-Your role is to execute the work exactly as designed. Do not add scope, do not improvise, and do not invent requirements that are not in the design document.
+Execute the work exactly as directed. Do not add scope, do not improvise, and do not invent requirements that are not in the integrated intent.
 
 ## Task Type
 [code / writing / planning / research / analysis / decision / creative / learning / other]
@@ -643,7 +683,7 @@ Your role is to execute the work exactly as designed. Do not add scope, do not i
 
 ## Work Content
 
-[Paste the task-type-specific section of the Phase 4 design document here verbatim]
+[Paste the Phase 3 IntegratedIntent and concrete execution steps here verbatim]
 
 ## Execution Order
 1. [Unit 1]
@@ -651,8 +691,8 @@ Your role is to execute the work exactly as designed. Do not add scope, do not i
 ...
 
 ## Output Expectations
-- All deliverables in Korean unless the design specifies otherwise.
-- Use the file types listed in the design (no surprise extensions).
+- All deliverables in Korean unless the user requirements or Phase 3 IntegratedIntent specify otherwise.
+- Use file types explicitly required by the user or Phase 3 IntegratedIntent. Otherwise, follow the project convention or choose the smallest fitting format (no surprise extensions).
 - When complete, output "Work Complete" followed by a list of artifacts created/modified.
 
 ## Blocker Reporting (if you cannot proceed)
@@ -660,14 +700,14 @@ If a step is underspecified, blocked, or you find a contradiction, DO NOT ask th
 
 BLOCKER: [one-sentence description of the gap]
 CONTEXT: [what information is missing or contradictory]
-REQUIRED: [what Opus must clarify or decide before you can proceed]
+REQUIRED: [what the controller must clarify or decide before you can proceed]
 
-The Opus controller will classify the blocker and loop back to the appropriate phase per the Loop-Back Rules.
+The controller will classify the blocker and loop back to Phase 3 or Phase 5 per the Loop-Back Rules.
 ```
 
-### 5-3. Task-Type Behavior Hints for Haiku
+### 5-3. Task-Type Behavior Hints for the selected executor
 
-| Task Type | Haiku 동작 |
+| Task Type | selected executor 동작 |
 |---|---|
 | code | 파일 편집/생성 (Edit, Write tool), linter/test 실행 가능 |
 | writing | markdown/txt 파일 작성 |
@@ -679,26 +719,27 @@ The Opus controller will classify the blocker and loop back to the appropriate p
 | learning | 커리큘럼 문서 작성 |
 | other | 사용자가 원한 형태 |
 
-### 5-4. Blocker Classification (Opus side)
+### 5-4. Blocker Classification (controller side)
 
-If Haiku returns a BLOCKER, Opus classifies it and triggers the appropriate loop-back:
+If the selected executor returns a BLOCKER, the controller classifies it and triggers the appropriate loop-back:
 
 | Blocker type | Trigger | Loop-back |
 |---|---|---|
-| Design underspec (the design itself is missing detail) | Rule 3 | 5 → 4 (max 1) |
+| IntegratedIntent underspec or contradiction | Rule 3 | 5 → 3 (max 1) |
 | Transient failure (network, file lock, retryable error) | Rule 4 | 5 → 5 retry (max 2) |
-| Contradiction with IntegratedIntent | Rule 7 | 6 → 3 (max 1) |
+| 하위 모델 2회 실패 또는 위험 상승 | controller escalation | 5 → 5, controller pass (max 1) |
 
 ### 5-5. Phase 5 Output Format
 
 ```
-🚀 Phase 5 — Delegating to Haiku
+🚀 Phase 5 — Execution Routing
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📤 Task tool 호출 (subagent_type: general-purpose, model: haiku)
+📤 선택: [utility / standard / controller] — [관찰된 작업 속성]
+📤 위임: [실제 runtime 모델, reasoning_effort 또는 Claude 대응]
 [Work Execution Directive 요약]
 
-📥 Haiku 응답:
+📥 executor 응답:
 [Work Complete / BLOCKER report]
 
 (if BLOCKER) 🔄 Loop-back classification: [Rule N → Phase X]
@@ -712,7 +753,17 @@ If Haiku returns a BLOCKER, Opus classifies it and triggers the appropriate loop
 
 This phase verifies the Phase 5 execution output against task-type-specific quality criteria. It is the last line of defense against hallucinations, structural defects, and silently-skipped requirements. Findings are classified into 4 buckets that map to loop-back rules.
 
-> **Single-agent (knife invariant)**: Phase 6 verification은 **단일 critic/verifier** (task-type canonical choice 하나) 또는 Opus 자가 검증으로 수행한다. Task-type별 canonical: code→code-reviewer 1개, writing→critic 1개, research→critic 1개 (단, citation verification은 Opus 직접), decision→critic 1개, analysis→scientist 1개. 복수 reviewer 병렬 dispatch는 knife invariant 위반 — 필요하면 `/cast`로 escalation. 단일 critic의 findings를 6-4 classification bucket으로 매핑.
+> **Single-agent (knife invariant)**: Phase 6 검증은 순차적으로 한 번에 단일 verifier만 호출한다. 작성자와 verifier는 가능한 한 분리한다. utility가 작성했으면 standard verifier를 우선하고, standard가 작성했으면 다른 standard context 또는 controller pass를 쓴다. `fleet_mode: off`는 동시 fleet 금지이며 순차 worker/verifier 한 명 호출을 금지하지 않는다.
+
+### 6-0. Verification Routing
+
+| 검증 성격 | 기본 경로 | controller 승격 조건 |
+|---|---|---|
+| 기계 검사 | utility executor | 검사 결과가 상충하거나 수정 범위가 커짐 |
+| 표준 기능 검증 | standard executor | 요구사항 해석 분쟁, 재현 불가 결함, 교차 범위 영향 |
+| 보안·고위험·분쟁 발견 | controller | controller가 최종 분류와 다음 행동을 결정 |
+
+Codex verifier 호출도 반드시 정확한 `model`과 `reasoning_effort`를 함께 명시한다. fallback과 Claude Code 대응은 registry 규칙을 따른다.
 
 ### 6-1. Verification Recipes (per task type)
 
@@ -824,7 +875,7 @@ Final output에 다음 마커들을 자동 주입한다:
 |---|---|---|
 | 통과 (검증 OK) | — | 종료 |
 | 사소한 수정 (typo, formatting, 부분 fact 미흡) | minor | Rule 5: 6 → 5 (재실행, 최대 3회) |
-| 구조적 결함 (design 자체가 잘못됨) | structural | Rule 6: 6 → 4 (재설계, 최대 1회) |
+| 구조적 결함 (IntegratedIntent 또는 실행 계획 자체가 잘못됨) | structural | Rule 6: 6 → 3 (재통합, 최대 1회) |
 | 요구사항 누락 (사용자가 말한 것이 빠짐) | requirements gap | Rule 7: 6 → 3 (Integrated Intent 갱신, 최대 1회) |
 
 ### 6-5. Phase 6 Output Format
@@ -834,6 +885,7 @@ Final output에 다음 마커들을 자동 주입한다:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🔍 Verification recipe: [task type별 recipe 이름]
+📤 검증 경로: [utility / standard / controller], 실제 모델: [...]
 
 검증 결과:
 - [Item 1]: PASS / FAIL — [상세]
@@ -865,12 +917,12 @@ The 7 phases above are not strictly linear. Loop-backs are allowed under explici
 | # | Trigger | From → To | Max | Notes |
 |---|---|---|---|---|
 | 1 | Post-Q reconciliation surfaces NEW ambiguity or contradiction Phase 2 cannot resolve | Phase 3 → Phase 1 | 2 | Re-enumerate ambiguities, may re-enter Phase 2 |
-| 2 | Phase 4 design fails the verification checklist (underspec, missing evidence, placeholder leak) | Phase 4 → Phase 3 | 2 | Tighten the IntegratedIntent first |
-| 3 | Phase 5 Haiku BLOCKER — design underspec | Phase 5 → Phase 4 | 1 | Rewrite the relevant design section |
-| 4 | Phase 5 transient failure (retryable error) | Phase 5 → Phase 5 | 2 retry | Same Haiku call, no design change |
+| 2 | Phase 3 IntegratedIntent fails controller completeness check (underspec, missing evidence, placeholder leak) | Phase 3 → Phase 3 | 2 | Tighten the IntegratedIntent first |
+| 3 | Phase 5 executor BLOCKER — IntegratedIntent underspec | Phase 5 → Phase 3 | 1 | Clarify the relevant execution step |
+| 4 | Phase 5 transient failure (retryable error) | Phase 5 → Phase 5 | 2 retry | Same selected executor call, no scope change |
 | 5 | Phase 6 fixable finding (minor) | Phase 6 → Phase 5 | 3 | Re-execute with corrected scope |
-| 6 | Phase 6 structural issue (design itself wrong) | Phase 6 → Phase 4 | 1 | Redesign and re-execute |
-| 7 | Phase 6 requirements gap (Integrated Intent missed something) | Phase 6 → Phase 3 | 1 | Re-integrate, possibly re-design and re-execute |
+| 6 | Phase 6 structural issue (IntegratedIntent itself wrong) | Phase 6 → Phase 3 | 1 | Re-integrate and re-execute |
+| 7 | Phase 6 requirements gap (Integrated Intent missed something) | Phase 6 → Phase 3 | 1 | Re-integrate and re-execute |
 | 8 | **Global Circuit Breaker** | * → ABORT | 3 total | Loop-backs across all phases ≥ 3 → ABORT and escalate to user |
 
 ### Circuit Breaker Detail (Rule #8)
@@ -907,13 +959,13 @@ This skill explicitly avoids the following failure modes (drawn from MAST + KAIS
 - **Persona-prompt anti-pattern (KAIST 2025)** — "You are a senior X" hurts factual accuracy on MMLU. This skill uses purpose framing instead.
 - **Negative-instruction anti-pattern** — "Don't do X" underperforms "Do Y." This skill uses positive framing throughout.
 - **Stop Overthinking (arXiv:2503.16419)** — Wasting 19-42s on simple queries. Addressed by Phase 2-0 Skip Condition + Phase 1 LOW uncertainty path.
-- **Single-model routing anti-pattern** — Addressed by Phase 0 two-stage detection cascade.
+- **Single-model routing anti-pattern** — Addressed by Phase 0 Stage 1 cheap-signal detection and the Phase 5 work-attribute routing table.
 
 ---
 
 ## Role Prompting Fix (Purpose Framing, Not Persona)
 
-When delegating to Haiku agents, **never** use persona framing like "You are a senior engineer with 20 years of experience." Instead, use **purpose framing**:
+When delegating to any selected executor or verifier, **never** use persona framing like "You are a senior engineer with 20 years of experience." Instead, use **purpose framing**:
 
 **Bad**: "You are an expert code reviewer. Review this code."
 **Good**: "Your task: Identify logical flaws, performance issues, and security risks in this code. Output: list of issues + severity + fix suggestions."
@@ -922,18 +974,18 @@ When delegating to Haiku agents, **never** use persona framing like "You are a s
 **Good**: "Write a short story (200–300 words) in the voice of [tone], about [theme], suitable for [audience]. Output: story + 1-paragraph description of creative choices."
 
 Purpose framing:
-- Reduces hallucination (Haiku focuses on the task, not the imagined role).
-- Enables better agent composition (same Haiku can be a "code reviewer" in one subtask, a "test engineer" in another).
+- Reduces hallucination (the selected executor focuses on the task, not the imagined role).
+- Enables better agent composition (the same executor can verify code in one subtask and test it in another).
 - Improves quality measurement (success is defined by task output, not role persona).
 
 ---
 
 ## Notes
 
-- **Output language**: All user-facing output (design summaries, questions, explanations) is in **Korean**.
+- **Output language**: All user-facing output (phase summaries, questions, explanations) is in **Korean**.
 - **Skill invocation** from /haq, /haqq, /haqqq prepend config; /ha respects config or defaults to depth_budget=0.
-- **No re-implementation**: /haq/haqq/haqqq are thin shims; they never redefine Phase 0–6 logic. They only set config + category hints.
-- **Agent autonomy**: Haiku agents receive task descriptions + design template, not role personas. They are purpose-driven, not identity-driven.
+- **No re-implementation**: /haq/haqq/haqqq are thin shims; they only set config + category hints. 중첩 Skill 호출이 없는 runtime에서는 `ha`를 읽어 같은 canonical logic을 적용한다.
+- **Agent autonomy**: selected executors receive task descriptions + IntegratedIntent, not role personas. They are purpose-driven, not identity-driven.
 - **Transparency**: Every phase outputs intermediate results, ambiguity scores, agent dispatch decisions, verification notes. User can always see why decisions were made.
 - **Reasoning Framework**: 9원칙은 `shared/reasoning-framework.md`에 canonical source로 정의. ha와 decompose 모두 동일 파일을 Read하여 drift를 방지한다.
 
@@ -951,13 +1003,10 @@ Purpose framing:
 ❓ Phase 2 — Uncertainty-Driven Questioning   (skipped if uncertainty=LOW or depth_budget=0)
 [Phase 2 output block — or "SKIPPED: reason"]
 
-🔁 Phase 3 — Post-Q Integration Reasoning   (skipped if Phase 2 was skipped)
-[Phase 3 output block — or "SKIPPED: defaults from Phase 1 used"]
+🔁 Phase 3 — Post-Q Integration Reasoning
+[Phase 3 output block — Phase 2가 skip된 경우에도 Phase 1 기본값을 통합]
 
-📐 Phase 4 — Design Document (task type: [type])
-[Phase 4 template filled]
-
-🚀 Phase 5 — Delegating to Haiku
+🚀 Phase 5 — Execution Routing
 [Phase 5 output block]
 
 ✅ Phase 6 — Verification
@@ -972,4 +1021,5 @@ Purpose framing:
 - Artifacts modified: N
 - Verification result: [PASS / partial / FAIL]
 - Confidence markers injected: [list]
+- Model disclosure: [요청 역할 / 실제 모델 / fallback 사유(있으면)]
 ```

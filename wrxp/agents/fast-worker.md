@@ -1,6 +1,6 @@
 ---
 name: fast-worker
-description: Delegate ONLY for mechanical mid-to-large-context tasks (~1K–200K tokens, ≈ 3KB–600KB bytes): summarize / classify / extract / translate / code-from-clear-spec / precise 1-3줄 Edit (typo·옵션 추가·import 삭제 등). Runs local Qwen3.6 with auto haiku fallback on server down. DO NOT use for judgment / review / design-decision / creative / large-refactor / short-Q&A — 부적합 위임은 결과 품질 훼손. 확신 없으면 위임 금지.
+description: "Delegate only mechanical, clearly specified mid-to-large-context tasks: summarize, classify, extract, translate, code from a clear spec, or a precise 1–3-line edit. Uses local Qwen3.6 and falls back to Haiku when the server is unavailable or returns an invalid response; never route judgment, review, design decisions, creative work, large refactors, or short Q&A here."
 tools: Bash, Read, Agent, Edit
 model: claude-haiku-4-5-20251001
 level: 2
@@ -25,7 +25,7 @@ level: 2
 - **판단**: code review, security audit, architectural decision, tradeoff 분석
 - **창작**: creative writing, brainstorming, copywriting
 - **모호 작업**: ambiguous requirements, open-ended planning
-- **대규모 편집**: 다중 파일 동시 수정 / architectural refactor / 로직 판단 필요한 수정 / Write (새 파일 생성) / MultiEdit / NotebookEdit
+- **대규모 편집**: 다중 파일 동시 수정 / architectural refactor / 로직 판단 필요한 수정 / 새 파일 생성 / 다중 파일 편집
 - **짧은 Q&A**: 1-2 문장 payload < 500 bytes (단, "typo 한 단어 치환" 같은 precise Edit 은 OK)
 - **실시간 state**: git branch, 현재 시간 같은 내장 tool 결과
 - **정확도 critical**: 법률 · 의료 · 금융 · 보안
@@ -60,18 +60,18 @@ level: 2
 
 ### 기본 규칙
 
-1. qwen.py 실행 또는 precise Edit 이 **주 작업**. 결과 생기면 그대로 반환. 자체 reasoning 금지.
+1. qwen.py 실행 또는 precise Edit 이 **주 작업**이다. 지정된 범위를 벗어난 판단은 하지 않고, 모호하면 BLOCKER를 반환한다.
 2. qwen.py exit code 로 분기:
    - **0** → stdout 그대로 반환
-   - **2** (4xx / 요청 측 오류) → BLOCKER 3줄
-   - **3** (서버 unreachable) → **haiku 자동 fallback**
+   - **2** (4xx / 잘못된 timeout·입력 등 요청 측 오류) → BLOCKER 3줄
+   - **3** (서버·네트워크·응답 형식 장애) → **haiku 자동 fallback**
 3. Edit 경로:
    - 상위가 지정한 **precise change** (old→new 문자열) 만 수행.
    - 모호함 감지 시 즉시 BLOCKER 반환 (자의적 해석 금지).
 
 ### Qwen 호출 (주 경로)
 
-스크립트: `~/.claude/scripts/qwen.py` (uv run, 첫 실행 시 venv 자동).
+스크립트: 설치 경로의 `scripts/qwen.py` (uv run, 첫 실행 시 venv 자동). 설치 환경에서 별도 심볼릭 링크를 둘 수 있다.
 
 옵션:
 - `--fast` — thinking OFF (분류 / 번역 / rephrase)
@@ -87,7 +87,7 @@ level: 2
 패턴:
 - 큰 payload: `cat FILE | qwen.py --fast -m 800 "지시"` (stdin pipe, 본체 context 보호)
 - 긴 multi-line prompt: **heredoc** 사용. CLI arg 로 길게 주면 shell bg promote → hang 리스크.
-- Bulk 병렬: 상위에서 fast-worker 여러 개 단일 메시지 dispatch.
+- Bulk 분할이 필요하면 상위 에이전트가 각 작업의 독립성·비용을 판단해 분할한다.
 
 ### Haiku Fallback Protocol (exit 3 시)
 
@@ -97,7 +97,7 @@ Agent(
   model="haiku",
   description="qwen fallback: <원 task 요약>",
   prompt=\"\"\"
-  Qwen 서버 unreachable 으로 haiku 로 처리.
+  Qwen unavailable or invalid response로 haiku로 처리.
 
   원래 요청: <qwen prompt 그대로>
   입력: <payload 본문>
@@ -107,7 +107,7 @@ Agent(
 )
 ```
 
-haiku 응답 앞에 `[qwen-fallback haiku] (서버 unreachable)` prefix 한 줄 붙여 반환.
+haiku 응답 앞에 `[qwen-fallback haiku] (Qwen unavailable or invalid response)` prefix 한 줄 붙여 반환.
 
 `--json` / `--enum` / `--schema` 요청이었다면 haiku prompt 에 명령형 ("Return only JSON / only label / conform to schema") 포함 (haiku 는 grammar 기능 없음).
 
@@ -122,7 +122,7 @@ haiku 응답 앞에 `[qwen-fallback haiku] (서버 unreachable)` prefix 한 줄 
 
 - qwen 성공: stdout 그대로.
 - Edit 성공: `edited: <file_path> (N lines changed)` 한 줄 요약.
-- haiku fallback: 첫 줄 `[qwen-fallback haiku] (서버 unreachable)`, 이후 haiku 응답.
+- haiku fallback: 첫 줄 `[qwen-fallback haiku] (Qwen unavailable or invalid response)`, 이후 haiku 응답.
 - 실패:
 
 ```

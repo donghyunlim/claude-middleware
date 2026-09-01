@@ -1,6 +1,6 @@
 ---
 name: haqq
-description: Knife 중간 깊이 실행 - 5~8개 선택형 질문(불확실성 기반) 후 /ha 파이프라인 실행 (thin shim, single-agent)
+description: Use when a knife-mode request needs 5~8개의 선택형 질문으로 중간 깊이의 불확실성을 확인한 뒤 실행해야 한다.
 argument-hint: "[요청 내용]"
 level: 4
 ---
@@ -27,6 +27,8 @@ $ARGUMENTS
 
 Knife invariant(`fleet_mode: off`, Phase 4 skip, Phase 0 cheap-signal-only)는 /ha에서 관리되며 이 shim은 그대로 상속한다. 중간 깊이 질문이 필요한 단일-문제 task에 적합하다.
 
+질문 깊이와 모델 라우팅은 서로 독립적인 축이다. /haqq는 중간 질문 깊이와 동률 시 균형 편향만 전달하며, controller 또는 작업 속성 기반 모델 분류를 바꾸지 않는다.
+
 ---
 
 ## Tier Policy (Knife, Single-Agent)
@@ -47,6 +49,7 @@ question_rounds: 2
 max_budget: 8
 tier: haqq
 fleet_mode: off
+routing_bias: balanced
 ```
 
 이 config는 /ha Phase 2에 의해 해석된다. 라운드 1 후 ledger 재평가 — 모호성이 해소되면 라운드 2는 자동 생략. /ha Phase 1이 uncertainty를 LOW로 판정하면 depth_budget이 8이어도 Phase 2는 skip된다 (Stop Overthinking 원칙).
@@ -105,11 +108,16 @@ Skill tool parameters:
     max_budget: 8
     tier: haqq
     fleet_mode: off
+    routing_bias: balanced
 
     [원본 $ARGUMENTS 내용을 그대로 이어서]
 ```
 
 > **중요**: 이 skill 자체에서 Phase 0 감지, design 작성, execution, verification 어느 것도 수행하지 않는다. /ha가 파이프라인 전체를 관리한다.
+
+### Codex nested-skill fallback
+
+Skill tool로 `ha`를 중첩 호출할 수 있으면 위 호출을 사용한다. 그런 도구가 없는 Codex runtime에서는 같은 플러그인의 `../ha/SKILL.md`를 **끝까지 읽고**, 위 config block과 원본 요청을 적용해 canonical pipeline을 직접 실행한다. 이 fallback도 모델 registry는 `ha`만을 정본으로 사용한다.
 
 ---
 

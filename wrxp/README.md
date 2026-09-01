@@ -2,7 +2,7 @@
 
 > Opus는 조율(reason + synthesize), specialized subagents가 실행. 9가지 task type에 대해 불확실성 기반 질문과 Fleet Dispatching으로 publication-grade 산출물을 만드는 7-phase 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.5-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.24-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -16,6 +16,12 @@ wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 - **🛡️ Team family (`cast` / `castq` / `castqq` / `castqqq`)** — **Fleet ON, 병렬 specialized subagents**. Phase 1/5/6에서 3-20개 agent 병렬 dispatch. 다면 분석·교차 검증·여러 관점이 가치를 더할 때. /cast 가 canonical engine, 나머지 셋은 thin shim.
 
 두 family는 `shared/reasoning-framework.md`의 9원칙을 공유한다. 선택 기준: **사고의 흐름이 하나의 갈래면 /ha, 여러 갈래의 병렬 탐색이 본질이면 /cast**.
+
+### 0.1.24 Knife 모델 라우팅
+
+`/ha`가 유일한 registry다. Codex 5.6에서는 controller=`gpt-5.6-sol`/high, 표준 실행=`gpt-5.6-terra`/medium, 기계 작업=`gpt-5.6-luna`/low를 쓴다. Phase 0~3의 판단·계획·통합·blocker 분류는 controller가 소유하고, Phase 5·6은 관찰 가능한 작업·검증 속성으로 순차 라우팅한다. `fleet_mode: off`는 동시 fleet을 금지할 뿐, 한 번에 한 명의 worker/verifier를 순차 호출하는 것은 허용한다.
+
+`/haq`·`/haqq`·`/haqqq`는 각각 cost-first·balanced·quality-first의 동률 해소 편향만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 따라서 깊은 질문 tier라고 Sol을 강제하지 않으며, 보안·비가역·아키텍처·교차 범위 같은 위험 조건은 언제나 controller로 승격한다. Claude Code에서는 같은 역할을 opus/sonnet/haiku로 대응한다.
 
 추가로 `breakdown`, `decompose`, `agent-match` orchestration 축이 있다 (재귀 분해 + DAG 병렬). 총 11개 skill.
 
@@ -238,10 +244,7 @@ knife/team 계열과 breakdown 계열은 직교한다. knife/team은 quality tie
 ├── dag-{slug}.json            # Phase 4: Agent-matched DAG (breakdown)
 ├── strategy-{slug}.json       # Phase 5: 선택된 실행 전략 (breakdown)
 ├── execution-{slug}.json      # Phase 6: 실행 진행 상태 (breakdown)
-├── breakdown-{slug}.json      # 전체 파이프라인 상태
-├── ha-ambiguity-{slug}.json   # /ha Phase 1: ambiguity ledger
-├── ha-design-{slug}.md        # /ha Phase 3: design template
-└── ha-fleet-{slug}.json       # /ha Phase 4-6: fleet dispatch 기록
+└── breakdown-{slug}.json      # 전체 파이프라인 상태
 ```
 
 `{slug}` = 요청 기반 짧은 식별자 (예: `add-social-login`, `redesign-auth`).

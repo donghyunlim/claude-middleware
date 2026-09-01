@@ -22,12 +22,12 @@
 환경 (모두 선택):
   QWEN_ENDPOINT  (기본 https://qwen2.gocham.kr)
   QWEN_MODEL     (기본 Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf)
-  QWEN_API_KEY / QWEN_TOKEN  (없으면 아래 DEFAULT_API_KEY 사용)
+  QWEN_API_KEY / QWEN_TOKEN  (없으면 인증 헤더 없이 호출)
 
 Exit codes (fallback 라우팅용):
   0 — 성공
   2 — HTTP 4xx 또는 요청 측 오류 (prompt/schema 문제). prompt 수정 후 재시도.
-  3 — 서버 unreachable (connect fail / timeout / HTTP 5xx). **haiku fallback 권장**.
+  3 — 서버·네트워크·응답 형식 오류. **haiku fallback 권장**.
 """
 
 from __future__ import annotations
@@ -37,16 +37,15 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import BinaryIO
 
 import httpx
 
 DEFAULT_ENDPOINT = "https://qwen2.gocham.kr"
 DEFAULT_MODEL = "Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf"
-# 로컬 llama-server DDoS 가드용 하드코드 키. 유출 영향 미미 (endpoint 교체로 대응).
-DEFAULT_API_KEY = "e3a3449a36ef845884f5aea5f068250383ea2fd5f6c6ffd7"
 
-# stdin 대용량 가드 (Python 프로세스 OOM 회피).
-MAX_STDIN_BYTES = 2_000_000  # ≈ 500K 한영 혼합 토큰
+# fast-worker 최대 payload(600,000 bytes): Qwen 262K context에서 32K output 여유를 남긴다.
+MAX_STDIN_BYTES = 600_000
 
 # Qwen3.6 공식 long-output 한계 = 32,768 tokens.
 # native context 는 262K 지만 생성 token 의 실용 상한은 32K 권장.
@@ -87,6 +86,7 @@ def _load_env(path: Path) -> None:
 
 for candidate in (
     Path(__file__).resolve().parent / ".env",
+    Path.home() / ".claude/scripts/.env",
     Path.home() / ".claude/mcp-servers/qwen-mcp/.env",
 ):
     _load_env(candidate)
@@ -95,11 +95,47 @@ for candidate in (
 def _endpoint_and_key() -> tuple[str, str | None]:
     endpoint = os.environ.get("QWEN_ENDPOINT", DEFAULT_ENDPOINT).rstrip("/")
     api_key = (
-        os.environ.get("QWEN_API_KEY")
-        or os.environ.get("QWEN_TOKEN")
-        or DEFAULT_API_KEY
+        os.getenv("QWEN_API_KEY")
+        or os.getenv("QWEN_TOKEN")
     )
     return endpoint, api_key
+
+
+def read_limited_stdin(
+    stream: BinaryIO, max_bytes: int = MAX_STDIN_BYTES
+) -> tuple[str, int]:
+    """UTF-8 stdin을 최대 ``max_bytes + 1``만 읽어 text와 실제 읽은 byte 수를 반환한다.
+
+    한글처럼 여러 byte로 구성된 문자가 경계에서 잘리면 불완전한 마지막 문자만
+    버린다. 한 byte를 더 읽어 초과를 감지하고, 이후 byte는 읽지 않으므로
+    대용량 pipe 입력으로 메모리가 커지지 않는다.
+    """
+    data = stream.read(max_bytes + 1)
+    return data.decode("utf-8", errors="ignore"), len(data)
+
+
+class ResponseContractError(RuntimeError):
+    """OpenAI-compatible chat completion 응답이 기대 구조를 만족하지 않는다."""
+
+
+def exit_code_for_error(exc: Exception) -> int:
+    """요청 오류를 fast-worker가 이해하는 exit 계약(2/3)으로 분류한다."""
+    if isinstance(exc, ResponseContractError):
+        return 3
+    if isinstance(exc, httpx.HTTPStatusError):
+        return 3 if exc.response.status_code >= 500 else 2
+    if isinstance(exc, httpx.LocalProtocolError):
+        return 2
+    if isinstance(exc, UnicodeDecodeError):
+        return 3
+    if isinstance(exc, (json.JSONDecodeError, httpx.TimeoutException, httpx.NetworkError,
+                        httpx.ProtocolError, httpx.ProxyError, httpx.UnsupportedProtocol)):
+        return 3
+    if isinstance(exc, (ValueError, httpx.InvalidURL)):
+        return 2
+    if isinstance(exc, httpx.HTTPError):
+        return 3
+    return 2
 
 
 def probe(timeout_s: float = 5.0) -> tuple[int, str]:
@@ -192,16 +228,37 @@ def ask(
         return resp.json()
 
 
-def extract_content(data: dict) -> str:
-    choices = data.get("choices") or []
-    if not choices:
-        raise RuntimeError(
-            "Qwen 응답에 choices 가 비어있음: "
-            + json.dumps(data, ensure_ascii=False)[:300]
-        )
-    msg = choices[0].get("message") or {}
-    content = (msg.get("content") or "").strip()
-    reasoning = (msg.get("reasoning_content") or "").strip()
+def _response_message(data: object) -> dict:
+    if not isinstance(data, dict):
+        raise ResponseContractError("Qwen 응답 root는 object여야 함")
+    choices = data.get("choices")
+    if not isinstance(choices, list) or not choices:
+        raise ResponseContractError("Qwen 응답 choices는 비어 있지 않은 list여야 함")
+    choice = choices[0]
+    if not isinstance(choice, dict):
+        raise ResponseContractError("Qwen 응답 첫 choice는 object여야 함")
+    msg = choice.get("message")
+    if not isinstance(msg, dict):
+        raise ResponseContractError("Qwen 응답 message는 object여야 함")
+    return msg
+
+
+def validate_response_contract(data: object) -> None:
+    """raw 출력 경로를 포함해 chat completion 응답 구조를 검증한다."""
+    msg = _response_message(data)
+    content = msg.get("content", "")
+    reasoning = msg.get("reasoning_content", "")
+    if not isinstance(content, str) or not isinstance(reasoning, str):
+        raise ResponseContractError("Qwen 응답 content와 reasoning_content는 문자열이어야 함")
+    if not content.strip() and not reasoning.strip():
+        raise ResponseContractError("Qwen 응답 content와 reasoning_content가 모두 비어 있음")
+
+
+def extract_content(data: object) -> str:
+    validate_response_contract(data)
+    msg = _response_message(data)
+    content = msg.get("content", "").strip()
+    reasoning = msg.get("reasoning_content", "").strip()
     if not content and reasoning:
         return (
             "[reasoning-only fallback — max_tokens 가 content 전에 소진. "
@@ -264,14 +321,16 @@ def main() -> None:
         sys.exit(exit_code)
 
     prompt_cli = args.prompt
-    prompt_stdin = "" if sys.stdin.isatty() else sys.stdin.read()
-
-    if len(prompt_stdin) > MAX_STDIN_BYTES:
+    prompt_stdin = ""
+    stdin_bytes = 0
+    if not sys.stdin.isatty():
+        prompt_stdin, stdin_bytes = read_limited_stdin(sys.stdin.buffer)
+    if stdin_bytes > MAX_STDIN_BYTES:
         sys.stderr.write(
-            f"qwen.py: stdin {len(prompt_stdin)} bytes > {MAX_STDIN_BYTES}. "
-            f"앞 {MAX_STDIN_BYTES} bytes 만 전송.\n"
+            f"qwen.py: stdin이 최대 {MAX_STDIN_BYTES} bytes를 초과했습니다. "
+            "요청을 보내지 않았습니다. exit=2.\n"
         )
-        prompt_stdin = prompt_stdin[:MAX_STDIN_BYTES]
+        sys.exit(2)
 
     if prompt_cli and prompt_stdin:
         prompt = f"{prompt_cli}\n\n---\n{prompt_stdin}"
@@ -286,7 +345,7 @@ def main() -> None:
         try:
             with open(args.schema) as f:
                 json_schema_dict = json.load(f)
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
             sys.stderr.write(f"qwen.py: --schema 파일 로드 실패: {exc}\n")
             sys.exit(2)
 
@@ -295,7 +354,7 @@ def main() -> None:
         try:
             with open(args.grammar) as f:
                 grammar_str = f.read()
-        except OSError as exc:
+        except (OSError, UnicodeError) as exc:
             sys.stderr.write(f"qwen.py: --grammar 파일 로드 실패: {exc}\n")
             sys.exit(2)
 
@@ -319,29 +378,30 @@ def main() -> None:
             enum_labels=enum_list,
             grammar=grammar_str,
         )
-    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout) as exc:
-        sys.stderr.write(
-            f"qwen.py: server unreachable ({type(exc).__name__}): {exc}. "
-            f"haiku fallback 권장. exit=3.\n"
-        )
-        sys.exit(3)
-    except httpx.HTTPStatusError as exc:
-        code = exc.response.status_code
-        body = exc.response.text[:200]
-        if code >= 500:
+    except (ValueError, json.JSONDecodeError, httpx.HTTPError) as exc:
+        exit_code = exit_code_for_error(exc)
+        if isinstance(exc, httpx.HTTPStatusError):
+            body = exc.response.text[:200]
+            kind = "server side" if exit_code == 3 else "request side"
+            sys.stderr.write(f"qwen.py: HTTP {exc.response.status_code} ({kind}): {body}\n")
+        elif exit_code == 3:
             sys.stderr.write(
-                f"qwen.py: HTTP {code} (server side) — fallback 권장. body: {body}\n"
+                f"qwen.py: server/response error ({type(exc).__name__}): {exc}. "
+                "haiku fallback 권장. exit=3.\n"
             )
-            sys.exit(3)
-        sys.stderr.write(f"qwen.py: HTTP {code}: {body}\n")
-        sys.exit(2)
-    except httpx.HTTPError as exc:
-        sys.stderr.write(
-            f"qwen.py: transport error ({type(exc).__name__}): {exc}\n"
-        )
-        sys.exit(3)
+        else:
+            sys.stderr.write(f"qwen.py: request error ({type(exc).__name__}): {exc}. exit=2.\n")
+        sys.exit(exit_code)
 
     if args.raw:
+        try:
+            validate_response_contract(data)
+        except ResponseContractError as exc:
+            sys.stderr.write(
+                f"qwen.py: server/response error ({type(exc).__name__}): {exc}. "
+                "haiku fallback 권장. exit=3.\n"
+            )
+            sys.exit(3)
         json.dump(data, sys.stdout, ensure_ascii=False, indent=2)
         sys.stdout.write("\n")
         sys.stdout.flush()
@@ -349,9 +409,12 @@ def main() -> None:
 
     try:
         out = extract_content(data)
-    except RuntimeError as exc:
-        sys.stderr.write(f"qwen.py: {exc}\n")
-        sys.exit(2)
+    except ResponseContractError as exc:
+        sys.stderr.write(
+            f"qwen.py: server/response error ({type(exc).__name__}): {exc}. "
+            "haiku fallback 권장. exit=3.\n"
+        )
+        sys.exit(3)
 
     sys.stdout.write(out + ("" if out.endswith("\n") else "\n"))
     sys.stdout.flush()

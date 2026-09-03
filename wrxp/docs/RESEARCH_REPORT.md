@@ -7,7 +7,7 @@
 **Authors**: Claude Opus 4.6 research fleet + Donny (user)
 **License**: MIT
 
-> **현재 계약 정정 (0.1.25)**: 이 문서의 본문과 수치는 과거 연구·벤치마크 기록이며, 당시의 fleet·질문 정책을 역사적 기록으로 보존합니다. 현재 `/ha`는 공통 reasoning·execution 엔진이고 `/haq`·`/haqq`·`/haqqq`는 질문 프리셋만 바꾸는 thin shim입니다. 모든 tier는 0문항으로 종료할 수 있습니다. 질문은 증거를 확인한 뒤 `must_ask` 결정과 자료의 독자·용도·공유·결정 권한처럼 산출물의 쓰임을 바꾸는 `decision_quality` 선택에만 제시합니다. 호출당 최대 4문항과 `max_concurrency=1` 직렬 실행이 기본이며, 병렬 전문 탐색이 필요하면 `/cast`를 사용합니다. 현재 모델 라우팅은 질문 tier와 독립적으로 런타임 기능에 따라 결정됩니다.
+> **현재 계약 정정 (0.1.26)**: 이 문서의 본문과 수치는 과거 연구·벤치마크 기록이며, 당시의 fleet·질문 정책을 역사적 기록으로 보존합니다. 현재 직접 `/ha`는 `none` preset(0문항·0라운드)으로 선제 discovery 질문 없이 실행하며, 승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계만 discovery 예산 밖에서 즉시 확인합니다. `/haq`·`/haqq`·`/haqqq`는 질문 프리셋만 바꾸는 thin shim입니다. `/ha`는 하나의 확정 의도를 runtime-bounded dependency task graph로 실행하고 독립 unit만 병렬 위임하며, `/cast`는 관점·가설 fleet에 사용합니다. 현재 모델 라우팅은 질문 tier와 독립적으로 런타임 기능에 따라 결정됩니다.
 
 ---
 

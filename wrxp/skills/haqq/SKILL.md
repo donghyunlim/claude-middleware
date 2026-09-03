@@ -26,8 +26,6 @@ max_rounds: 2
 extended_max_questions: null
 extended_max_rounds: null
 extension_requires_user_consent: false
-execution_mode: serial
-max_concurrency: 1
 ```
 
 이 값은 질문 수의 상한이다. 첫 라운드 뒤 적격 질문을 다시 계산하며, 남은 질문이 없으면 즉시 실행한다.
@@ -49,5 +47,5 @@ shim은 task-type 질문 목록, 모델명, 실행자 역할 또는 검증 규�
 
 ```text
 🎚️ Tier: haqq · standard · 질문 0~8개 · 최대 2라운드
-🗡️ 실행: serial · max_concurrency=1
+🗡️ 실행: runtime-bounded task graph
 ```

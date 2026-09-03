@@ -22,6 +22,7 @@ RuntimeCapabilities:
   available_models: [string]
   supported_reasoning_efforts: {model: [string]}
   can_delegate: boolean
+  max_parallel_delegations: integer | unknown
   can_isolate_verifier_context: boolean
   structured_question:
     available: boolean
@@ -109,11 +110,15 @@ utility가 범위·설계·보안 판단을 새로 내려야 하면 standard 또
 산출물: PASS/FAIL, 증거, 수정이 필요한 정확한 항목.
 ```
 
-## 실행 직렬성
+## task-graph 실행
 
-`/ha` 계열의 계약은 `max_concurrency: 1`이다. 여러 실행자나 verifier를 사용할 수 있지만 동시에 실행하지 않는다. 한 실행이 끝나고 결과를 통합한 뒤 다음 위임을 시작한다.
+`runtime_parallel_limit`은 런타임이 공개한 양의 `max_parallel_delegations`이며, 값을 확인할 수 없거나 위임할 수 없으면 `1`이다. 동시 활성 subagent 수는 이 한도를 넘지 않는다.
 
-여러 파일·단계는 하나의 순차 목적이면 `/ha` 범위다. 보안·성능·UX처럼 독립 전문 관점을 병렬로 탐색하는 것이 결과를 실질적으로 개선할 때만 `/cast` 계열을 제안한다.
+controller는 하나의 확정 의도를 실행 단위와 의존선으로 나눈다. 독립 실행 단위만 같은 wave로 실행한다. 같은 파일을 쓰는 단위, 공유 상태나 외부 부작용을 갖는 단위, 생산자→소비자, writer→verifier는 의존선으로 연결하고 앞 wave가 끝난 뒤 시작한다. 각 wave 결과는 controller가 통합하며, 실패나 blocker가 있으면 의존 후속 wave를 시작하지 않는다.
+
+런타임이 위임을 지원하면 nontrivial standard/utility 실행 단위와 독립 verifier는 실제 subagent 호출로 라우팅한다. 사소한 단일 작업 또는 위임 불가 폴백에서만 controller가 직접 수행한다. 가용 슬롯을 채우는 것이 목적은 아니며, 수용 기준을 충족하는 최소 충분 위임만 사용한다.
+
+여러 파일·단계가 하나의 수렴 목적의 task graph라면 `/ha` 범위다. 보안·성능·UX처럼 서로 다른 관점·가설을 병렬 탐색하는 것이 목적 자체인 경우에는 `/cast` 계열을 제안한다.
 
 ## 검증 분리
 

@@ -37,6 +37,7 @@ QuestionCandidate:
   answer_owner: user | evidence | agent_default
   user_only_reason: string | null
   materially_branching: boolean
+  concrete_next_action_blocked: boolean
   branches:
     - answer: string
       execution_delta: string
@@ -52,6 +53,7 @@ QuestionCandidate:
 - `answer_owner`: 누가 답을 소유하는지 나타낸다. 개인 선호, 비공개 조직 정책, 승인, 의도는 `user`다. 저장소 상태나 API 사양은 `evidence`다.
 - `unresolved`: 관찰과 증거 확인을 마친 뒤에도 결정이 남아 있는지를 나타낸다.
 - `materially_branching`: 답에 따라 아래에서 정의한 실행 경계가 실제로 달라질 때만 `true`다.
+- `concrete_next_action_blocked`: concrete next action blocked, 즉 지금 수행할 다음 행동이 이 결정 없이는 안전하게 시작될 수 없을 때만 `true`다.
 - `branches`: 서로 다른 답과 그에 따른 구체적인 `execution_delta`를 적는다.
 - `assumption_cost`: 질문 비용과 비교한 가정 비용이다. 승인 자체가 필요한 경우에는 `approval_required`다.
 - `safe_default`: 틀려도 손쉽게 되돌릴 수 있는 기본값이다. 고위험·승인 문제에는 두지 않는다.
@@ -67,7 +69,7 @@ QuestionCandidate:
 
 세 조건을 통과한 후보는 다음처럼 분류한다.
 
-1. **`must_ask`**: `assumption_cost in {higher_than_question, approval_required}`까지 만족하는 경우다. 승인·보안·비가역성·권한 문제처럼 잘못 가정하면 안 되는 결정이므로 실행이나 외부 변경 전에 묻는다. 네 필드 중 하나라도 조건을 만족하지 않으면 `must_ask`로 분류하지 않는다.
+1. **`must_ask`**: 사용자 소유·미해결·실질 분기 상태이며, `concrete_next_action_blocked == true`, `safe_default: null`이고 승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계인 경우다. 실행이나 외부 변경 전에 묻되 discovery 예산·라운드에는 넣지 않는다. 실행 통제 경계 후보는 이 조건을 잃었다는 이유로 `decision_quality`로 우회 분류하지 않고, 증거로 해소하거나 blocker로 보고한다.
 2. **`decision_quality`**: 세 기본 조건을 만족하고, 답이 산출물의 쓰임을 바꾸는 경우다. `assumption_cost`가 `lower_than_question`이어도 다음 중 하나가 바뀌면 해당한다.
    - 산출물의 독자·사용 목적
    - 공유·공개 범위
@@ -106,19 +108,22 @@ QuestionCandidate:
 
 같은 실행 경로를 만드는 후보는 제거한다. 연관된 결정이라도 서로 독립적으로 답할 수 있으면 질문을 분리한다.
 
-`must_ask` 후보가 있으면 먼저 배치에 넣고 남은 슬롯만 `decision_quality` 후보로 채운다. `decision_quality`는 질문 수 할당량이 아니다. 적격 후보가 전혀 없으면 모든 프리셋이 0문항으로 진행한다. 다만 새 문서·회의 자료·메시지·결정 기록처럼 사람이 사용할 산출물을 만들고 그 쓰임이 불명확하면, 프리셋별로 다음만큼 선제 확인한다.
+승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계를 확인하는 `must_ask`는 실행 통제 질문이므로 discovery 예산과 라운드에 넣지 않고 즉시 처리한다. `decision_quality`는 질문 수 할당량이 아니다. 적격 후보가 전혀 없으면 모든 프리셋이 0문항으로 진행한다. 새 문서·회의 자료·메시지·결정 기록처럼 사람이 사용할 산출물을 만들고 그 쓰임이 불명확한 경우에는 프리셋별로 다음만큼만 선제 확인한다.
 
-- `auto`·`quick`: 가장 영향이 큰 `decision_quality` 후보 1개만 첫 라운드에 묻는다.
-- `standard` 프리셋은 1~3개의 가장 중요한 `decision_quality` 후보를 첫 라운드에 묻는다. `must_ask`가 슬롯을 차지하면 남은 슬롯에서 가장 영향이 큰 후보만 추가한다.
-- `deep`: blocker와 고위험 후보를 먼저 두고, 남은 슬롯에서 최대 4개의 `decision_quality` 후보를 묻는다.
+`must_ask` 실행 통제 질문은 별도 전송 경로로 즉시 보낸다. 이 경로에는 QuestionBudgetState 사전검사 또는 discovery 배치 공식을 적용하지 않으며, discovery 카운터를 갱신하지 않는다. `remaining_total_budget`과 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`은 `decision_quality` 배치에만 적용한다.
 
-질문 라운드는 서로 관련된 실질 결정 질문을 한 번에 전달하고 답을 받은 단위다. 한 라운드에는 최대 4개만 묻는다. 호출당 한도가 양의 정수이면 `normalized_runtime_limit = runtime_limit`이고, `unknown`이거나 유효하지 않으면 `normalized_runtime_limit = 1`이다. 실제 배치 크기는 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`이다. 구조화 질문 도구가 없으면 한 라운드에 자유 응답형 질문 하나만 묻는다.
+- `none`은 `decision_quality` 후보를 선제 질문하지 않는다. 관찰 근거가 없으면 안전한 기본값을 `assumptions`에 기록하고 진행하며, 안전한 기본값이 없으면 실행하지 말고 blocker로 보고한다.
+- `quick`: 가장 영향이 큰 `decision_quality` 후보 1개만 첫 라운드에 묻는다.
+- `standard` 프리셋은 1~3개의 가장 중요한 `decision_quality` 후보를 첫 라운드에 묻는다.
+- `deep`: 최대 4개의 `decision_quality` 후보를 첫 라운드에 묻는다.
 
-실질 질문 배치를 실제로 보낸 직후에는 같은 `QuestionBudgetState`에 `questions_asked_total += batch_size`와 `substantive_rounds_completed += 1`을 적용한다. `batch_size`는 실제 전송된 질문 수여야 한다. 그 뒤 `remaining_total_budget = effective_max_questions - questions_asked_total`로 다시 계산한 값으로 다음 배치를 제한한다. 따라서 새 라운드에서 예산을 초기화하거나 이전 배치 수를 다시 사용할 수 없다.
+`decision_quality` 질문 라운드는 서로 관련된 실질 결정 질문을 한 번에 전달하고 답을 받은 단위다. 한 라운드에는 최대 4개만 묻는다. 호출당 한도가 양의 정수이면 `normalized_runtime_limit = runtime_limit`이고, `unknown`이거나 유효하지 않으면 `normalized_runtime_limit = 1`이다. 실제 배치 크기는 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`이다. 구조화 질문 도구가 없으면 한 라운드에 자유 응답형 질문 하나만 묻는다.
+
+`decision_quality` 배치를 실제로 보낸 직후에는 같은 `QuestionBudgetState`에 `questions_asked_total += batch_size`와 `substantive_rounds_completed += 1`을 적용한다. `batch_size`는 실제 전송된 질문 수여야 한다. 그 뒤 `remaining_total_budget = effective_max_questions - questions_asked_total`로 다시 계산한 값으로 다음 배치를 제한한다. 따라서 새 라운드에서 예산을 초기화하거나 이전 배치 수를 다시 사용할 수 없다.
 
 | preset | 기본 질문 상한 | 라운드당 상한 | 기본 라운드 상한 | 용도 |
 |---|---:|---:|---:|---|
-| `auto` | 4 | 4 | 2 | `/ha` 직접 호출의 균형형 기본값 |
+| `none` | 0 | 0 | 0 | `/ha` 직접 호출의 선제 discovery 없음 |
 | `quick` | 4 | 4 | 1 | 한 번의 빠른 확인 |
 | `standard` | 8 | 4 | 2 | 답변 후 재평가가 필요한 표준 발견 |
 | `deep` | 12 | 4 | 3 | 고위험 단일 문제의 단계적 확인 |
@@ -168,7 +173,7 @@ QuestionCandidate:
 
 요청: “영업 대시보드를 개선해줘.”
 
-관찰 후에도 1차 성공 기준을 사용자만 결정할 수 있고, 답에 따라 측정·UI·쿼리가 달라진다면 질문한다.
+관찰 후에도 1차 성공 기준을 사용자만 결정할 수 있고, 답에 따라 측정·UI·쿼리가 달라진다면 질문 tier에서는 `decision_quality`로 질문할 수 있다.
 
 ```yaml
 decision: 1차 성공 기준
@@ -177,6 +182,7 @@ evidence_checked: [사용자 요청, 저장소 대시보드 구현, 현재 지�
 answer_owner: user
 user_only_reason: 제품 우선순위는 저장소에서 확인할 수 없음
 materially_branching: true
+concrete_next_action_blocked: false
 branches:
   - answer: 로딩 시간
     execution_delta: 쿼리와 렌더링 병목을 우선 최적화
@@ -186,8 +192,8 @@ branches:
     execution_delta: 필터·일괄 작업·리드 우선순위를 우선 변경
 risk_if_assumed: high
 assumption_cost: higher_than_question
-safe_default: null
-question_class: must_ask
+safe_default: 로딩 시간
+question_class: decision_quality
 priority: high
 ```
 
@@ -204,6 +210,7 @@ evidence_checked: [회의록, 캘린더 초대, 기존 협업 문서]
 answer_owner: user
 user_only_reason: 자료의 공유·승인 목적은 조직 문서만으로 확정할 수 없음
 materially_branching: true
+concrete_next_action_blocked: false
 branches:
   - answer: 내부 진행용 워킹 문서
     execution_delta: 쟁점·질문·미확정 항목을 중심으로 작성

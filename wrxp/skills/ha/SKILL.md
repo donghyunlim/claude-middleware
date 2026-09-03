@@ -1,13 +1,13 @@
 ---
 name: ha
-description: Use when a request has one convergent line of work and should be reasoned about, clarified only where necessary, executed serially, and verified.
+description: Use when a request has one convergent line of work and should be reasoned about, clarified only where necessary, executed as a dependency graph, and verified.
 argument-hint: "[요청 내용]"
 level: 4
 ---
 
 # /ha — Common Knife Engine
 
-`/ha`는 하나의 수렴하는 작업을 관찰하고, 필요한 사용자 결정만 질문하고, 역할에 맞는 모델로 순차 실행한 뒤 검증하는 공통 엔진이다. `/haq`, `/haqq`, `/haqqq`는 이 엔진의 질문 상한만 바꾸는 thin shim이다.
+`/ha`는 하나의 수렴하는 작업을 관찰하고, 필요한 사용자 결정만 질문하고, 역할에 맞는 모델로 의존성 그래프를 실행한 뒤 검증하는 공통 엔진이다. `/haq`, `/haqq`, `/haqqq`는 이 엔진의 질문 상한만 바꾸는 thin shim이다.
 
 모든 사용자 대상 출력은 한국어로 작성한다. 사용자가 다른 언어 또는 형식을 명시하면 그 요구를 우선한다.
 
@@ -18,20 +18,18 @@ $ARGUMENTS
 ## 핵심 계약
 
 ```yaml
-execution_mode: serial
-max_concurrency: 1
-question_preset: auto
+question_preset: none
 min_questions: 0
-max_questions: 4
-max_questions_per_round: 4
-max_rounds: 2
+max_questions: 0
+max_questions_per_round: 0
+max_rounds: 0
 ```
 
-- `max_concurrency: 1`은 동시 실행을 금지한다. 필요하면 worker와 verifier를 한 명씩 순차 호출할 수 있다.
 - 질문 수는 항상 상한이다. 적격 질문이 없으면 0개가 정상이다.
+- 직접 `/ha`의 `none` 프리셋은 선제 discovery 질문을 0개로 둔다. 승인·보안·비밀·외부 변경·파괴적·불가역 경계는 discovery 예산 밖의 실행 통제 게이트이므로 즉시 확인한다.
 - 질문 프리셋은 모델 라우팅에 영향을 주지 않는다.
-- 여러 파일이나 단계가 있다는 이유만으로 병렬 체계로 전환하지 않는다.
-- 독립적인 전문 관점을 병렬 탐색해야 품질이 실질적으로 좋아질 때만 `/cast` 계열을 제안한다.
+- 하나의 확정 의도는 dependency DAG로 나누며, 독립 실행 단위는 런타임 한도 안에서 병렬 위임할 수 있다.
+- `/ha`의 task-graph 병렬화와 `/cast`의 관점·가설 fleet을 구분한다.
 - 상세한 내부 사고 과정을 노출하지 않는다. 사용자에게는 결정, 가정, 실행 경로, 검증 근거만 보여준다.
 
 ## 호출 설정
@@ -39,7 +37,7 @@ max_rounds: 2
 직접 `/ha` 호출에는 위 기본값을 적용한다. tier shim이 아래 키를 전달하면 질문 관련 값만 덮어쓴다.
 
 ```yaml
-question_preset: auto | quick | standard | deep
+question_preset: none | quick | standard | deep
 min_questions: 0
 max_questions: integer
 max_questions_per_round: 4
@@ -47,8 +45,6 @@ max_rounds: integer
 extended_max_questions: integer | null
 extended_max_rounds: integer | null
 extension_requires_user_consent: boolean
-execution_mode: serial
-max_concurrency: 1
 ```
 
 알 수 없는 설정 키는 무시하고 기록한다. shim이 모델명, 실행자 역할, 검증법 또는 병렬성을 덮어쓰려 하면 무시한다.
@@ -67,8 +63,9 @@ CAPABILITY_RESOLVE
   → OBSERVE
   → IDENTIFY_DECISIONS
   → QUESTION_GATE
-      ├─ 적격 질문 있음 → ASK → IDENTIFY_DECISIONS
-      └─ 적격 질문 없음
+      ├─ must_ask 있음 → EXECUTION_CONTROL_ASK → IDENTIFY_DECISIONS
+      ├─ 예산 내 decision_quality 있음 → DISCOVERY_ASK → IDENTIFY_DECISIONS
+      └─ 전송할 질문 없음
   → COMMIT_INTENT
   → ROUTE_AND_EXECUTE
   → VERIFY
@@ -91,7 +88,7 @@ REPAIR_CHECKPOINT
 
 - 공급자와 활성 모델
 - 선택 가능한 모델과 사고 수준
-- 에이전트 위임 및 독립 verifier 문맥 지원 여부
+- 에이전트 위임, 독립 verifier 문맥 및 동시 위임 한도
 - 구조화 질문 도구와 호출당 질문 수 제한
 - 파일, 검색, 웹, 테스트 등 사용 가능한 도구
 
@@ -123,7 +120,7 @@ Observation:
   unresolved_decisions: [string]
 ```
 
-목표 또는 산출물이 한 갈래로 수렴하지 않고 독립적인 탐색 축이 여러 개라면 실행 전에 `/cast` 계열이 더 적합한지 판단한다. 단지 작업량이 크다는 이유로 전환하지 않는다.
+목표 또는 산출물이 한 갈래로 수렴하지 않고 독립적인 관점·가설 탐색이 핵심이면 실행 전에 `/cast` 계열이 더 적합한지 판단한다. 하나의 확정 의도를 이루는 독립 실행 단위가 여러 개인 것은 `/ha`의 task graph로 처리한다.
 
 ## 2. IDENTIFY_DECISIONS
 
@@ -142,13 +139,15 @@ Observation:
 
 `references/questioning.md`에 따라 각 후보를 `must_ask`, `decision_quality`, `skip`으로 분류한다.
 
-- `must_ask`: 관찰 뒤에도 남은 사용자 소유 결정이고, 답이 실행을 바꾸며, 승인·보안·비가역성 또는 높은 가정 비용이 걸린다. 실행이나 외부 변경 전에 반드시 묻는다.
+- `must_ask`: 사용자 소유·미해결 상태이고 concrete next action blocked이며 `safe_default: null`인 승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계다. 실행 전에 반드시 묻고 discovery 예산에는 넣지 않는다.
 - `decision_quality`: 같은 세 기본 조건을 만족하고 산출물의 독자·용도·공유 범위·결정 권한·참석자·수용 기준을 바꾼다. 안전한 기본값이 있어도 새 문서·회의 자료·메시지·결정 기록의 쓰임을 바꾸면 tier 예산 안에서 선제적으로 묻는다.
 - `skip`: 증거로 확인할 수 있거나 모든 답이 같은 실행으로 이어지거나 표현만 달라지는 항목이다.
 
-질문 수는 할당량이 아니다. 다만 `standard` 프리셋에서는 `must_ask`를 우선한 뒤 남은 첫 라운드에 영향이 큰 `decision_quality` 후보 1~3개를 확인한다. 후보가 없으면 0문항으로 바로 진행한다.
+질문 수는 할당량이 아니다. `none` 프리셋은 선제 discovery 질문을 0개로 두고, 실행 통제 게이트 외 후보는 관찰 근거 또는 기록한 안전한 기본값으로 진행한다. 안전한 기본값이 없으면 실행하지 말고 blocker로 보고한다. `quick`·`standard`·`deep` 프리셋은 질문 티어 계약에 따라 `decision_quality` 후보를 물을 수 있다. 후보가 없으면 0문항으로 바로 진행한다.
 
-구조화 질문 도구가 있으면 런타임 스키마와 한도를 따르되, 한 라운드에 최대 4개만 묻는다. 호출당 한도가 양의 정수이면 `normalized_runtime_limit = runtime_limit`이고, `unknown`이거나 유효하지 않으면 `normalized_runtime_limit = 1`이다. 실제 배치 크기는 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`이다. 의미상 배타적인 선택지를 만들 수 없거나 구조화 도구가 없으면 가장 중요한 질문 하나를 짧은 자유 응답형으로 묻는다.
+`must_ask` 실행 통제 질문은 별도 전송 경로로 즉시 보낸다. 이 경로에는 QuestionBudgetState 사전검사 또는 discovery 배치 공식을 적용하지 않으며, discovery 카운터를 갱신하지 않는다. `remaining_total_budget`과 배치 크기 공식은 `decision_quality` 배치에만 적용한다.
+
+`decision_quality` 배치는 구조화 질문 도구의 런타임 스키마와 한도를 따르되, 한 라운드에 최대 4개만 묻는다. 호출당 한도가 양의 정수이면 `normalized_runtime_limit = runtime_limit`이고, `unknown`이거나 유효하지 않으면 `normalized_runtime_limit = 1`이다. 실제 배치 크기는 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`이다. 의미상 배타적인 선택지를 만들 수 없거나 구조화 도구가 없으면 가장 중요한 질문 하나를 짧은 자유 응답형으로 묻는다.
 
 다음 상태를 유지한다.
 
@@ -160,7 +159,7 @@ QuestionBudgetState:
   effective_max_rounds: max_rounds
 ```
 
-실질 질문 배치를 보내기 전에 `questions_asked_total < effective_max_questions`와 `substantive_rounds_completed < effective_max_rounds`를 모두 확인한다. 배치를 실제로 보낸 직후 같은 상태 객체에 `questions_asked_total += batch_size`와 `substantive_rounds_completed += 1`을 적용한다. `batch_size`는 제안한 수가 아니라 실제로 보낸 질문 수다. 이어서 `remaining_total_budget = effective_max_questions - questions_asked_total`로 다시 계산한다. 각 답변 뒤에 결정을 다시 계산한다. 적격 질문이 사라지면 예산이 남아도 즉시 종료한다. 기본 상한에 도달하면 질문을 멈춘다.
+`decision_quality` 배치를 보내기 전에 `questions_asked_total < effective_max_questions`와 `substantive_rounds_completed < effective_max_rounds`를 모두 확인한다. 배치를 실제로 보낸 직후 같은 상태 객체에 `questions_asked_total += batch_size`와 `substantive_rounds_completed += 1`을 적용한다. `batch_size`는 제안한 수가 아니라 실제로 보낸 질문 수다. 이어서 `remaining_total_budget = effective_max_questions - questions_asked_total`로 다시 계산한다. 각 답변 뒤에 결정을 다시 계산한다. 적격 질문이 사라지면 예산이 남아도 즉시 종료한다. 기본 상한에 도달하면 질문을 멈춘다.
 
 `deep` 프리셋은 명시적인 확장 동의를 받은 뒤에만 `effective_max_questions = extended_max_questions`, `effective_max_rounds = extended_max_rounds`로 바꾼다. 확장 동의 제어 질문은 `questions_asked_total += 1`만 적용하고 `substantive_rounds_completed`는 증가시키지 않는다. 이 제어 질문은 기본 상한에 도달한 뒤에도 새 실질 질문이 남고 `questions_asked_total < extended_max_questions`일 때 한 번만 허용한다. 사용자가 동의하지 않으면 즉시 질문을 끝낸다. 질문 총수가 20개를 넘거나 실질 질문 라운드가 5개를 넘도록 확장하지 않는다. 질문 상한에 도달했는데 승인·보안·비가역 blocker가 남으면 임의로 진행하지 않는다.
 
@@ -195,7 +194,17 @@ CommittedIntent:
 - **standard executor**: 일반 코드 작업, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서
 - **utility executor**: 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경과 기계 검사
 
-실행 단위마다 한 명만 활성화한다. 이전 결과를 통합한 뒤 다음 위임을 시작한다. 작업 범위와 수용 기준이 충분히 명확하면 controller가 직접 수행할 수도 있다.
+```yaml
+RuntimeParallelism:
+  max_parallel_delegations: positive_integer | unknown
+  runtime_parallel_limit:
+    when_can_delegate_false: 1
+    when_max_unknown: 1
+    when_max_positive: max_parallel_delegations
+  dependency_edges: [same_file_write, shared_state, external_side_effect, producer_consumer, writer_verifier]
+```
+
+controller는 확정 의도를 실행 단위와 의존선으로 나눈다. 런타임이 공개한 동시 위임 한도 안에서 의존성이 없는 단위만 같은 wave로 위임하며, 한도를 확인할 수 없거나 위임할 수 없으면 `runtime_parallel_limit = 1`로 둔다. 같은 파일 쓰기, 공유 상태, 외부 부작용, 생산자→소비자, writer→verifier는 의존선으로 두어 직렬 wave로 실행한다. 한 wave의 결과를 통합하고 실패·blocker를 처리한 뒤에만 의존 후속 wave를 시작한다. 사소한 단일 작업은 controller가 직접 수행할 수 있다.
 
 위임에는 역할극 대신 다음을 포함한다.
 

@@ -82,7 +82,7 @@ class WrxpInvariantTests(unittest.TestCase):
                 f"README claims nonexistent /ha artifact: {artifact}",
             )
 
-    def test_current_knife_docs_do_not_reintroduce_question_minimums_or_fleet(self):
+    def test_current_knife_docs_describe_runtime_bounded_task_graph_parallelism(self):
         readme = (WRXP_ROOT / "README.md").read_text()
         ha = (WRXP_ROOT / "docs/benchmark/ha.md").read_text()
         haq = (WRXP_ROOT / "docs/benchmark/haq.md").read_text()
@@ -95,36 +95,35 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertNotIn("균형 잡힌 실행 (5-8개 질문)", ha)
         self.assertNotIn("심층 실행 (9-20개 질문)", ha)
         self.assertIn("0문항", haq)
-        self.assertIn("`max_concurrency=1`", haq)
+        self.assertIn("런타임이 공개한 동시 위임 한도", haq)
         self.assertIn("최대 8개", haqq)
         self.assertIn("한 라운드에 최대 4개", haqq)
         self.assertNotIn("5~8개 핵심 질문", haqq)
         self.assertNotIn("2개씩 묶어서", haqq)
         self.assertIn("0~12개", haqqq)
         self.assertIn("명시적 동의", haqqq)
-        self.assertIn("`max_concurrency=1`", haqqq)
-        self.assertIn("`/cast`", haqqq)
-        self.assertNotIn("여러 전문가 AI 동시 투입", haqqq)
+        self.assertIn("런타임이 공개한 동시 위임 한도", haqqq)
+        self.assertIn("task graph", haqqq)
         self.assertNotIn("최대 3회까지 반복", ha)
         self.assertIn("5·15·25", ha)
         self.assertIn("10·20·30", ha)
         for current_row in (
-            "| /wrxp:haq | 0-4 | 1 | 순차 |",
-            "| /wrxp:haqq | 0-8 | 2 | 순차 |",
-            "| /wrxp:haqqq | 0-12 (동의 시 max 20) | 3 (동의 시 5) | 순차 |",
+            "| /wrxp:haq | 0-4 | 1 | runtime-bounded task graph |",
+            "| /wrxp:haqq | 0-8 | 2 | runtime-bounded task graph |",
+            "| /wrxp:haqqq | 0-12 (동의 시 max 20) | 3 (동의 시 5) | runtime-bounded task graph |",
         ):
             self.assertIn(current_row, readme)
         self.assertIn("질문 깊이와 모델 라우팅은 서로 독립적인 축", readme)
         self.assertIn("## Team family 7단계 파이프라인", readme)
         self.assertIn(
-            "Knife family인 `/ha` 계열은 위에서 설명한 공통 상태 흐름",
+            "Knife family인 `/ha` 계열은 위에서 설명한 runtime-bounded dependency task graph 계약",
             readme,
         )
         self.assertIn("어떤 tier에서도 0문항으로 종료", readme)
-        self.assertIn("Team family에서만", readme)
+        self.assertIn("관점·가설 fleet", readme)
         self.assertNotIn("Phase 1이 HIGH로 판정할 때만", readme)
         self.assertLess(
-            research.index("현재 계약 정정 (0.1.25)"),
+            research.index("현재 계약 정정 (0.1.26)"),
             research.index("## Executive Summary"),
         )
 
@@ -165,7 +164,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.25"},
+            {"0.1.26"},
             {plugin_version, package_version, marketplace_version},
         )
 
@@ -187,6 +186,7 @@ class WrxpInvariantTests(unittest.TestCase):
             "available_models",
             "supported_reasoning_efforts",
             "can_delegate",
+            "max_parallel_delegations",
             "can_isolate_verifier_context",
         ):
             self.assertIn(capability, routing)
@@ -194,17 +194,17 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertIn("같은 모델에서", routing)
         self.assertIn("`opus`, `sonnet`, `haiku`", routing)
         self.assertIn("Claude API 모델 ID", routing)
-        self.assertIn("동시에 실행하지 않는다", routing)
-        self.assertIn(
-            "한 실행이 끝나고 결과를 통합한 뒤 다음 위임",
-            routing,
-        )
+        self.assertIn("runtime_parallel_limit", routing)
+        self.assertIn("독립 실행 단위만 같은 wave", routing)
+        self.assertIn("동시 활성 subagent 수", routing)
 
         benchmark = (
-            WRXP_ROOT / "docs/benchmark/model-routing-0.1.25.md"
+            WRXP_ROOT / "docs/benchmark/model-routing-0.1.26.md"
         ).read_text()
         self.assertIn("모델 분류나 동률 판단 성향을 바꾸지 않는다", benchmark)
         self.assertNotIn("동률 판단의 비용 성향만", benchmark)
+        self.assertIn("실제 subagent 호출", routing)
+        self.assertIn("최소 충분 위임", routing)
 
     def test_question_policy_requires_user_ownership_and_execution_delta(self):
         questioning = (
@@ -224,6 +224,7 @@ class WrxpInvariantTests(unittest.TestCase):
             "evidence_checked",
             "answer_owner",
             "materially_branching",
+            "concrete_next_action_blocked",
             "execution_delta",
             "risk_if_assumed",
             "assumption_cost",
@@ -237,10 +238,11 @@ class WrxpInvariantTests(unittest.TestCase):
             "`unresolved == true`",
             "`answer_owner == user`",
             "`materially_branching == true`",
-            "`assumption_cost in {higher_than_question, approval_required}`",
+            "`concrete_next_action_blocked == true`",
+            "`safe_default: null`",
         ):
             self.assertIn(gate, questioning)
-        self.assertIn("네 필드 중 하나라도", questioning)
+        self.assertIn("실행 통제 경계 후보는 이 조건을 잃었다는 이유로", questioning)
 
     def test_question_policy_promotes_user_owned_artifact_choices(self):
         """Meeting-brief choices must not disappear behind a reversible default."""
@@ -268,6 +270,64 @@ class WrxpInvariantTests(unittest.TestCase):
             questioning,
         )
 
+    def test_direct_ha_has_a_zero_question_none_preset(self):
+        """Direct /ha has no discovery budget; gates are a separate control path."""
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        questioning = (
+            WRXP_ROOT / "skills/ha/references/questioning.md"
+        ).read_text()
+
+        self.assertEqual(
+            {
+                "question_preset": "none",
+                "min_questions": 0,
+                "max_questions": 0,
+                "max_questions_per_round": 0,
+                "max_rounds": 0,
+            },
+            parse_flat_yaml_block_after(engine, "## 핵심 계약"),
+        )
+        self.assertIn("none | quick | standard | deep", engine)
+        self.assertIn("| `none` | 0 | 0 | 0 |", questioning)
+        self.assertIn("승인·보안·비밀·외부 변경·파괴적·불가역", engine)
+        self.assertIn("`concrete_next_action_blocked == true`", questioning)
+        self.assertIn("safe_default: null", questioning)
+        self.assertIn("안전한 기본값이 없으면 실행하지 말고 blocker", questioning)
+        self.assertNotIn("`must_ask`가 슬롯을 차지하면", questioning)
+        self.assertNotIn("`deep`: blocker와 고위험 후보를 먼저", questioning)
+
+    def test_execution_control_questions_bypass_discovery_budget_state(self):
+        """Approval gates must never consume or be capped by discovery batches."""
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        questioning = (
+            WRXP_ROOT / "skills/ha/references/questioning.md"
+        ).read_text()
+
+        for contract in (engine, questioning):
+            self.assertIn("별도 전송 경로", contract)
+            self.assertIn("QuestionBudgetState 사전검사", contract)
+            self.assertIn("갱신하지 않는다", contract)
+            self.assertIn("`decision_quality` 배치에만", contract)
+        self.assertIn("must_ask 있음 → EXECUTION_CONTROL_ASK", engine)
+        self.assertIn("예산 내 decision_quality 있음 → DISCOVERY_ASK", engine)
+
+    def test_runtime_caps_and_dependency_waves_have_a_structured_contract(self):
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+
+        for contract in (
+            "max_parallel_delegations: positive_integer | unknown",
+            "runtime_parallel_limit:",
+            "when_can_delegate_false: 1",
+            "when_max_unknown: 1",
+            "when_max_positive: max_parallel_delegations",
+            "same_file_write",
+            "shared_state",
+            "external_side_effect",
+            "producer_consumer",
+            "writer_verifier",
+        ):
+            self.assertIn(contract, engine)
+
     def test_tier_shims_only_supply_question_presets(self):
         expected = {
             "haq": {
@@ -279,8 +339,6 @@ class WrxpInvariantTests(unittest.TestCase):
                 "extended_max_questions": None,
                 "extended_max_rounds": None,
                 "extension_requires_user_consent": False,
-                "execution_mode": "serial",
-                "max_concurrency": 1,
             },
             "haqq": {
                 "question_preset": "standard",
@@ -291,8 +349,6 @@ class WrxpInvariantTests(unittest.TestCase):
                 "extended_max_questions": None,
                 "extended_max_rounds": None,
                 "extension_requires_user_consent": False,
-                "execution_mode": "serial",
-                "max_concurrency": 1,
             },
             "haqqq": {
                 "question_preset": "deep",
@@ -303,8 +359,6 @@ class WrxpInvariantTests(unittest.TestCase):
                 "extended_max_questions": 20,
                 "extended_max_rounds": 5,
                 "extension_requires_user_consent": True,
-                "execution_mode": "serial",
-                "max_concurrency": 1,
             },
         }
         for name, expected_preset in expected.items():
@@ -482,22 +536,52 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertIn("references/questioning.md", skill)
         self.assertIn("references/model-routing.md", skill)
         self.assertIn("references/verification.md", skill)
-        self.assertIn("max_concurrency: 1", skill)
+        self.assertIn("runtime_parallel_limit", skill)
         self.assertIn("질문 프리셋은 모델 라우팅에 영향을 주지 않는다", skill)
 
         core = parse_flat_yaml_block_after(skill, "## 핵심 계약")
         self.assertEqual(
             {
-                "execution_mode": "serial",
-                "max_concurrency": 1,
-                "question_preset": "auto",
+                "question_preset": "none",
                 "min_questions": 0,
-                "max_questions": 4,
-                "max_questions_per_round": 4,
-                "max_rounds": 2,
+                "max_questions": 0,
+                "max_questions_per_round": 0,
+                "max_rounds": 0,
             },
             core,
         )
+
+    def test_readme_lists_supported_claude_and_codex_install_paths(self):
+        readme = (WRXP_ROOT / "README.md").read_text()
+
+        for command in (
+            "codex plugin marketplace add donghyunlim/claude-middleware --ref main",
+            "codex plugin add wrxp@donghyunlim",
+            "codex plugin marketplace upgrade donghyunlim",
+            "claude plugin marketplace add donghyunlim/claude-middleware",
+            "claude plugin install wrxp@donghyunlim",
+            "claude plugin marketplace update donghyunlim",
+            "claude plugin update wrxp@donghyunlim",
+        ):
+            self.assertIn(command, readme)
+        self.assertNotIn(
+            "claude plugin marketplace add github:donghyunlim/claude-middleware",
+            readme,
+        )
+
+    def test_haqqq_documents_task_units_and_verification_not_a_opinion_fleet(self):
+        benchmark = (WRXP_ROOT / "docs/benchmark/haqqq.md").read_text()
+
+        self.assertIn("task-unit 라우팅", benchmark)
+        self.assertIn("독립 verifier", benchmark)
+        self.assertIn("관점·가설 fleet은 `/cast`", benchmark)
+        for stale_claim in (
+            "여러 AI의 답변이 서로 다를 때",
+            "다수결",
+            "여러 독립 AI의 교차 검증",
+            "여러 AI가 독립 분석 후 종합",
+        ):
+            self.assertNotIn(stale_claim, benchmark)
 
     def test_knife_frontmatter_preserves_claude_plugin_extensions(self):
         for name in ("ha", "haq", "haqq", "haqqq"):

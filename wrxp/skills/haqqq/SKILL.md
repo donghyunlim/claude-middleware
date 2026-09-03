@@ -26,8 +26,6 @@ max_rounds: 3
 extended_max_questions: 20
 extended_max_rounds: 5
 extension_requires_user_consent: true
-execution_mode: serial
-max_concurrency: 1
 ```
 
 12개와 3라운드는 기본 상한이며 라운드당 최대 4개만 묻는다. 적격 질문이 없으면 0개로 실행한다. 기본 상한 이후에도 사용자만 결정할 수 있는 고위험 항목이 남으면 계속 질문할지 먼저 확인한다. 사용자가 동의한 경우에만 실질적인 질문을 최대 5라운드까지 진행하고, 사용자에게 제시한 모든 질문을 합쳐 최대 20개까지 확장한다. 확장 동의 질문도 총 질문 수에 포함한다. 동의가 없거나 절대 상한에 도달하면 위험한 기본값으로 진행하지 않고 blocker를 보고한다.
@@ -49,5 +47,5 @@ shim은 task-type 질문 목록, 모델명, 실행자 역할 또는 검증 규�
 
 ```text
 🎚️ Tier: haqqq · deep · 질문 0~12개/3라운드 · 동의 시 절대 상한 20개/5라운드
-🗡️ 실행: serial · max_concurrency=1
+🗡️ 실행: runtime-bounded task graph
 ```

@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.25-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.26-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -12,7 +12,7 @@
 
 wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
-- **🗡️ Knife family (`ha` / `haq` / `haqq` / `haqqq`)** — **단일 사고 갈래, 직렬 실행**. 동시 dispatching OFF. 문제가 한 갈래로 수렴할 때 사용한다. `/ha`가 질문·라우팅·실행·검증의 canonical engine이며 나머지 셋은 질문 상한만 다른 thin shim이다.
+- **🗡️ Knife family (`ha` / `haq` / `haqq` / `haqqq`)** — **단일 수렴 목표의 task graph 실행**. 독립 단위만 런타임 한도 안에서 병렬 위임한다. `/ha`가 질문·라우팅·실행·검증의 canonical engine이며 나머지 셋은 질문 상한만 다른 thin shim이다.
 - **🛡️ Team family (`cast` / `castq` / `castqq` / `castqqq`)** — **Fleet ON, 병렬 specialized subagents**. Phase 1/5/6에서 3-20개 agent 병렬 dispatch. 다면 분석·교차 검증·여러 관점이 가치를 더할 때. /cast 가 canonical engine, 나머지 셋은 thin shim.
 
 두 family는 `shared/reasoning-framework.md`의 9원칙을 공유한다. 선택 기준: **사고의 흐름이 하나의 갈래면 /ha, 여러 갈래의 병렬 탐색이 본질이면 /cast**.
@@ -21,24 +21,24 @@ wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
 `/ha`가 유일한 registry다. Codex에서는 종합 판단=`gpt-5.6-sol`, 일반 구현·중간 리팩터링=`gpt-5.6-terra`, 단순 탐색·국소 변경=`gpt-5.6-luna`를 선호한다. Claude에서는 같은 역할을 Opus 5, Sonnet 5, Haiku 4.5에 대응한다. 정확한 모델과 사고 수준은 런타임 가용성을 먼저 확인하고, 지원되지 않으면 같은 역할의 가용 모델 또는 런타임 기본 모델로 폴백한다.
 
-`/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** `max_concurrency: 1`은 동시 실행을 금지하지만 worker와 verifier를 한 명씩 순차 호출하는 것은 허용한다.
+`/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
 추가로 `breakdown`, `decompose`, `agent-match` orchestration 축이 있다 (재귀 분해 + DAG 병렬). 총 11개 skill.
 
-**핵심 철학**: Knife family는 controller가 의도를 통합하고 작업 속성에 맞는 단일 executor와 verifier를 순차 사용한다. Team family는 독립적인 전문 관점의 병렬 탐색이 필요한 경우에만 Fleet Dispatching을 사용한다.
+**핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다. Team family는 관점·가설 fleet으로 다면 탐색이 필요한 경우에 사용한다.
 
-wrxp의 **Uncertainty-Driven Questioning**은 질문 전에 대화·파일·문서·도구를 먼저 확인한다. 그 뒤에도 남은 사용자 소유 결정을 `must_ask`와 `decision_quality`로 나눈다. 전자는 승인·보안·비가역성처럼 잘못 가정하면 안 되는 결정이고, 후자는 자료의 독자·용도·공유 범위·결정 권한처럼 산출물의 쓰임을 바꾸는 선택이다. 질문 예산은 항상 상한이므로 두 종류의 후보가 모두 없으면 모든 tier에서 질문 0개가 정상이다.
+wrxp의 **Uncertainty-Driven Questioning**은 질문 전에 대화·파일·문서·도구를 먼저 확인한다. 직접 `/ha`는 `none` preset(0문항·0라운드)으로 실행하며, 승인·보안·비밀·외부 변경·파괴적·불가역 경계만 discovery 예산 밖에서 즉시 확인한다. `/haq`·`/haqq`·`/haqqq`는 질문 tier에 따라 `decision_quality` 선택을 물을 수 있다.
 
 Knife family의 수정 루프는 실제 결함이 남아 있는 동안 횟수만으로 중단하지 않는다. 검증 뒤에도 수정이 더 필요하면 5·15·25회에는 에이전트가 원래 목적·계획·수정의 필수성을 점검하고, 10·20·30회에는 진행 상황과 다음 선택을 요약해 사용자 판단을 받는다. 모든 수용 기준이 충족되면 배수에 도달했더라도 바로 완료하며, 새 권한·외부 변경·보안 경계 확대는 체크포인트를 기다리지 않고 즉시 확인한다.
 
-wrxp의 **Fleet Dispatching**은 team family(`/cast` 계열)에 적용된다 — tier별로 dispatching 상한선을 정하여 공격적 병렬화를 허용하면서도 resource 폭주를 방지한다. /cast는 1-5, /castq는 phase당 5, /castqq는 8, /castqqq는 12(critical 시 20) agent를 Phase 1/5/6 각 phase에 dispatch한다. 총 cluster size는 15-60 agents, /castqqq는 unlimited budget이다. 반면 knife family(`/ha` 계열)는 tier와 무관하게 `max_concurrency: 1`이며, 하나의 수렴하는 작업을 순차 실행한다.
+wrxp의 **Fleet Dispatching**은 team family(`/cast` 계열)에 적용된다 — tier별로 dispatching 상한선을 정하여 공격적 병렬화를 허용하면서도 resource 폭주를 방지한다. Knife family(`/ha` 계열)는 하나의 수렴 목표를 dependency DAG로 실행하고, 독립 unit만 런타임 한도 안에서 병렬 위임한다.
 
 ## 왜 쓰는가 (Why use it?)
 
 - **환각 감소 (Hallucination reduction)**: Chain-of-Verification 4-step 프로세스(arXiv:2309.11495) 주입으로 longform generation hallucination 50-70% 감소. Reflexion(arXiv:2303.11366) self-reflection 루프로 HumanEval pass@1 80%→91% (+11%). Research/Decision task에서는 CoVe 적용이 mandatory다.
 - **질문 효율 (Question efficiency)**: 증거로 확인할 사실은 먼저 조사하고, 반드시 확인해야 하는 결정과 산출물의 쓰임을 바꾸는 사용자 선택만 질문한다. 모든 질문 수는 상한이며, 어떤 tier에서도 0문항으로 종료할 수 있다.
 - **Task type 커버리지 (Task type coverage)**: NBER WP #34255 (2025년, 1.1M ChatGPT 대화 분석) 분류 체계와 Anthropic Clio 데이터를 매핑하여 9가지 task type 확정. analysis(신규)를 포함한 9 types은 사용자 workload 전 스펙트럼을 cover한다.
-- **병렬 전문가 투입 (Fleet Dispatching)**: Team family에서만 tier별 specialized subagent를 Phase 1(uncertainty 감지), Phase 5(execution), Phase 6(검증)에 동시 dispatch한다. Knife family는 `max_concurrency: 1`을 유지한다.
+- **병렬 실행**: Knife family는 독립 task unit을 런타임 한도 안에서 실행하고, Team family는 관점·가설 fleet을 동시 dispatch한다.
 - **Loop-Back Safety**: 8가지 loop-back 규칙(Ambiguity Spiral, Verification Fail, Scope Creep, Data Unavailable, Complexity Underestimate, Reviewer Deadlock, Token Exhaustion, User Timeout)과 Global Circuit Breaker가 무한 루프와 scope drift를 자동 차단한다.
 - **Expert Discovery 패턴 내재화**: 19개의 전문가 discovery 프로토콜(SPIKES, MI, SPIN, Sandler, Five Whys, JTBD, MECE, Calgary-Cambridge 등)에서 추출한 10개 Universal Principle이 파이프라인 설계 전반에 내재되어 있다. Sandler Upfront Contract는 Phase 2 preamble로, Five Whys는 Phase 1-2 depth probe로, MI Reflective Summarization은 Phase 3 통합으로 이어진다.
 - **Role Prompting Fix**: KAIST 2025 연구에 따라 persona 기반 prompting("You are a senior X")이 MMLU 등 factual task에서 성능을 떨어뜨린다. wrxp는 모든 agent prompt에서 persona를 제거하고 purpose-focused framing만 사용한다.
@@ -48,11 +48,34 @@ wrxp의 **Fleet Dispatching**은 team family(`/cast` 계열)에 적용된다 —
 
 ### 설치
 
+#### Codex
+
 ```bash
-claude plugin add donghyunlim/wrxp
+codex plugin marketplace add donghyunlim/claude-middleware --ref main
+codex plugin add wrxp@donghyunlim
 ```
 
-### 🗡️ Knife family (single-thread, serial execution)
+업데이트는 marketplace snapshot을 갱신한 뒤 Codex를 다시 시작합니다.
+
+```bash
+codex plugin marketplace upgrade donghyunlim
+```
+
+#### Claude Code
+
+```bash
+claude plugin marketplace add donghyunlim/claude-middleware
+claude plugin install wrxp@donghyunlim
+```
+
+업데이트는 다음 순서로 실행한 뒤 Claude Code를 다시 시작합니다.
+
+```bash
+claude plugin marketplace update donghyunlim
+claude plugin update wrxp@donghyunlim
+```
+
+### 🗡️ Knife family (runtime-bounded task graph)
 
 #### /wrxp:ha — 기본 knife (default)
 
@@ -60,7 +83,7 @@ claude plugin add donghyunlim/wrxp
 /wrxp:ha "이 함수의 off-by-one 버그 고쳐줘"
 ```
 
-자동 질문 상한은 4개이며, 적격 질문이 없으면 바로 실행한다. 하나의 사고 갈래로 수렴하는 작업에 적합하다.
+`none` preset은 질문 0개·0라운드이며, 승인·보안 등 실행 통제 경계가 아니라면 바로 실행한다. 하나의 사고 갈래로 수렴하는 작업에 적합하다.
 
 #### /wrxp:haq — 빠른 knife
 
@@ -128,7 +151,7 @@ Phase 4만 실행 — 이미 분해된 task list가 있을 때, dynamic agent ma
 
 ## Team family 7단계 파이프라인 (Phase 0-6 at a glance)
 
-아래 그림은 병렬 Fleet을 사용하는 `/cast` 계열의 흐름이다. Knife family인 `/ha` 계열은 위에서 설명한 공통 상태 흐름과 `max_concurrency: 1` 직렬 계약을 사용한다.
+아래 그림은 병렬 Fleet을 사용하는 `/cast` 계열의 흐름이다. Knife family인 `/ha` 계열은 위에서 설명한 runtime-bounded dependency task graph 계약을 사용한다.
 
 ```
 Phase 0: Context & Task-Type Detection
@@ -150,14 +173,14 @@ Final Output
 
 ## Tier 비교표
 
-### 🗡️ Knife family (동시 실행 없음, `max_concurrency: 1`)
+### 🗡️ Knife family (runtime-bounded task graph)
 
 | Tier | 질문 수 | Rounds | Fleet | 용도 |
 |---|---|---|---|---|
-| /wrxp:ha (default) | 0-4 | 2 | 순차 | 균형형 자동 질문 |
-| /wrxp:haq | 0-4 | 1 | 순차 | 빠른 확인 |
-| /wrxp:haqq | 0-8 | 2 | 순차 | 표준 발견 |
-| /wrxp:haqqq | 0-12 (동의 시 max 20) | 3 (동의 시 5) | 순차 | 고위험 단일 문제 심층 확인 |
+| /wrxp:ha (default) | 0 | 0 | runtime-bounded task graph | 승인·보안 게이트만 확인 |
+| /wrxp:haq | 0-4 | 1 | runtime-bounded task graph | 빠른 확인 |
+| /wrxp:haqq | 0-8 | 2 | runtime-bounded task graph | 표준 발견 |
+| /wrxp:haqqq | 0-12 (동의 시 max 20) | 3 (동의 시 5) | runtime-bounded task graph | 고위험 단일 문제 심층 확인 |
 
 ### 🛡️ Team family (fleet=on, parallel)
 
@@ -186,7 +209,7 @@ Final Output
 
 - **Pre-Q / Post-Q Deep Reasoning**: 15개 연구 논문 기반 (Self-Ask, ToT, Least-to-Most, Plan-and-Solve, Uncertainty of Thoughts, Reflexion, Self-Refine, Chain-of-Verification 등)
 - **Uncertainty-Driven Questioning**: Bayesian OED 이론 + arXiv:2503.16419 "Stop Overthinking" skip gate + Cowan 4-chunk working memory 한계 준수
-- **Decision-Gated Questions**: 증거로 확인할 수 있는 사실은 먼저 조사하고, `must_ask` 결정과 독자·용도·공유·권한을 바꾸는 `decision_quality` 선택을 우선순위대로 질문
+- **Decision-Gated Questions**: 직접 `/ha`는 실행을 막는 승인·보안 경계만 묻고, 질문 tier는 `decision_quality` 선택을 우선순위대로 질문
 - **Dynamic Fleet Dispatching**: Runtime에 available subagent 목록을 enumerate → filter(task_type, phase) → diversify(중복 제거) → rank(fit score) → dispatch(top N)
 - **Task-Type-Aware Verification**: 9 types마다 전용 verification recipe. Research는 DOI/citation mandatory 검증, Decision은 alternatives audit + bias audit + sensitivity flagging
 - **Loop-Back Rules + Circuit Breaker**: 8 rules (LB1-LB8) + global abort threshold. Ambiguity Spiral / Verification Fail / Scope Creep / Data Unavailable / Complexity Underestimate / Reviewer Deadlock / Token Exhaustion / User Timeout
@@ -201,11 +224,11 @@ wrxp의 모든 설계 결정은 publicly verifiable 연구에 근거한다. 구�
 
 ## Composable usage
 
-### 🗡️ Knife family (single-thread, serial execution)
+### 🗡️ Knife family (runtime-bounded task graph)
 
 | 호출 | 실행 범위 | 사용 시점 |
 |------|---------|---------|
-| `/wrxp:ha "요청"` | 공통 상태 흐름 + 질문 0~4개 | 균형형 기본 실행 |
+| `/wrxp:ha "요청"` | 공통 상태 흐름 + 질문 0개/0라운드 | 승인·보안 경계가 아닌 한 즉시 실행 |
 | `/wrxp:haq "요청"` | 공통 상태 흐름 + 최대 1라운드 | 빠른 확인 |
 | `/wrxp:haqq "요청"` | 공통 상태 흐름 + 최대 2라운드 | 표준 발견 |
 | `/wrxp:haqqq "요청"` | 공통 상태 흐름 + 최대 3라운드(동의 시 5) | 고위험 단일 문제 심층 확인 |

@@ -7,6 +7,8 @@
 **Authors**: Claude Opus 4.6 research fleet + Donny (user)
 **License**: MIT
 
+> **현재 계약 정정 (0.1.25)**: 이 문서의 본문과 수치는 과거 연구·벤치마크 기록이며, 당시의 fleet·질문 정책을 역사적 기록으로 보존합니다. 현재 `/ha`는 공통 reasoning·execution 엔진이고 `/haq`·`/haqq`·`/haqqq`는 질문 프리셋만 바꾸는 thin shim입니다. 모든 tier는 0문항으로 종료할 수 있습니다. 질문은 증거를 확인한 뒤 `must_ask` 결정과 자료의 독자·용도·공유·결정 권한처럼 산출물의 쓰임을 바꾸는 `decision_quality` 선택에만 제시합니다. 호출당 최대 4문항과 `max_concurrency=1` 직렬 실행이 기본이며, 병렬 전문 탐색이 필요하면 `/cast`를 사용합니다. 현재 모델 라우팅은 질문 tier와 독립적으로 런타임 기능에 따라 결정됩니다.
+
 ---
 
 ## Executive Summary
@@ -17,7 +19,7 @@ wrxp(Universal Reasoning & Execution Pipeline)는 Claude Code 위에서 동작�
 
 문서는 크게 세 부분으로 구성된다.
 
-**Part 1 — Skill Journeys**는 wrxp의 7개 skill을 각각 하나의 story로 설명한다. `/ha`가 처음 호출되었을 때부터 결과가 반환되기까지 Phase 0-6을 어떤 논리로 통과하는지 내러티브로 따라가며, 그 과정에서 Self-Ask, Least-to-Most, Reflexion, CoVe, UoT, EVPI ordering 같은 기법들이 **왜 그 phase에 있는지** 자연스럽게 드러난다. `/haq`, `/haqq`, `/haqqq`는 같은 엔진을 질문 수와 함대 규모로 tune한 것이고, `/breakdown`, `/decompose`, `/agent-match`는 문제 분해와 에이전트 매칭 축을 담당한다.
+**Part 1 — Skill Journeys**는 wrxp의 7개 skill을 각각 하나의 story로 설명한다. `/ha`가 처음 호출되었을 때부터 결과가 반환되기까지 Phase 0-6을 어떤 논리로 통과하는지 내러티브로 따라가며, 그 과정에서 Self-Ask, Least-to-Most, Reflexion, CoVe, UoT, EVPI ordering 같은 기법들이 **왜 그 phase에 있는지** 자연스럽게 드러난다. 과거 버전에서는 `/haq`, `/haqq`, `/haqqq`를 질문 수와 함대 규모로 tune했지만, 현재는 같은 공통 엔진에 질문 preset만 제공하는 thin shim이며, `/breakdown`, `/decompose`, `/agent-match`는 문제 분해와 에이전트 매칭 축을 담당한다.
 
 **Part 2 — Why Is This Good?**는 baseline(raw Claude Opus, 시스템 프롬프트 없음, task text만)이 **구조적으로** 어떤 실패 패턴을 가지는지 열거하고, wrxp의 각 메커니즘이 그 실패 패턴을 **어떻게** 공격하는지 매핑한다. MAST(arXiv:2503.13657)의 14개 failure mode, HaluEval의 19.5% hallucination, Dahl 2024의 39-88% legal citation fabrication, Stop Overthinking(arXiv:2503.16419)의 19-42초 낭비 같은 baseline의 구조적 취약점이, wrxp의 Phase 1 Pre-Q reasoning / Phase 2 EVPI ordering / Phase 6 task-type verification에 의해 각각 어떻게 닫히는지가 이 파트의 핵심 주장이다.
 
@@ -39,7 +41,7 @@ wrxp(Universal Reasoning & Execution Pipeline)는 Claude Code 위에서 동작�
 
 wrxp는 서로 독립적으로 쓸 수 있지만 내부적으로는 하나의 파이프라인으로 얽혀 있는 7개 skill로 구성된다. 축으로 나누면 다음과 같다.
 
-- **Universal Reasoning & Execution 축**: `/ha` (canonical engine) + `/haq` / `/haqq` / `/haqqq` (depth tier thin shims)
+- **Universal Reasoning & Execution 축**: `/ha` (canonical engine) + `/haq` / `/haqq` / `/haqqq` (question-policy thin shims)
 - **Orchestration & Decomposition 축**: `/breakdown` (full pipeline) + `/decompose` (intent + decomposition) + `/agent-match` (dynamic matching + DAG)
 
 이 Part는 각 skill을 "사용자가 무엇을 입력하면 내부에서 무슨 일이 일어나고, 결과가 어떻게 나오는가"의 **journey** 형태로 설명한다. 기술과 기법은 이 journey 속에서 "이 phase가 왜 필요한가"의 답으로 자연스럽게 등장한다.
@@ -79,9 +81,9 @@ Phase 1은 여러 논문에서 영감을 얻는다. **Self-Ask (Press et al. 202
 
 #### 과정: Phase 2 — "EVPI 순서로, 필요한 만큼만, 멈출 줄 알게"
 
-AmbiguityLedger가 HIGH로 나왔으므로, /ha는 **Phase 2: Uncertainty-Driven Questioning**으로 넘어간다. 여기서 가장 먼저 확인할 것은 **"사용자가 호출한 tier가 무엇인가"**다. Direct `/ha`는 default로 `depth_budget=0`이므로 사실 대부분의 경우 Phase 2를 건너뛰고 HIGH라도 explicit assumption을 명시하고 Phase 3로 직행한다. 이 "ask-nothing-by-default" 정책은 **Amazon Alexa Top Intent Accuracy Study (Shum et al. 2020)**의 77% 수치와 **Learning to Clarify (Bao et al. 2024, arXiv:2410.13788)**의 61.9% direct-answer optimal 수치를 근거로 한다. 두 연구 모두 독립적으로 "대부분의 경우 사용자는 top intent를 정확히 맞추기 때문에 물어보지 않는 것이 더 낫다"는 empirical 결론을 낸다.
+이 절에서 기록한 과거 파이프라인은 AmbiguityLedger가 HIGH이면 **Phase 2: Uncertainty-Driven Questioning**으로 넘어갔다. 당시 Direct `/ha`는 `depth_budget=0`을 기본값으로 사용했지만 HIGH일 때에는 예외적으로 질문할 수 있어 계약이 모호했다. 현재 엔진은 이 규칙을 폐기하고 모든 preset에 증거 우선 `must_ask`·`decision_quality` 게이트와 명시적인 질문 상한을 적용한다. 과거의 "ask-nothing-by-default" 정책은 **Amazon Alexa Top Intent Accuracy Study (Shum et al. 2020)**의 77% 수치와 **Learning to Clarify (Bao et al. 2024, arXiv:2410.13788)**의 61.9% direct-answer optimal 수치를 근거로 했다.
 
-사용자가 `/haq` / `/haqq` / `/haqqq`를 호출했다면 Phase 2가 활성화된다. 이때 등장하는 핵심 기법이 두 가지다.
+사용자가 `/haq` / `/haqq` / `/haqqq`를 호출하면 해당 question preset이 적용된다. 다만 현재 계약에서는 preset이 질문을 강제하지 않으며, 증거 확인 뒤 `must_ask` 결정 또는 산출물의 쓰임을 바꾸는 `decision_quality` 선택이 있을 때만 Phase 2가 활성화된다.
 
 첫째, **EVPI Ordering (Sun et al. 2025, arXiv:2511.08798)**이다. EVPI는 Expected Value of Perfect Information의 약자로, Bayesian Optimal Experimental Design(Lindley 1956, Chaloner & Verdinelli 1995)의 prompt-level heuristic 버전이다. 직관적으로 말하면 "이 질문의 답이 yes/no일 때 execution plan이 얼마나 바뀔 것인가"를 추정해서 plan-changing impact가 큰 질문을 먼저 묻고, 모든 plausible answer에서 같은 plan을 produce하는 dominated 질문은 drop한다. Sun et al. 2025는 이 ordering이 같은 정보량을 **1.5-2.7배 적은 질문**으로 얻을 수 있음을 empirical하게 보였다. 우리 예시에서는 "로그 location?"과 "우선순위 선정 기준?"이 둘 다 high EVPI인데, 전자의 답은 nearly tous plan에 영향을 주므로 첫 질문으로 올라간다.
 
@@ -274,9 +276,9 @@ fleet_tier: upper
 fleet_upper_bound: 8
 ```
 
-#### 과정: 5-8 질문 across 2 rounds, 8 agent fleet, Expanded budget
+#### 과거 흐름: 5-8 질문 across 2 rounds, 8 agent fleet, Expanded budget
 
-`/haqq`가 `/haq`와 구조적으로 다른 점은 **round 개념의 도입**이다. 단일 round에 최대 4 질문이라는 Cowan 4-chunk 한계 때문에, 5-8 질문은 반드시 2 round로 분할된다. Round 1에서 top 4 EVPI 질문을 묻고, round 1 답변으로 AmbiguityLedger를 재평가한다. 만약 LOW로 떨어졌다면 round 2는 자동 생략. 아니면 remaining ambiguity에 대해 EVPI를 re-rank하고 round 2를 시작한다.
+과거 `/haqq`가 `/haq`와 구조적으로 다르다고 설명한 지점은 **round 개념의 도입**이다. 단일 round에 최대 4 질문이라는 Cowan 4-chunk 한계 때문에, 5-8 질문은 반드시 2 round로 분할된다고 기록했다. Round 1에서 top 4 EVPI 질문을 묻고, round 1 답변으로 AmbiguityLedger를 재평가한다. 만약 LOW로 떨어졌다면 round 2는 자동 생략. 아니면 remaining ambiguity에 대해 EVPI를 re-rank하고 round 2를 시작한다.
 
 Fleet 상한이 8로 오르는 것도 구조적 의미가 있다. 이 tier부터는 단순 duplicate가 금지된다 — 예를 들어 `code-reviewer` 2개를 소환하는 것은 허용되지 않고, `reviewer + test-engineer + security-reviewer + verifier + ...` 처럼 **서로 다른 전문성**으로 다양화되어야 한다. 같은 역할 중복은 MAST의 FM-1.2 (Disobey role spec)와 동형의 문제를 낳기 때문이다. Runtime detection은 이 diversification을 rank 단계에서 강제한다.
 
@@ -408,7 +410,7 @@ Phase 3에서 CoVe 4-step이 **full mandatory**로 적용된다 (research나 dec
 
 - **Step 2A — Pre-Q Deep Reasoning**: 9 Gemini principles를 엄격히 순서대로 적용한다. (1) Logical Dependencies, (2) Risk Assessment, (3) Abductive Reasoning & Hypothesis Exploration, (4) Outcome Evaluation & Adaptability, (5) Information Availability, (6) Precision & Grounding, (7) Completeness, (8) Persistence & Patience, (9) Response Inhibition. 이 9원칙의 산출물이 **모호성 목록**이다. 그리고 가장 엄격한 rule — **Response Inhibition**: 이 reasoning이 완료되기 전에 절대로 질문을 생성하지 않는다.
 
-- **Step 2B — AskUserQuestion 강제 질문**: 평문 질문 금지, 반드시 `AskUserQuestion` 도구로만. 한 번에 하나의 질문 (최대 4개 배열), 가능하면 options 제공, multiSelect 적절 시 활용. Soft cap 5회, Hard cap 10회. 이 rule은 MAST FM-2.2 (Fail to ask for clarification) 의 직접 대응이다.
+- **(과거) Step 2B — AskUserQuestion 강제 질문**: 평문 질문 금지, 반드시 `AskUserQuestion` 도구로만. 한 번에 하나의 질문 (최대 4개 배열), 가능하면 options 제공, multiSelect 적절 시 활용. Soft cap 5회, Hard cap 10회. 이 rule은 MAST FM-2.2 (Fail to ask for clarification) 의 직접 대응이다.
 
 - **Step 2C — Post-Q Integration Reasoning**: 답변을 받은 후 `intent-{slug}.md` 저장 전에 통합 검증. (1) Completeness 재검증 (모호성 목록의 모든 항목 해소?), (2) Consistency 검증 (답변 사이 모순?), (3) 암묵적 가정 재확인, (4) 추가 질문 판단 (soft cap 내?), (5) 통과 시 Step 3 진행.
 
@@ -586,7 +588,7 @@ Baseline은 이 over-thinking 문제가 **없다** (reasoning을 강제하지 �
 
 각 매핑을 한 단락씩 풀어 쓰면 다음과 같다.
 
-**Silent Assumption → Phase 1 + Phase 2.** Baseline이 "로그인 시스템 만들어줘"에 대해 email/password를 confabulate하는 대신, wrxp의 Phase 1은 9 Gemini principles(Logical Dependencies, Risk Assessment, Abductive Reasoning, ...)로 요청을 스캔해서 AmbiguityLedger를 작성한다. 이 ledger는 "epistemic 60 (auth 방식 불명), aleatoric 20, pragmatic 55 (session storage 불명), overall 60 → HIGH"처럼 구조화된 형태로 나온다. 그 다음 Phase 2는 EVPI 순서로 top 질문들을 `AskUserQuestion` 도구로 제시한다 — 평문 질문은 금지되고, 반드시 options를 포함한 structured question이어야 한다. 이 강제는 MAST FM-2.2 (Fail to ask for clarification, 2.2%)의 직접 대응이다. 그리고 이 질문들은 Cowan 4-chunk working memory 한계를 존중하여 round당 최대 4개로 제한된다.
+**(과거 0.1.x) Silent Assumption → Phase 1 + Phase 2.** Baseline이 "로그인 시스템 만들어줘"에 대해 email/password를 confabulate하는 대신, 당시 wrxp의 Phase 1은 9 Gemini principles(Logical Dependencies, Risk Assessment, Abductive Reasoning, ...)로 요청을 스캔해서 AmbiguityLedger를 작성했다. 이 ledger는 "epistemic 60 (auth 방식 불명), aleatoric 20, pragmatic 55 (session storage 불명), overall 60 → HIGH"처럼 구조화된 형태로 나온다. 그 다음 Phase 2는 EVPI 순서로 top 질문들을 `AskUserQuestion` 도구로 제시했다 — 평문 질문은 금지되고, 반드시 options를 포함한 structured question이어야 했다. 이 강제는 MAST FM-2.2 (Fail to ask for clarification, 2.2%)의 직접 대응이었다. 그리고 이 질문들은 Cowan 4-chunk working memory 한계를 존중하여 round당 최대 4개로 제한됐다.
 
 **Hallucination → Phase 3 + Phase 6.** Baseline이 legal citation을 39-88% 확률로 fabricate하는 대신, wrxp는 research task type에 대해 CoVe 4-step을 mandatory로 적용한다. (1) baseline draft, (2) verification question 생성, (3) independent answer (원 draft 참조 없이), (4) verified final. Dhuliawala et al. 2023 (arXiv:2309.11495)은 이 4-step이 longform generation hallucination을 **50-70% 감소**시키고 MultiSpanQA F1을 **0.39 → 0.48 (+23%)** 로 향상시킴을 보였다. 그리고 Phase 6 research recipe는 이에 더해 **DOI/citation verification (CrossRef 또는 Semantic Scholar API 대조)**를 요구한다 — fabricated citation은 이 단계에서 external lookup으로 걸러진다. Decision task에서도 동일한 CoVe mandatory가 적용되며, 추가로 **alternatives audit (최소 3개 대안 제시 강제)**와 bias audit가 추가된다 — Omiye 2023의 83% base rate echo에 대한 구체적 대응이다.
 

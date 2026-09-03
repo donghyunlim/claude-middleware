@@ -1,1025 +1,236 @@
 ---
 name: ha
-description: Use when a request has one clear branch of thought and needs the knife-mode, sequential reasoning-and-execution pipeline.
+description: Use when a request has one convergent line of work and should be reasoned about, clarified only where necessary, executed serially, and verified.
 argument-hint: "[요청 내용]"
 level: 4
 ---
 
-ultrathink.
+# /ha — Common Knife Engine
 
-# /ha — Knife-Mode Reasoning & Execution Engine
+`/ha`는 하나의 수렴하는 작업을 관찰하고, 필요한 사용자 결정만 질문하고, 역할에 맞는 모델로 순차 실행한 뒤 검증하는 공통 엔진이다. `/haq`, `/haqq`, `/haqqq`는 이 엔진의 질문 상한만 바꾸는 thin shim이다.
 
-이 skill은 **"하나의 명확한 문제"**를 단일 사고의 갈래(single reasoning thread)로 끝까지 밀어붙이는 knife-mode engine이다. Fleet dispatching 없이 Phase 0 → 1 → 2(조건부) → 3 → 5 → 6을 순차 수행한다. Phase 4(design template)는 knife mode에서 생략된다.
-
-/ha 는 **/cast의 knife 대칭 canonical engine**이다. 둘 다 `shared/reasoning-framework.md`의 9원칙을 공유하지만:
-
-- **/cast (team)**: Fleet ON — Phase 1/5/6 전 구간에서 병렬 specialized subagents dispatch. 다면 분석, 교차 검증, 여러 관점이 가치를 더하는 task.
-- **/ha (knife)**: Fleet OFF — 단일 agent, 단일 사고 흐름. 문제 경로가 한 갈래로 수렴하는 task.
-
-`/haq`, `/haqq`, `/haqqq`는 /ha를 호출하는 thin shim으로, 사용자에게 물을 수 있는 질문 수와 동률 해소용 `routing_bias`만 다르다.
-
-**Output all responses in Korean.**
+모든 사용자 대상 출력은 한국어로 작성한다. 사용자가 다른 언어 또는 형식을 명시하면 그 요구를 우선한다.
 
 ## Requirements
+
 $ARGUMENTS
 
----
-
-## Configuration from Caller
-
-This skill can be invoked in two ways:
-
-1. **Direct invocation (`/ha ...`)**: defaults to `depth_budget: 0`, meaning Phase 2 (Questioning) is **skipped** unless Phase 1 detects HIGH uncertainty. This honors the principle that 77% of requests already have a clear top-intent (Amazon Alexa research) and that simple queries waste 19-42 seconds on unnecessary reasoning (Stop Overthinking, arXiv:2503.16419).
-
-2. **Tier shim invocation (`/haq`, `/haqq`, `/haqqq`)**: a config block is passed in via `$ARGUMENTS`. Parse the following keys at the top of the requirements:
-
-```
-depth_budget: <0-4 | 5-8 | 9-12-up-to-20>
-question_rounds: <1 | 2 | 3-5>
-max_budget: <4 | 8 | 20>
-tier: <haq | haqq | haqqq | direct>
-fleet_mode: off     # knife family는 항상 off
-routing_bias: <cost-first | balanced | quality-first>
-```
-
-If no config block is present, treat as direct invocation with `fleet_mode: off` (knife default). The depth budget governs Phase 2's AskUserQuestion count ceiling. Phase 1's uncertainty detection still has the final say — uncertainty=LOW always skips Phase 2 regardless of caller tier.
-
-`routing_bias`는 동률인 실행 후보를 고를 때만 쓴다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** tier, depth_budget, question_rounds는 controller 모델이나 관측 가능한 작업 속성에 따른 모델 분류를 바꾸지 않는다.
-
-## Model Routing Registry (single source of truth)
-
-이 registry는 `/ha`에만 둔다. `/haq`·`/haqq`·`/haqqq`는 질문 깊이와 `routing_bias`만 전달하며, 모델명을 재정의하지 않는다.
-
-| 역할 | Codex 5.6 | reasoning_effort | Claude Code 대응 | 담당 |
-|---|---|---|---|---|
-| controller | `gpt-5.6-sol` | `high` | opus | Phase 0~3의 큰 줄기·판단·계획·통합·blocker 분류 및 고위험 최종 판단 |
-| standard executor | `gpt-5.6-terra` | `medium` | sonnet | 표준 구현·디버깅·공식 문서 조사·테스트·보통의 글/분석 |
-| utility executor | `gpt-5.6-luna` | `low` | haiku | 결정론적 검색·목록화·포맷·명확한 1~3줄 기계 변경·기계 검사 |
+## 핵심 계약
 
 ```yaml
-codex_model_registry:
-- role: controller
-  model: gpt-5.6-sol
-  reasoning_effort: high
-- role: standard_executor
-  model: gpt-5.6-terra
-  reasoning_effort: medium
-- role: utility_executor
-  model: gpt-5.6-luna
-  reasoning_effort: low
+execution_mode: serial
+max_concurrency: 1
+question_preset: auto
+min_questions: 0
+max_questions: 4
+max_questions_per_round: 4
+max_rounds: 2
 ```
 
-**Codex 위임 규칙**: 모든 Codex 위임에 `model`과 `reasoning_effort`를 함께 명시한다. runtime이 지원하지 않는 모델이면 registry 역할과 가장 가까운 가용 모델로 fallback하고, 최종 출력에 `요청 역할 / 실제 모델 / fallback 사유`를 공개한다. active controller가 Sol이 아니고 runtime이 모델 지정 위임을 지원하면, Phase 0~3 또는 blocker 판단을 Sol controller에 **순차 위임하고 결과를 기다린다**. 지원하지 않으면 active controller가 같은 절차를 수행하고 그 사실을 공개한다.
+- `max_concurrency: 1`은 동시 실행을 금지한다. 필요하면 worker와 verifier를 한 명씩 순차 호출할 수 있다.
+- 질문 수는 항상 상한이다. 적격 질문이 없으면 0개가 정상이다.
+- 질문 프리셋은 모델 라우팅에 영향을 주지 않는다.
+- 여러 파일이나 단계가 있다는 이유만으로 병렬 체계로 전환하지 않는다.
+- 독립적인 전문 관점을 병렬 탐색해야 품질이 실질적으로 좋아질 때만 `/cast` 계열을 제안한다.
+- 상세한 내부 사고 과정을 노출하지 않는다. 사용자에게는 결정, 가정, 실행 경로, 검증 근거만 보여준다.
 
-**Claude Code 규칙**: controller/standard/utility를 각각 opus/sonnet/haiku로 대응한다. Claude Code 위임에는 지원되지 않는 `reasoning_effort` 필드를 강제하지 않는다.
+## 호출 설정
 
-**Knife invariants (하드 제약, tier 무관):**
+직접 `/ha` 호출에는 위 기본값을 적용한다. tier shim이 아래 키를 전달하면 질문 관련 값만 덮어쓴다.
 
-- `fleet_mode: off` 고정. 이는 **동시 fleet 금지**를 뜻한다. Phase별 worker 또는 verifier는 순차적으로, 한 번에 최대 한 명만 호출할 수 있다.
-- **Phase 4 (Design Template) skip**. Single deliverable이 전제이므로 9-종 task template은 생성하지 않는다. Phase 3 통합 추론이 곧 실행 명세가 된다.
-- **Phase 0 cascade 축소**. Stage 1 (cheap signals) + context collection만 실행. Stage 2 (internal classification) / Stage 3 (AskUserQuestion fallback)는 생략 — knife mode는 "task type이 이미 명확"을 전제한다. 애매하면 사용자를 `/cast` 쪽으로 유도한다.
-- **Phase 2 질문은 AskUserQuestion 웹UI를 통한 brainstorming-style 선택형(multi-choice) 포맷**을 기본으로 한다. prose 자유서술 질문은 지양.
-
----
-
-## Phase 0 — Context & Task-Type Detection
-
-This phase establishes the work environment, identifies the task type, gathers task-specific context, and reserves a verification plan. It is mandatory and non-skippable, and is owned by the controller.
-
-### 0-1. Task Type Table (9 types)
-
-| Task Type | 특징 | 산출물 형태 |
-|---|---|---|
-| `code` | 코드 작성/수정/리팩토링/디버깅 | 파일별 구현 명세 |
-| `writing` | 글 작성 (문서/이메일/보고서/에세이) | 섹션별 개요 + 본문 |
-| `planning` | 계획/일정/로드맵/이벤트 준비 | 단계별 타임라인 |
-| `research` | 조사/문헌 리뷰/요약 | 소스 목록 + 합성 |
-| `analysis` | **데이터 분석/패턴 발견/판단/평점/이미지 분석** | 분석 보고서 + 결론 |
-| `decision` | 의사결정 지원/트레이드오프 분석 | 기준 + 대안 매트릭스 |
-| `creative` | 창작 (디자인/스토리/시/브레인스토밍) | 장면/스탠자/패널 분해 |
-| `learning` | 학습 계획/커리큘럼/스터디 설계 | 세션별 커리큘럼 |
-| `other` | 위에 해당 없음 | 자유 형식 |
-
-**`analysis` 타입이 신규 추가된 이유** (NBER 1.5M ChatGPT 대화 분석): NBER 분류체계는 `data_analysis`와 `analyze_an_image`를 독립 leaf로 가지며, 기존 code/research/other에 흩어져 있던 "데이터 보고 판단/등급/패턴 발견" 요청을 하나의 명확한 카테고리로 통합한다. 데이터 무결성과 통계적 적절성이 핵심 검증 축이 된다.
-
-### 0-2. Cheap-Signal-Only Detection (Knife Reduction)
-
-Knife mode는 **Stage 1 (cheap signals)만 수행**한다. Stage 2 (Opus internal classification) 와 Stage 3 (AskUserQuestion fallback) 은 **생략**된다 — knife의 전제가 "task type이 이미 명확함"이기 때문이다. Stage 1만으로 결정이 안 나면, 이 요청은 /ha 적합성이 의심되는 것이므로 사용자에게 `/cast`로의 전환을 제안하고 중단한다.
-
-**Stage 1 — Cheap Signals (only stage)**
-
-CWD cues:
-
-| 신호 | Task Type 후보 |
-|---|---|
-| `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `build.gradle`, `composer.json`, `Gemfile`, `pubspec.yaml`, `*.csproj` | code |
-| `.obsidian/`, 다수의 `.md`, `docs/`, `vault/`, `notes/` | writing 또는 research |
-| `*.csv`, `*.parquet`, `*.ipynb`, `*.tsv`, `*.xlsx`, `data/` | **analysis** |
-| 일정 파일, ical, calendar | planning |
-| `references/`, `bib*`, `papers/` | research |
-| 위 어디에도 해당 없음 | 요청 텍스트로 판단 |
-
-요청 키워드:
-
-| 키워드 | Task Type |
-|---|---|
-| 구현/리팩토링/버그/코드/함수/클래스/API | code |
-| 써줘/작성/글/이메일/문서/보고서/에세이 | writing |
-| 계획/일정/준비/로드맵/타임라인 | planning |
-| 조사/요약/리서치/문헌 | research |
-| **분석해줘/패턴/등급/평점/판단해줘/이미지 분석/이 데이터** | **analysis** |
-| 비교/선택/결정/어느 것/vs | decision |
-| 그려줘/만들어줘/디자인/로고/아이디어/브레인스토밍 | creative |
-| 배우고 싶어/공부/학습/강의/커리큘럼 | learning |
-
-**판정 규칙**: Stage 1 confidence ≥ 0.85 → 감지된 task type 확정, 다음 sub-phase로. Confidence < 0.85 → `/cast` 사용 권장 메시지 후 knife 종료.
-
-### 0-3. Task-Type-Specific Context Collection
-
-| Task Type | 수집 대상 |
-|---|---|
-| code | 프로젝트 루트, stack, 주요 디렉토리, 의존성, linter 설정 (아래 표 참조) |
-| writing | 관련 이전 글/초안, 스타일 가이드, 타겟 매체, `docs/`, `**/*.md` |
-| planning | 명시 제약 (날짜/예산/인원), 기존 일정/캘린더, 이해관계자 |
-| research | 기존 자료, 노트, 참고 문헌, `.obsidian/`, `notes/`, `references/`, `bib*` |
-| **analysis** | **데이터 소스 (파일/DB/API), 스키마, 행/열 수, 사용 가능 도구 (pandas/SQL/spreadsheet), 분석 목적, 산출물 형태 (보고서/시각화/요약), 데이터 품질 단서** |
-| decision | 대안 후보, 평가 기준, 시간/리스크 제약, 이전 논의 |
-| creative | 레퍼런스, 스타일/톤 가이드, 타겟 오디언스, 권리 제약 |
-| learning | 현재 수준, 목표 수준, 가용 시간, 선호 방식 |
-| other | `AskUserQuestion`으로 직접 질문 |
-
-Code stack 감지표:
-
-| File | Stack | Linter |
-|---|---|---|
-| pyproject.toml | Python | mypy / ruff |
-| package.json | Node/TS | tsc --noEmit / eslint |
-| Cargo.toml | Rust | cargo clippy |
-| go.mod | Go | go vet / staticcheck |
-| pom.xml | Java Maven | - |
-| build.gradle | Java Gradle | - |
-| composer.json | PHP | - |
-| Gemfile | Ruby | rubocop |
-| pubspec.yaml | Dart/Flutter | dart analyze |
-| *.csproj | C#/.NET | - |
-
-### 0-4. Phase 6 Verification Plan Reservation (preview)
-
-Phase 6에서 사용할 검증 방법을 Phase 0에서 미리 선택한다. 실제 검증 절차의 상세는 Phase 6에 정의되어 있고, 여기서는 어떤 verification recipe를 쓸지만 결정한다.
-
-| Task Type | 검증 recipe (preview) |
-|---|---|
-| code | 감지된 linter + 테스트 러너 |
-| writing | atomic claim extraction + temporal disclosure + fact-flagging |
-| planning | Critical Path + cycle detection + arithmetic validation |
-| research | 🔴 **CRITICAL** — DOI/citation verification + CRAAP test |
-| **analysis** | **데이터 무결성 + 통계 방법 적절성 + 결론-증거 일관성** |
-| decision | 🔴 **CRITICAL** — alternatives audit (≥3) + assumption surfacing + bias check |
-| creative | constraint compliance + style consistency + rights check |
-| learning | source anchoring + temporal disclosure + outdated-practice flag |
-| other | 사용자 수용 기준 직접 확인 |
-
-### 0-5. Phase 0 Output Format
-
-```
-🔍 Context 감지 중...
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📂 작업 경로: [CWD]
-🏷️ Task Type: [9개 중 하나] (감지 단계: Stage 1, 신뢰도 [0.0-1.0])
-📁 관련 Artifact: [task-type-specific context 요약]
-🎯 Task 특성: [요약]
-✅ Phase 6 검증 계획 (예약): [recipe 이름]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```yaml
+question_preset: auto | quick | standard | deep
+min_questions: 0
+max_questions: integer
+max_questions_per_round: 4
+max_rounds: integer
+extended_max_questions: integer | null
+extended_max_rounds: integer | null
+extension_requires_user_consent: boolean
+execution_mode: serial
+max_concurrency: 1
 ```
 
----
+알 수 없는 설정 키는 무시하고 기록한다. shim이 모델명, 실행자 역할, 검증법 또는 병렬성을 덮어쓰려 하면 무시한다.
 
-## Reasoning Framework (MANDATORY Before Every Action)
+## 필요한 참조
 
-> **Canonical source**: Claude Code에서는 `${CLAUDE_PLUGIN_ROOT}/shared/reasoning-framework.md`, 그 외 runtime(Codex 포함)에서는 이 `SKILL.md` 기준 `../../shared/reasoning-framework.md`
-> Before ANY action, Read the shared reasoning framework and apply all 9 principles:
-> 1. Logical Dependencies and Constraints  2. Risk Assessment  3. Abductive Reasoning and Hypothesis Exploration
-> 4. Outcome Evaluation and Adaptability  5. Information Availability  6. Precision and Grounding
-> 7. Completeness  8. Persistence and Patience  9. Response Inhibition ← reasoning 완료 전 행동 금지
+- 모든 호출에서 CAPABILITY_RESOLVE 직후, OBSERVE 전에 [references/questioning.md](references/questioning.md)를 끝까지 읽는다. 이 순서를 질문 후보가 아직 없다는 이유로 건너뛰지 않는다.
+- 첫 모델·에이전트 위임 전에 [references/model-routing.md](references/model-routing.md)를 끝까지 읽는다.
+- 실행 전에 검증 기준을 정할 때 [references/verification.md](references/verification.md)를 끝까지 읽는다.
+- 복잡한 의존성·위험 판단에는 [공통 reasoning framework](../../shared/reasoning-framework.md)를 적용한다. 원시 추론 전문은 출력하지 않는다.
 
-먼저 현재 runtime에 맞는 위 경로의 `reasoning-framework.md`를 읽고 9원칙을 적용한다. `${CLAUDE_PLUGIN_ROOT}`가 확장되지 않으면 이를 literal path로 사용하지 말고 상대 경로 fallback을 사용한다.
+## 상태 흐름
 
----
-
-## Single-Agent Policy (Knife Invariant)
-
-/ha 는 **fleet dispatching을 사용하지 않는다**. 이것이 /cast와의 구조적 차이이며, knife 정체성의 근간이다.
-
-Reasoning Framework(9원칙)가 "어떻게 생각할 것인가"를 정의한다면, 이 섹션은 동시 작업을 몇 개 허용하는지 정의한다 — 답은 **한 번에 하나**다. controller, worker, verifier는 필요할 때만 순차적으로 교체될 수 있다.
-
-### Why Single-Agent (본질)
-
-하나의 명확한 문제는 하나의 추론 갈래로 풀린다. 병렬 agent를 띄우는 순간 다음 4개 비용이 발생한다:
-
-1. **Synthesis overhead** — 여러 관점 산출물을 통합하는 controller의 추가 작업
-2. **Context bleed** — 각 agent가 서로 다른 state를 가정해 결론이 미묘하게 어긋남
-3. **Noise amplification** — 문제가 단일 갈래면 "다른 관점"이 noise로 작용
-4. **Latency tax** — 병렬이라도 느린 agent 하나에 전체가 묶임
-
-Knife의 가치는 "한 화살이 정확히 꽂히는 것"이다. Fleet은 다면 탐색이 가치를 더할 때(/cast)만 의미가 있다.
-
-### What "Single-Agent" Means in Each Phase
-
-| Phase | /cast (team) | /ha (knife) |
-|---|---|---|
-| Phase 1 Pre-Q Reasoning | 복수 탐색/문서 조회 agent 병렬 | controller 단독. Read/Grep/Glob만으로 IntentDraft + AmbiguityLedger 산출 |
-| Phase 2 Questioning | EVPI 카테고리 pool에서 텍스트 질문 | 구조화 질문 도구 또는 동일한 3~4지선다 메시지 fallback (depth_budget에 따라 0~20개) |
-| Phase 5 Execution | Fleet 3-20 agents 병렬 실행 | 관측 가능한 작업 속성에 맞춘 단일 executor/worker. 필요 시 controller가 직접 수행 |
-| Phase 6 Verification | 복수 critic/reviewer/verifier 병렬 | 단일 verifier를 순차 호출. 고위험 판단은 controller가 수행 |
-
-### When `/ha` is Wrong and `/cast` is Right
-
-- 한 문제가 **2개 이상 명확한 하위 축**으로 쪼개진다 (예: "보안 + 성능 + DX 동시에") → /cast
-- **다면 검증이 본질적으로 필요**하다 (research 결론의 CRAAP test, decision의 alternatives audit) → /cast
-- 문제를 정의하는 것 자체가 **탐색 작업**이다 (unknown unknowns 많음) → /cast
-- 사용자 요청이 **vague**하다 (top-intent 불분명) → /cast
-
-반대로, 문제가 한 갈래로 풀리고 단일 artifact가 결과이면 /ha 가 오히려 낫다 (적은 synthesis overhead, 빠른 iteration).
-
-### Escalation Path
-
-/ha Phase 1이 HIGH uncertainty + multi-branch reasoning 필요성을 감지하면 사용자에게 `/cast`로의 escalation을 제안하고 중단한다 (Loop-Back Rule #5 Complexity Underestimate의 knife 변형). 임의로 fleet을 켜지 않는다 — knife invariant는 스킬 경계 내에서 불가침이다.
-
----
-
-## Phase 1 — Pre-Q Deep Reasoning
-
-This phase produces two typed artifacts — **IntentDraft** and **AmbiguityLedger** — BEFORE any user questioning or execution. It applies the 9 reasoning principles above to the request gathered in Phase 0. Conditional on the result, Phase 2 is either entered or skipped.
-
-### 1-1. Purpose
-
-Deep reasoning at this stage replaces the common anti-pattern of "ask first, think later." The aim is to enumerate every plausible interpretation, every dependency, and every information gap before deciding whether to bother the user.
-
-Core techniques applied:
-
-- **Self-Ask gate** (arXiv:2210.03350): explicit `Are follow-up questions needed here? Yes/No` decision at the end of this phase.
-- **Least-to-Most decomposition** (SCAN 16% → 99.7%): "To solve X, we need to first resolve A, B, C, ..."
-- **Plan-and-Solve PS+** (GSM8K +3%): "Extract relevant variables and their values" — name what is known and what is missing.
-- **Uncertainty-of-Thoughts** (UoT, arXiv:2402.03271): simulate how plausible answers branch the plan. 20Q accuracy 48.6% → 71.2%, Medical Diagnosis +120%.
-
-### 1-2. Sub-Steps
-
-**1-2-1. Lightweight Artifact Exploration**
-
-Use Grep, Glob, Read on the artifacts surfaced in Phase 0. Goal: understand existing patterns, conventions, dependencies. Do NOT execute the work yet — only observe enough to reason about ambiguity.
-
-> **Controller ownership**: Phase 1 Pre-Q Reasoning은 registry controller가 소유한다. Read/Grep/Glob 등 local tool만 사용해 IntentDraft + AmbiguityLedger를 산출한다. 어떤 worker도 dispatch하지 않는다. 다면 탐색이 필요하다고 판단되면 `/cast`로 escalation 제안 후 중단한다.
-
-**1-2-2. IntentDraft Construction**
-
-Draft a typed object with these fields:
-
-```
-IntentDraft:
-  goal: [one sentence: what the user wants]
-  primary_artifact: [the deliverable]
-  inferred_constraints: [what we've inferred from CWD/keywords/context]
-  explicit_constraints: [what the user explicitly said]
-  task_type: [from Phase 0]
-  confidence: [0.0 - 1.0]
+```text
+CAPABILITY_RESOLVE
+  → OBSERVE
+  → IDENTIFY_DECISIONS
+  → QUESTION_GATE
+      ├─ 적격 질문 있음 → ASK → IDENTIFY_DECISIONS
+      └─ 적격 질문 없음
+  → COMMIT_INTENT
+  → ROUTE_AND_EXECUTE
+  → VERIFY
+      ├─ 국소 수정 가능 → ROUTE_AND_EXECUTE
+      ├─ 사용자 결정 필요 → QUESTION_GATE
+      └─ 완료 또는 blocker
 ```
 
-**1-2-3. Ambiguity Enumeration (Least-to-Most)**
+각 상태의 종료 조건을 만족한 뒤 다음 상태로 이동한다.
 
-List EVERY plausible ambiguity. Do not prematurely prune. For each ambiguity, write:
+## 0. CAPABILITY_RESOLVE
 
-- **What** is unclear
-- **Why** it matters (which downstream decisions depend on it)
-- **Plausible answers** (2-4 candidates)
+이번 런타임에서 실제로 사용할 수 있는 기능만 확인한다.
 
-**1-2-4. EVPI Scoring per Ambiguity**
+- 공급자와 활성 모델
+- 선택 가능한 모델과 사고 수준
+- 에이전트 위임 및 독립 verifier 문맥 지원 여부
+- 구조화 질문 도구와 호출당 질문 수 제한
+- 파일, 검색, 웹, 테스트 등 사용 가능한 도구
 
-For each ambiguity, simulate: "If I assumed each plausible answer, would the resulting plan differ materially?"
+런타임이 제공하지 않은 모델명이나 도구를 추측해 호출하지 않는다. 확인할 수 없는 항목은 `unknown`으로 두고 안전한 폴백을 사용한다.
 
-- **Hi severity**: different answers → fundamentally different plan (different files, different audience, different output form). Worth asking.
-- **Med severity**: different answers → different details but same overall plan. Maybe ask if budget allows.
-- **Low severity**: all plausible answers lead to the same plan. Do NOT ask. Pick the most likely default and state it.
+## 1. OBSERVE
 
-**1-2-5. Hypothesis Generation**
+사용자에게 질문하기 전에 이미 있는 답을 찾는다.
 
-For unresolved questions where no user input is available, list 2-3 hypotheses (most likely first). These will be re-tested in Phase 6.
+이 상태에 들어오기 전에 `references/questioning.md`를 읽었어야 한다. 읽지 않았다면 관찰을 시작하지 말고 먼저 읽는다.
 
-**1-2-6. Source / Evidence Inventory**
+1. 현재 요청, 이전 대화, 첨부물과 지정 링크를 읽는다.
+2. 저장소의 `AGENTS.md`, `CLAUDE.md`, 관련 문서와 기존 구현을 확인한다.
+3. 필요한 사실을 로컬 검색, 읽기 도구 또는 공식 문서로 확인한다.
+4. 사용자만 결정할 수 있는 선호·정책·승인과 증거로 확인할 사실을 분리한다.
 
-What sources will be needed? For research/analysis/decision, list candidate sources. For code/writing, list reference files.
+task type은 검증법과 산출물 관례를 고르는 보조 정보다. task type 자체가 질문 수를 결정하지 않는다.
 
-**1-2-7. Uncertainty Level Decision**
+관찰 결과를 내부적으로 다음 형태로 정리한다.
 
-Aggregate the AmbiguityLedger:
-
-| Uncertainty | Hi count | Med count | Action |
-|---|---|---|---|
-| **LOW** | 0 | ≤2 | **Skip Phase 2**, go directly to Phase 3 with default assumptions stated |
-| **MEDIUM** | 1-3 | 3-5 | Enter Phase 2, /haq or /haqq range applies |
-| **HIGH** | ≥4 | ≥6 | Enter Phase 2, /haqq or /haqqq range applies |
-
-The caller's `depth_budget` is a CEILING, not a floor. If the caller is /haqqq but the actual uncertainty is LOW, you still skip Phase 2. This is the **Stop Overthinking** principle (arXiv:2503.16419) operationalized.
-
-### 1-3. Self-Ask Gate
-
-End Phase 1 with a single explicit gate:
-
-```
-Are follow-up questions needed here? [Yes / No]
-Reason: [if Yes — reference highest-EVPI items; if No — state which defaults will be used]
+```yaml
+Observation:
+  goal: string
+  deliverable: string
+  explicit_constraints: [string]
+  repository_constraints: [string]
+  evidence: [string]
+  acceptance_criteria: [string]
+  unresolved_decisions: [string]
 ```
 
-If `No` → jump to Phase 3. If `Yes` → proceed to Phase 2.
+목표 또는 산출물이 한 갈래로 수렴하지 않고 독립적인 탐색 축이 여러 개라면 실행 전에 `/cast` 계열이 더 적합한지 판단한다. 단지 작업량이 크다는 이유로 전환하지 않는다.
 
-### 1-4. Phase 1 Output Format
+## 2. IDENTIFY_DECISIONS
 
-```
-🧠 Pre-Q Deep Reasoning 결과
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+“모호할 수 있는 것”을 전부 나열하지 않는다. 답에 따라 실행이 달라질 수 있는 결정만 식별한다.
 
-📋 Logical Dependencies:
-[순서/의존/제약 분석]
+각 결정에서 다음을 확인한다.
 
-⚠️ Risk Assessment:
-[리스크 항목]
+- 어떤 증거를 이미 확인했는가
+- 답을 사용자, 증거 또는 안전한 기본값 중 누가 소유하는가
+- 가능한 답마다 파일·계약·범위·산출물·수용 기준·위험 처리가 어떻게 달라지는가
+- 잘못 가정했을 때의 위험과 되돌림 비용은 무엇인가
 
-🔬 Hypotheses:
-[현재 문제에 대한 가설들]
+이 결과로 `QuestionCandidate`를 만들고 `references/questioning.md`의 적격성 게이트를 적용한다.
 
-📚 Sources / Evidence Needed:
-[참고 자료 후보]
+## 3. QUESTION_GATE
 
-🎯 IntentDraft:
-- Goal: ...
-- Primary Artifact: ...
-- Inferred Constraints: ...
-- Explicit Constraints: ...
-- Confidence: 0.XX
+`references/questioning.md`에 따라 각 후보를 `must_ask`, `decision_quality`, `skip`으로 분류한다.
 
-🎯 AmbiguityLedger:
-| # | What | Why | Plausible Answers | EVPI |
-|---|---|---|---|---|
-| 1 | ... | ... | ... | Hi / Med / Low |
+- `must_ask`: 관찰 뒤에도 남은 사용자 소유 결정이고, 답이 실행을 바꾸며, 승인·보안·비가역성 또는 높은 가정 비용이 걸린다. 실행이나 외부 변경 전에 반드시 묻는다.
+- `decision_quality`: 같은 세 기본 조건을 만족하고 산출물의 독자·용도·공유 범위·결정 권한·참석자·수용 기준을 바꾼다. 안전한 기본값이 있어도 새 문서·회의 자료·메시지·결정 기록의 쓰임을 바꾸면 tier 예산 안에서 선제적으로 묻는다.
+- `skip`: 증거로 확인할 수 있거나 모든 답이 같은 실행으로 이어지거나 표현만 달라지는 항목이다.
 
-🚦 Uncertainty Level: [LOW / MEDIUM / HIGH]
-   - Hi: N, Med: N, Low: N
-   - Caller depth_budget: [0-4 / 5-8 / 9-12 / direct]
-   - Effective decision: [SKIP Phase 2 / ENTER Phase 2 with budget X]
+질문 수는 할당량이 아니다. 다만 `standard` 프리셋에서는 `must_ask`를 우선한 뒤 남은 첫 라운드에 영향이 큰 `decision_quality` 후보 1~3개를 확인한다. 후보가 없으면 0문항으로 바로 진행한다.
 
-🚪 Self-Ask Gate: Are follow-up questions needed here? [Yes / No]
-   Reason: ...
+구조화 질문 도구가 있으면 런타임 스키마와 한도를 따르되, 한 라운드에 최대 4개만 묻는다. 호출당 한도가 양의 정수이면 `normalized_runtime_limit = runtime_limit`이고, `unknown`이거나 유효하지 않으면 `normalized_runtime_limit = 1`이다. 실제 배치 크기는 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`이다. 의미상 배타적인 선택지를 만들 수 없거나 구조화 도구가 없으면 가장 중요한 질문 하나를 짧은 자유 응답형으로 묻는다.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+다음 상태를 유지한다.
+
+```yaml
+QuestionBudgetState:
+  questions_asked_total: integer
+  substantive_rounds_completed: integer
+  effective_max_questions: max_questions
+  effective_max_rounds: max_rounds
 ```
 
-**Response Inhibition reminder (principle #9)**: Phase 1의 reasoning이 모두 끝난 후에만 Phase 2 또는 Phase 3로 진입한다. 중간에 미리 코드를 쓰거나 결과를 만들지 않는다.
+실질 질문 배치를 보내기 전에 `questions_asked_total < effective_max_questions`와 `substantive_rounds_completed < effective_max_rounds`를 모두 확인한다. 배치를 실제로 보낸 직후 같은 상태 객체에 `questions_asked_total += batch_size`와 `substantive_rounds_completed += 1`을 적용한다. `batch_size`는 제안한 수가 아니라 실제로 보낸 질문 수다. 이어서 `remaining_total_budget = effective_max_questions - questions_asked_total`로 다시 계산한다. 각 답변 뒤에 결정을 다시 계산한다. 적격 질문이 사라지면 예산이 남아도 즉시 종료한다. 기본 상한에 도달하면 질문을 멈춘다.
 
----
+`deep` 프리셋은 명시적인 확장 동의를 받은 뒤에만 `effective_max_questions = extended_max_questions`, `effective_max_rounds = extended_max_rounds`로 바꾼다. 확장 동의 제어 질문은 `questions_asked_total += 1`만 적용하고 `substantive_rounds_completed`는 증가시키지 않는다. 이 제어 질문은 기본 상한에 도달한 뒤에도 새 실질 질문이 남고 `questions_asked_total < extended_max_questions`일 때 한 번만 허용한다. 사용자가 동의하지 않으면 즉시 질문을 끝낸다. 질문 총수가 20개를 넘거나 실질 질문 라운드가 5개를 넘도록 확장하지 않는다. 질문 상한에 도달했는데 승인·보안·비가역 blocker가 남으면 임의로 진행하지 않는다.
 
-## Phase 2 — Uncertainty-Driven Questioning (Conditional)
+## 4. COMMIT_INTENT
 
-This phase asks the user clarifying questions, but only when warranted by Phase 1's uncertainty level. It enforces the user's existing **Uncertainty-Driven Questioning** principle and adds EVPI ordering, fatigue detection, and a Sandler upfront contract.
+질문 답변과 관찰 근거를 통합해 실행 계약을 확정한다.
 
-### 2-0. Skip Condition (CHECK FIRST)
-
-**Skip Phase 2 entirely** if any of these hold:
-
-1. `depth_budget == 0` (direct /ha invocation default)
-2. `uncertainty == LOW` (Phase 1 self-ask gate said No)
-3. The caller's max_budget is 0
-
-When skipping, state explicitly which assumptions you are adopting and why, then complete Phase 3 with those defaults before entering Phase 5. Skipping is the **default behavior** for simple requests — 77% of top-intents in Amazon Alexa logs are correct on the first try without questioning, and Modeling Future Conversation Turns (arXiv:2410.13788) shows 61.9% correctness when LLMs choose "answer directly" over "ask first."
-
-### 2-1. Sandler Upfront Contract Preamble
-
-When entering Phase 2, open with an explicit contract to the user. This pattern (Sandler sales methodology) reduces drop-off and respects user agency:
-
-```
-📋 질문 단계 안내 (Upfront Contract)
-- 예상 질문 수: 약 [N]개 (최대 [max_budget]개)
-- 목적: [highest-EVPI 항목 1-2개 명시]
-- 모든 질문에 답할 필요 없습니다. "skip" 또는 "충분해" 라고 답하면 즉시 Phase 3으로 진행합니다.
-- 답변 후 모호성이 해소되면 남은 질문은 자동 생략됩니다.
+```yaml
+CommittedIntent:
+  goal: string
+  deliverable: string
+  hard_constraints: [string]
+  acceptance_criteria: [string]
+  user_decisions: [string]
+  assumptions: [string]
+  blockers: [string]
+  execution_units: [string]
+  verification_criteria: [string]
 ```
 
-### Question Pool Construction (per task_type)
+- 사용자 답과 명시 요구가 추론된 기본값보다 우선한다.
+- 정책·안전 규칙과 저장소 지침은 그대로 지킨다.
+- 낮은 위험의 기본값은 `assumptions`에 남긴다.
+- 고위험 blocker가 하나라도 있으면 실행하지 않고 필요한 결정만 보고한다.
+- 실행 전 `references/verification.md`에 따라 검증 기준을 예약한다.
 
-Each task type has a prioritized question **category pool**. Tiers define how many categories participate:
+## 5. ROUTE_AND_EXECUTE
 
-**Code**:
-- haq: {핵심 기능, 데이터·구조}
-- haqq: {핵심 기능, 데이터·구조, 에러 처리, 성능·제약, 통합·의존성}
-- haqqq: {핵심 기능, 데이터·구조, 에러 처리, 성능·확장성, 통합·의존성, 보안·검증, 운영·모니터링}
+`references/model-routing.md`의 역할 기준으로 각 실행 단위를 고른다.
 
-**Writing**:
-- haq: {독자·톤, 핵심 메시지}
-- haqq: {독자·톤, 분량·형식, 핵심 메시지, 사실·자료, 구성·흐름}
-- haqqq: {독자·톤, 분량·형식, 핵심 메시지, 사실·자료, 구성·흐름, 인용·출처, 편집 라운드, 게시 계획}
+- **controller**: 종합 판단, 아키텍처, 보안, 비가역 결정, 교차 계약과 blocker 분류
+- **standard executor**: 일반 코드 작업, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서
+- **utility executor**: 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경과 기계 검사
 
-**Planning**:
-- haq: {목표·성공 기준, 핵심 제약}
-- haqq: {목표·성공 기준, 제약, 우선순위, 리스크, 이해관계자}
-- haqqq: {목표·성공 기준, 제약, 우선순위, 리스크, 이해관계자, 컨틴전시, 의사소통, 측정 지표, 회고 계획}
+실행 단위마다 한 명만 활성화한다. 이전 결과를 통합한 뒤 다음 위임을 시작한다. 작업 범위와 수용 기준이 충분히 명확하면 controller가 직접 수행할 수도 있다.
 
-**Research**:
-- haq: {질문 구체화, 자료 출처}
-- haqq: {질문 구체화, 기존 지식, 자료 출처, 분석 방법, 결론 형식}
-- haqqq: {질문 구체화, 기존 지식, 자료 출처, 분석 방법, 편향 통제, 결론 형식, 재현 가능성, 후속 연구}
+위임에는 역할극 대신 다음을 포함한다.
 
-**Analysis**:
-- haq: {분석 질문, 데이터 출처}
-- haqq: {분석 질문, 데이터 출처, 분석 방법, 가정, 해석·결론 형식}
-- haqqq: {분석 질문, 데이터 출처, 데이터 품질·전처리, 분석 방법, 가정, 엣지 케이스, 해석, 감도 분석, 표현·시각화, 재현성·동료 검토}
+- 목적과 정확한 범위
+- 관련 파일·증거·사용자 결정
+- 지켜야 할 제약과 실행 순서
+- 기대 산출물과 검증 기준
+- blocker 발생 시 필요한 보고 형식
 
-**Decision**:
-- haq: {대안들, 평가 기준}
-- haqq: {대안들, 평가 기준, 가중치, 시간 압박, 되돌릴 수 있는가}
-- haqqq: {대안들, 평가 기준, 가중치, 시간 압박, 되돌릴 수 있는가, 감도 분석, 2차 효과, 의사소통}
+실행자는 새 제품 결정을 임의로 만들지 않는다. 새 사용자 전용 결정이 발견되면 controller에 blocker로 돌려보낸다.
 
-**Creative**:
-- haq: {주제·정서, 스타일·레퍼런스}
-- haqq: {주제·정서, 시점·화자, 스타일·레퍼런스, 길이·포맷, 제약}
-- haqqq: {주제·정서, 시점·화자, 스타일·레퍼런스, 길이·포맷, 제약·권리, 오디언스, 반복 계획}
+## 6. VERIFY
 
-**Learning**:
-- haq: {목표 수준, 가용 시간}
-- haqq: {현재 수준, 목표 수준, 가용 시간, 선호 학습 방식, 평가 방법}
-- haqqq: {현재 수준, 목표 수준, 가용 시간, 선호 학습 방식, 평가 방법, 동기·리마인더, 실패 복구, 진척 추적}
+`references/verification.md`의 공통 계약과 task-type별 최소 검증을 적용한다.
 
-**Other**:
-- All tiers: Negotiate directly with user for 2 / 5 / 9 priority questions.
+- 가능한 경우 작성과 검증의 문맥을 분리한다.
+- 테스트, 정적 검사, 실제 파일, 공식 출처와 재현 가능한 계산을 증거로 사용한다.
+- 국소 결함은 수정하고 관련 검증을 다시 수행한다.
+- 의도·구조 결함은 COMMIT_INTENT로 돌아간다.
+- 사용자 결정이 새로 필요하면 QUESTION_GATE로 돌아간다.
+- 같은 원인의 반복이 한도에 도달하면 중단하고 원인과 남은 선택지를 보고한다.
 
-### 2-2. EVPI-Ordered Question Selection
+검증되지 않은 결과를 완료로 표시하지 않는다.
 
-Questions are NOT asked in arbitrary order. Use the AmbiguityLedger from Phase 1 and rank by EVPI (Expected Value of Perfect Information):
+## 최종 출력
 
-1. Highest-EVPI item first (Hi severity, biggest plan-change impact)
-2. Drop any question where all plausible answers lead to the same plan (Low severity)
-3. Group related Med-severity items into single multi-part questions where possible
-4. EVPI ordering yields 1.5-2.7x question reduction (arXiv:2511.08798)
+사용자에게 필요한 내용만 간결하게 전달한다.
 
-### 2-3. Structured Questioning (Brainstorming-Style 선택형)
-
-구조화 질문 도구가 있으면 Knife 모드의 Phase 2 질문은 **AskUserQuestion 웹UI + brainstorming-style 선택형(multi-choice)** 포맷을 사용한다. Codex 등 runtime에 해당 도구가 없으면 동일한 3~4지선다와 직접 입력 선택지를 일반 사용자 메시지로 제시하고 응답을 기다린다. 어느 경우에도 선택지 없이 장문의 자유서술 답변을 요구하지 않는다.
-
-**Why selection-style in knife mode**: 사용자 feedback "비주얼 컴패니언 선택형 질문 선호"와 NBER 6-10Q drop-off cliff (응답률 73.6%) 대응. 단일-갈래 문제에 prose answer를 요구하는 것은 user working memory(Cowan 4-chunk) 낭비다. 3-4지선다 + "직접 입력" 옵션이 knife의 속도와 brainstorming의 탐색성을 동시에 보존한다.
-
-**Canonical invocation pattern**:
-
-```
-AskUserQuestion tool parameters:
-- questions: [
-    {
-      "question": "이 분석의 1차 독자는 누구입니까?",
-      "header": "독자",
-      "multiSelect": false,
-      "options": [
-        {"label": "경영진/임원", "description": "요약 중심, 의사결정 지원"},
-        {"label": "동료 분석가", "description": "방법론 중심, 재현 가능"},
-        {"label": "외부 클라이언트", "description": "전문성 표현"},
-        {"label": "본인 학습용", "description": "탐색적, 노트 중심"}
-      ]
-    }
-  ]
+```yaml
+result:
+  outcome: string
+  artifacts: [string]
+  assumptions: [string]
+  user_decisions: [string]
+  verification_evidence: [string]
+  remaining_risks: [string]
+  model_routes: [model_route]
 ```
 
-**선택지 구성 원칙**:
+실제 위임이나 폴백이 없으면 `model_routes`를 생략할 수 있다. 내부 후보 목록과 상세 추론은 출력하지 않는다.
 
-1. **3-4개 discrete option + "직접 입력" 자유형**: Cowan 4-chunk 한계 안에서 의사결정.
-2. **Option 간 semantic distance 크게**: "API only" vs "UI + API" 처럼 선택이 실제 plan을 바꾸는 branches.
-3. **Description에 trade-off 명시**: 각 선택이 유도할 귀결을 한 줄로 — "요약 중심, 의사결정 지원" 식으로.
-4. **Default/recommended 힌트 가능**: description에 "(권장)" 또는 "(가장 일반적)" 삽입. 강요 아님.
-5. **라운드당 최대 4개 질문** (Cowan 준수).
+## 중첩 호출이 없는 런타임
 
-**fallback**: 사용자가 "직접 입력"을 택하거나 옵션 외 답을 주면 knife의 판단으로 어느 bucket에 매핑할지 1회 확인 후 진행. 옵션 reconstruct를 위한 re-ask는 금지 (피로도).
-
-### 2-4. Question Round Management
-
-The caller's `question_rounds` controls batching:
-
-- `question_rounds: 1` (haq) — 한 라운드에 모든 질문, 최대 4개
-- `question_rounds: 2` (haqq) — 라운드당 4개씩 최대 2라운드
-- `question_rounds: 3-5` (haqqq) — 라운드당 4개씩, 기본 3라운드, 필요 시 최대 5라운드
-
-각 라운드 종료 후 AmbiguityLedger를 재평가한다. 해소된 항목이 많아 잔여 모호성이 LOW가 되면 즉시 Phase 3로 진행한다 (조기 종료).
-
-### 2-5. Fatigue Detection (Early Termination)
-
-다음 신호 중 2개 이상이 감지되면 즉시 Phase 3로 종료한다:
-
-- **Answer-length decline**: 사용자 답변 길이가 라운드를 거듭할수록 40% 이상 감소
-- **Monosyllabic answers**: "응", "yes", "ok" 같은 1-2 단어 답변이 구조화된 답변 뒤에 등장
-- **Explicit stop cues**: "skip", "충분해", "그냥 해줘", "enough", "just do it"
-- **Inattention markers**: 무의미한 반복, 첫 옵션 자동 선택, 답변 모순
-
-User Drop-off Cliff (Survicate): 1Q 85.7% → 6-10Q 73.6% → 21-40Q 70.5%. 너무 많은 질문은 답변 품질 자체를 떨어뜨린다.
-
-### 2-6. Stopping Criteria (Event-Driven, Not Count-Driven)
-
-Expert discovery protocols (MI commitment language, SPIN explicit need, aporia resolution) say: stop when the user's answers express commitment / explicit need / resolved aporia, NOT when a count threshold is hit. If the AmbiguityLedger reaches all-RESOLVED or all-INFERABLE, stop immediately even if budget remains.
-
-### 2-7. Phase 2 Output Format
-
-```
-❓ Phase 2 — Uncertainty-Driven Questioning
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📋 Upfront Contract: [N개 예상, 최대 M개, skip 가능]
-
-🎯 라운드 1 (EVPI 순서로 [k]개)
-[AskUserQuestion 호출 결과]
-
-(필요 시) 🎯 라운드 2 ...
-(필요 시) 🎯 라운드 3 ...
-
-⏱️ Fatigue 신호: [없음 / 답변 길이 감소 / 모노실래빅 / 명시 stop]
-🛑 종료 사유: [모호성 해소 / 예산 소진 / fatigue / 사용자 stop]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
----
-
-## Phase 3 — Post-Q Integration Reasoning
-
-This phase is owned by the controller. It reconciles user answers with the IntentDraft and AmbiguityLedger from Phase 1, detects contradictions, resolves the ledger, and may trigger a loop-back to Phase 1 if reconciliation surfaces new ambiguity.
-
-### 3-1. Purpose
-
-Without integration, Phase 2 answers risk being treated as raw inputs into Phase 5 — which loses the chance to detect contradictions between answers, between an answer and an inferred constraint, or between an answer and the original IntentDraft. Reflexion (arXiv:2303.11366) showed verbal reflection lifts HumanEval 80% → 91%; Chain-of-Verification (CoVe, arXiv:2309.11495) showed independent verification questions reduce hallucinations 50-70%; Self-Refine added +20% across 7 tasks via "localize problem + give fix instruction."
-
-### 3-2. Sub-Steps
-
-**3-2-1. Map Answers to AmbiguityLedger**
-
-For each item in the ledger, classify:
-
-- **RESOLVED** — user's answer directly answers it
-- **INFERABLE** — user's answer plus context allows confident inference
-- **STILL_OPEN** — answer was ambiguous, user skipped, or fatigue terminated
-
-**3-2-2. Reflexion-Style Contradiction Detection**
-
-Look for contradictions across:
-
-- Answer ↔ Answer (e.g. user wants "fast" and "comprehensive" both top priority)
-- Answer ↔ IntentDraft (e.g. user said audience is novice but goal implies expert)
-- Answer ↔ Phase 0 inferred constraints (e.g. user said no Python but project is pyproject.toml-based)
-
-For each contradiction, write a reconciliation strategy (which side wins, or how both can be honored).
-
-**3-2-3. CoVe-Style Verification Questions (research/decision/analysis)**
-
-For research/decision/analysis tasks, draft 3-5 verification questions that the final output must withstand. These are NOT asked to the user — they are answered INDEPENDENTLY in Phase 6. Example for research: "Does claim X have a primary source published after 2020?" Example for decision: "Have at least 3 alternatives been considered?"
-
-CoVe key insight: verification questions answered in isolation reduce hallucinations 50-70% vs verification done as part of the original generation.
-
-**3-2-4. Aleatoric vs Epistemic Classification**
-
-If a STILL_OPEN item has survived 2 rounds of questioning, treat it as **aleatoric** (genuinely uncertain in the world, not resolvable by more questions). Pick the most defensible default and state it explicitly in the IntegratedIntent.
-
-If a STILL_OPEN item is **epistemic** (resolvable in principle but not yet resolved) and EVPI is high, this triggers **Loop-Back Rule #1**: return to Phase 1 to enumerate the new ambiguity, then re-enter Phase 2 (subject to circuit breaker).
-
-**3-2-5. Build Integrated Intent**
-
-Produce the final consolidated intent that Phase 5 will execute from:
-
-```
-IntegratedIntent:
-  goal: [refined from IntentDraft + answers]
-  task_type: [from Phase 0, possibly refined]
-  hard_constraints: [must-have from answers + inferred]
-  soft_preferences: [nice-to-have]
-  default_assumptions: [stated assumptions for STILL_OPEN aleatoric items]
-  verification_questions: [3-5 CoVe questions for Phase 6]
-  loopback_needed: [true|false, with reason]
-```
-
-### 3-3. Phase 3 Output Format
-
-```
-🔁 Post-Q Integration Reasoning
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ Ledger Resolution:
-| # | Item | Status | Resolution |
-|---|---|---|---|
-| 1 | ... | RESOLVED | 답변: ... |
-| 2 | ... | INFERABLE | 추론: ... |
-| 3 | ... | STILL_OPEN (aleatoric) | 기본값: ... |
-
-⚠️ Contradictions Detected:
-[항목별 + 화해 전략]
-
-🔬 CoVe Verification Questions (Phase 6용):
-1. ...
-2. ...
-3. ...
-
-🔄 Loop-back Needed: [No / Yes — to Phase 1, reason: ...]
-
-🎯 Final Integrated Intent:
-- Goal: ...
-- Task Type: ...
-- Hard Constraints: ...
-- Soft Preferences: ...
-- Default Assumptions: ...
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
----
-
-## Phase 4 — Skipped in Knife Mode
-
-Knife의 전제는 "단일 산출물, 단일 사고 갈래"다. 9-종 task-type design template으로 실행 계획을 분리·정형화하는 /cast Phase 4는 knife mode에서 **skip**된다.
-
-Phase 3의 Post-Q 통합 추론 결과(IntentDraft + AmbiguityLedger 해소분 + 실행 경로)가 곧 Phase 5 execution directive다. 중간 design artifact는 생성하지 않는다 — 한 사고가 한 실행으로 직결되는 것이 knife의 가치다.
-
-**Escalation trigger**: 만약 task가 multi-file / multi-section / multi-step 산출물을 본질적으로 요구한다면 knife 적합성을 재평가하고 `/cast`로 escalate 제안 후 중단한다 (Loop-Back Rule #5 knife 변형 — Complexity Underestimate).
-
-## Phase 5 — Execution Routing & Delegation
-
-Phase 3의 Post-Q 통합 결과가 곧 실행 지시서다. `fleet_mode: off`이므로 fleet을 병렬로 띄우지 않는다. **작업 속성**을 관찰해 아래에서 하나만 고르고, 필요하면 이전 worker가 끝난 뒤 다음 worker를 순차 호출한다.
-
-| 관찰 가능한 작업 속성 | 기본 경로 | 예시 |
-|---|---|---|
-| 결정론적이며 좁은 범위, 검색·목록화·포맷 또는 명확한 1~3줄 기계 변경 | utility executor | 파일 목록, 정확한 문자열 검색, 표 정렬, 명시된 한 줄 수정 |
-| 표준 구현·디버깅·공식 문서 조사·테스트·보통의 글/분석 | standard executor | 기능 구현, 재현 가능한 버그 수정, API 공식 문서 확인, 단위 테스트 |
-| 모호·비가역·보안·아키텍처·교차 범위 또는 하위 모델이 같은 분류에서 2회 실패 | controller 직접 또는 별도 controller pass | 권한 설계, 데이터 마이그레이션, 여러 모듈 계약 변경, 두 번 실패한 디버깅 |
-
-`routing_bias`는 위 행이 동률일 때만 적용한다. `cost-first`는 utility 쪽, `balanced`는 standard 쪽, `quality-first`는 controller 검토 쪽으로 기울이되, 보안·비가역·아키텍처·교차 범위 조건을 낮추지 않는다.
-
-### 5-1. Delegation Invocation
-
-**Codex**에서는 모든 위임에 다음처럼 모델과 사고 수준을 모두 명시한다.
-
-```
-subagent parameters:
-- model: "gpt-5.6-luna" | "gpt-5.6-terra" | "gpt-5.6-sol"
-- reasoning_effort: "low" | "medium" | "high"
-- prompt: (use Work Execution Directive below)
-```
-
-**Claude Code**에서는 registry의 opus/sonnet/haiku 대응을 사용하고 `reasoning_effort` 필드를 붙이지 않는다. 실제 호출 모델이 fallback이면 controller가 그 사유를 기록한다.
-
-### 5-2. Work Execution Directive Template
-
-```
-# Work Execution Directive
-
-Execute the work exactly as directed. Do not add scope, do not improvise, and do not invent requirements that are not in the integrated intent.
-
-## Task Type
-[code / writing / planning / research / analysis / decision / creative / learning / other]
-
-## Context
-- Working directory: [CWD]
-- Relevant artifacts: [Phase 0 detected context]
-- Task characteristics: [summary]
-- Default assumptions to honor: [from Phase 3 IntegratedIntent]
-
-## Work Content
-
-[Paste the Phase 3 IntegratedIntent and concrete execution steps here verbatim]
-
-## Execution Order
-1. [Unit 1]
-2. [Unit 2]
-...
-
-## Output Expectations
-- All deliverables in Korean unless the user requirements or Phase 3 IntegratedIntent specify otherwise.
-- Use file types explicitly required by the user or Phase 3 IntegratedIntent. Otherwise, follow the project convention or choose the smallest fitting format (no surprise extensions).
-- When complete, output "Work Complete" followed by a list of artifacts created/modified.
-
-## Blocker Reporting (if you cannot proceed)
-If a step is underspecified, blocked, or you find a contradiction, DO NOT ask the user. Instead, return a structured blocker report and stop:
-
-BLOCKER: [one-sentence description of the gap]
-CONTEXT: [what information is missing or contradictory]
-REQUIRED: [what the controller must clarify or decide before you can proceed]
-
-The controller will classify the blocker and loop back to Phase 3 or Phase 5 per the Loop-Back Rules.
-```
-
-### 5-3. Task-Type Behavior Hints for the selected executor
-
-| Task Type | selected executor 동작 |
-|---|---|
-| code | 파일 편집/생성 (Edit, Write tool), linter/test 실행 가능 |
-| writing | markdown/txt 파일 작성 |
-| planning | 일정표/체크리스트 (markdown 표) 생성 |
-| research | 문서 요약/합성, 인용 마커 유지 |
-| analysis | 데이터 로드 + 변환 + 보고서 작성 (각 단계 결과 명시) |
-| decision | 매트릭스 + 권장안 작성 |
-| creative | 구조화된 창작물 작성 |
-| learning | 커리큘럼 문서 작성 |
-| other | 사용자가 원한 형태 |
-
-### 5-4. Blocker Classification (controller side)
-
-If the selected executor returns a BLOCKER, the controller classifies it and triggers the appropriate loop-back:
-
-| Blocker type | Trigger | Loop-back |
-|---|---|---|
-| IntegratedIntent underspec or contradiction | Rule 3 | 5 → 3 (max 1) |
-| Transient failure (network, file lock, retryable error) | Rule 4 | 5 → 5 retry (max 2) |
-| 하위 모델 2회 실패 또는 위험 상승 | controller escalation | 5 → 5, controller pass (max 1) |
-
-### 5-5. Phase 5 Output Format
-
-```
-🚀 Phase 5 — Execution Routing
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📤 선택: [utility / standard / controller] — [관찰된 작업 속성]
-📤 위임: [실제 runtime 모델, reasoning_effort 또는 Claude 대응]
-[Work Execution Directive 요약]
-
-📥 executor 응답:
-[Work Complete / BLOCKER report]
-
-(if BLOCKER) 🔄 Loop-back classification: [Rule N → Phase X]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
----
-
-## Phase 6 — Task-Type-Aware Verification
-
-This phase verifies the Phase 5 execution output against task-type-specific quality criteria. It is the last line of defense against hallucinations, structural defects, and silently-skipped requirements. Findings are classified into 4 buckets that map to loop-back rules.
-
-> **Single-agent (knife invariant)**: Phase 6 검증은 순차적으로 한 번에 단일 verifier만 호출한다. 작성자와 verifier는 가능한 한 분리한다. utility가 작성했으면 standard verifier를 우선하고, standard가 작성했으면 다른 standard context 또는 controller pass를 쓴다. `fleet_mode: off`는 동시 fleet 금지이며 순차 worker/verifier 한 명 호출을 금지하지 않는다.
-
-### 6-0. Verification Routing
-
-| 검증 성격 | 기본 경로 | controller 승격 조건 |
-|---|---|---|
-| 기계 검사 | utility executor | 검사 결과가 상충하거나 수정 범위가 커짐 |
-| 표준 기능 검증 | standard executor | 요구사항 해석 분쟁, 재현 불가 결함, 교차 범위 영향 |
-| 보안·고위험·분쟁 발견 | controller | controller가 최종 분류와 다음 행동을 결정 |
-
-Codex verifier 호출도 반드시 정확한 `model`과 `reasoning_effort`를 함께 명시한다. fallback과 Claude Code 대응은 registry 규칙을 따른다.
-
-### 6-1. Verification Recipes (per task type)
-
-**[code]**
-
-- 감지된 linter 실행 (mypy / tsc --noEmit / ruff / cargo clippy / go vet 등 Phase 0 detection 결과)
-- 감지된 test runner 실행 (pytest / jest / cargo test / go test 등)
-- 영향 받는 다른 모듈 grep 확인
-- 발견된 오류 → 수정 위임
-
-**[writing]**
-
-- **Atomic claim extraction**: 본문의 모든 사실 주장을 1문장 단위로 추출
-- **Fact-flagging**: 검증되지 않은 통계/숫자/인용/날짜에 `[STAT UNVERIFIED]` 등 마커 자동 주입 (6-3 참조)
-- **Temporal disclosure**: 시점 의존 정보에 "as of [date]" 추가
-- 톤 일관성, 구조, 문법 자체 점검
-- (선택) LanguageTool 류 외부 도구 가능 시 사용
-
-**[planning]**
-
-- **Critical Path 검증**: 각 단계의 prerequisite가 실제로 선행 단계에 포함되는가
-- **Cycle detection**: dependency 그래프에 사이클이 없는가
-- **Arithmetic validation**: duration 합계, 예산 합계가 제약과 일치하는가
-- 자원 경합 (같은 owner가 동시에 두 단계 담당하는가) 확인
-
-**[research] 🔴 CRITICAL**
-
-법률 분야에서 LLM hallucination rate는 39-88%에 이른다. Research task는 다른 어떤 task type보다도 강한 검증이 필요하다.
-
-- **Mandatory DOI/citation verification**: 모든 인용에 대해 WebFetch로 1차 출처 접근 (실패 시 `[CITATION UNVERIFIED]` 마킹)
-- **CRAAP test**: Currency / Relevance / Authority / Accuracy / Purpose 5축 점검
-- **CoVe verification questions**: Phase 3에서 만든 검증 질문에 INDEPENDENTLY 답함 (원래 본문을 보지 않고)
-- **Bias check**: 한쪽 관점만 인용했는지 확인
-- 해소 불가한 인용 → `[UNVERIFIED]` 라벨로 명시 + 사용자에게 알림
-
-**[analysis] (NEW)**
-
-- **데이터 무결성**: row count, null %, dtype, 중복, outlier 분포 확인
-- **통계 방법 적절성**: 사용된 방법이 데이터 분포/표본 크기/측정 수준에 맞는가
-- **결론-증거 일관성**: 결론이 데이터에서 실제로 도출 가능한가, 과잉 일반화 없는가
-- **대안 해석 탐색**: "다르게 해석할 수 있는가?" 최소 1개 대안 시나리오 검토
-- **Sample size disclosure**: 표본 크기/대표성 명시
-- 결과 시각화 (있는 경우) — 축, 범례, 단위 누락 확인
-
-**[decision] 🔴 CRITICAL**
-
-Clinical decision support에서 83% error echo rate가 보고되어 있다. Decision task도 research와 동급의 위험을 가진다.
-
-- **Alternatives audit**: 최소 3개 대안이 매트릭스에 있는가 (없으면 즉시 fail)
-- **Assumption surfacing**: 암묵 가정이 명시되어 있는가
-- **Bias audit**: 가능하면 different-model judge 사용 (LLM-as-judge는 same-model self-evaluation은 신뢰 불가)
-- **Sensitivity flagging**: 가중치 ±20% 변화 시 순위 뒤집힘 여부 명시
-- **Reversibility statement**: 결정의 되돌림 가능성 명시
-
-**[creative]**
-
-- **Constraint compliance**: 사용자 명시 제약 (길이/포맷/금지어) 충족 여부
-- **Style consistency**: 톤/시점/시제 일관성
-- **Rights check**: 저작권 우려가 있는 직접 인용/모방 없음
-- **Originality flag**: 잘 알려진 작품과 과도한 유사성 경고
-
-**[learning]**
-
-- **Source anchoring**: 학습 자료에 출처가 있는가 (위키피디아 vs 1차 자료)
-- **Temporal disclosure**: "as of [date]" — 빠르게 변하는 분야 (frameworks, APIs, regulations)
-- **Outdated-practice flag**: 더 이상 권장되지 않는 패턴이 포함되었는지
-- **Pedagogical coherence**: 선행 세션이 후행 세션의 prerequisite을 충족하는가
-- **Realistic time budget**: 세션 시간이 실제 학습 가능한 양인가
-
-**[other]**
-
-- 사용자 수용 기준 직접 확인
-- 산출물 형태가 사용자가 원한 것과 일치하는가
-
-### 6-2. Severity Rank (R9 evidence)
-
-Hallucination 위험 severity ranking:
-
-```
-Research (CRITICAL, 39-88% fabricated citations)
-> Decision (CRITICAL, 83% error echo in clinical)
-> Learning
-> Writing
-> Analysis
-> Planning
-> Creative
-> Code (linter/test catches most)
-```
-
-CRITICAL 등급 task type의 검증은 절대 생략하지 않는다.
-
-### 6-3. Confidence Disclosure Auto-Injection
-
-Final output에 다음 마커들을 자동 주입한다:
-
-| Marker | When to inject |
-|---|---|
-| `[STAT UNVERIFIED]` | 검증되지 않은 통계/숫자 |
-| `[QUOTE UNVERIFIED]` | 1차 출처에서 확인 불가한 직접 인용 |
-| `[CITATION UNVERIFIED]` | DOI/URL 접근 실패 인용 |
-| `[HIGH-STAKES ADVICE]` | 의학/법률/재무 등 결과 영향 큰 권고 |
-| `[KNOWLEDGE CUTOFF: YYYY-MM]` | 모델 cutoff 이후 가능성 있는 사실 |
-| `[LOW CONFIDENCE]` | Phase 1 confidence < 0.6 |
-| `[ASSUMED DEFAULT]` | Phase 3 STILL_OPEN aleatoric로 default 사용된 부분 |
-
-### 6-4. Findings Classification → Loop-Back Mapping
-
-| Finding | Severity | Loop-back rule |
-|---|---|---|
-| 통과 (검증 OK) | — | 종료 |
-| 사소한 수정 (typo, formatting, 부분 fact 미흡) | minor | Rule 5: 6 → 5 (재실행, 최대 3회) |
-| 구조적 결함 (IntegratedIntent 또는 실행 계획 자체가 잘못됨) | structural | Rule 6: 6 → 3 (재통합, 최대 1회) |
-| 요구사항 누락 (사용자가 말한 것이 빠짐) | requirements gap | Rule 7: 6 → 3 (Integrated Intent 갱신, 최대 1회) |
-
-### 6-5. Phase 6 Output Format
-
-```
-✅ Phase 6 — Verification
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🔍 Verification recipe: [task type별 recipe 이름]
-📤 검증 경로: [utility / standard / controller], 실제 모델: [...]
-
-검증 결과:
-- [Item 1]: PASS / FAIL — [상세]
-- [Item 2]: PASS / FAIL — [상세]
-- [Item 3]: PASS / FAIL — [상세]
-
-🔬 CoVe answers (research/decision/analysis):
-1. Q: ... | Independent answer: ...
-2. ...
-
-💡 Confidence markers injected: [STAT UNVERIFIED, KNOWLEDGE CUTOFF, ...]
-
-📊 Findings classification:
-- pass / minor fix (rule 5) / structural (rule 6) / requirements gap (rule 7)
-
-🔄 Loop-back action: [None / Rule N → Phase X]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
----
-
-## Loop-Back Rules
-
-The 7 phases above are not strictly linear. Loop-backs are allowed under explicit rules with hard caps. A global circuit breaker triggers user escalation if too many loop-backs accumulate.
-
-### 8 Loop-Back Rules
-
-| # | Trigger | From → To | Max | Notes |
-|---|---|---|---|---|
-| 1 | Post-Q reconciliation surfaces NEW ambiguity or contradiction Phase 2 cannot resolve | Phase 3 → Phase 1 | 2 | Re-enumerate ambiguities, may re-enter Phase 2 |
-| 2 | Phase 3 IntegratedIntent fails controller completeness check (underspec, missing evidence, placeholder leak) | Phase 3 → Phase 3 | 2 | Tighten the IntegratedIntent first |
-| 3 | Phase 5 executor BLOCKER — IntegratedIntent underspec | Phase 5 → Phase 3 | 1 | Clarify the relevant execution step |
-| 4 | Phase 5 transient failure (retryable error) | Phase 5 → Phase 5 | 2 retry | Same selected executor call, no scope change |
-| 5 | Phase 6 fixable finding (minor) | Phase 6 → Phase 5 | 3 | Re-execute with corrected scope |
-| 6 | Phase 6 structural issue (IntegratedIntent itself wrong) | Phase 6 → Phase 3 | 1 | Re-integrate and re-execute |
-| 7 | Phase 6 requirements gap (Integrated Intent missed something) | Phase 6 → Phase 3 | 1 | Re-integrate and re-execute |
-| 8 | **Global Circuit Breaker** | * → ABORT | 3 total | Loop-backs across all phases ≥ 3 → ABORT and escalate to user |
-
-### Circuit Breaker Detail (Rule #8)
-
-Loop-back count is summed across ALL rules. If the running total reaches 3, treat this as evidence that the architecture or assumption is wrong, NOT that "one more loop will fix it." Sunk-cost fallacy avoidance.
-
-When the circuit breaker fires:
-
-1. STOP all execution.
-2. Print the loop-back history (which rule fired when, why).
-3. State the suspected root cause (most common: ambiguity in Phase 0 task type detection, or contradictory user constraints).
-4. Print the **User Escalation** message:
-   ```
-   ⛔ Circuit Breaker triggered (3 loop-backs)
-   Architecture or assumption is likely wrong. Halting to ask:
-   - 가장 흔한 원인: [task type 오감지 / 모순된 제약 / 데이터 부족]
-   - 확인이 필요한 항목: [3개 이내]
-   - 다음 행동 제안: [restart with /haqq, clarify constraint X, provide data Y]
-   ```
-5. Wait for user direction before any further work.
-
-The circuit breaker is intentional and non-negotiable. Skipping it leads to MAST FM-3.1 (premature termination of debugging followed by hallucinated success claims).
-
----
-
-## Anti-Patterns to Avoid
-
-This skill explicitly avoids the following failure modes (drawn from MAST + KAIST 2025 + arXiv prompt engineering meta-studies):
-
-- **MAST FM-2.2** — Failing to ask for clarification when needed: addressed by Phase 1 Self-Ask gate.
-- **MAST FM-2.3** — Task derailment: addressed by Phase 0 task type lock + Phase 5 "do not add scope" directive.
-- **MAST FM-3.1** — Premature termination: addressed by Phase 6 verification + circuit breaker.
-- **MAST FM-1.2** — Disobeying role: addressed by Work Execution Directive's strict scope clause.
-- **Persona-prompt anti-pattern (KAIST 2025)** — "You are a senior X" hurts factual accuracy on MMLU. This skill uses purpose framing instead.
-- **Negative-instruction anti-pattern** — "Don't do X" underperforms "Do Y." This skill uses positive framing throughout.
-- **Stop Overthinking (arXiv:2503.16419)** — Wasting 19-42s on simple queries. Addressed by Phase 2-0 Skip Condition + Phase 1 LOW uncertainty path.
-- **Single-model routing anti-pattern** — Addressed by Phase 0 Stage 1 cheap-signal detection and the Phase 5 work-attribute routing table.
-
----
-
-## Role Prompting Fix (Purpose Framing, Not Persona)
-
-When delegating to any selected executor or verifier, **never** use persona framing like "You are a senior engineer with 20 years of experience." Instead, use **purpose framing**:
-
-**Bad**: "You are an expert code reviewer. Review this code."
-**Good**: "Your task: Identify logical flaws, performance issues, and security risks in this code. Output: list of issues + severity + fix suggestions."
-
-**Bad**: "You are a creative writer. Write a story."
-**Good**: "Write a short story (200–300 words) in the voice of [tone], about [theme], suitable for [audience]. Output: story + 1-paragraph description of creative choices."
-
-Purpose framing:
-- Reduces hallucination (the selected executor focuses on the task, not the imagined role).
-- Enables better agent composition (the same executor can verify code in one subtask and test it in another).
-- Improves quality measurement (success is defined by task output, not role persona).
-
----
-
-## Notes
-
-- **Output language**: All user-facing output (phase summaries, questions, explanations) is in **Korean**.
-- **Skill invocation** from /haq, /haqq, /haqqq prepend config; /ha respects config or defaults to depth_budget=0.
-- **No re-implementation**: /haq/haqq/haqqq are thin shims; they only set config + category hints. 중첩 Skill 호출이 없는 runtime에서는 `ha`를 읽어 같은 canonical logic을 적용한다.
-- **Agent autonomy**: selected executors receive task descriptions + IntegratedIntent, not role personas. They are purpose-driven, not identity-driven.
-- **Transparency**: Every phase outputs intermediate results, ambiguity scores, agent dispatch decisions, verification notes. User can always see why decisions were made.
-- **Reasoning Framework**: 9원칙은 `shared/reasoning-framework.md`에 canonical source로 정의. ha와 decompose 모두 동일 파일을 Read하여 drift를 방지한다.
-
----
-
-## Output Format (Combined View)
-
-```
-🔍 Phase 0 — Context 감지
-[Phase 0 output block]
-
-🧠 Phase 1 — Pre-Q Deep Reasoning
-[Phase 1 output block, ending with Self-Ask gate]
-
-❓ Phase 2 — Uncertainty-Driven Questioning   (skipped if uncertainty=LOW or depth_budget=0)
-[Phase 2 output block — or "SKIPPED: reason"]
-
-🔁 Phase 3 — Post-Q Integration Reasoning
-[Phase 3 output block — Phase 2가 skip된 경우에도 Phase 1 기본값을 통합]
-
-🚀 Phase 5 — Execution Routing
-[Phase 5 output block]
-
-✅ Phase 6 — Verification
-[Phase 6 output block]
-
-📊 Final Status:
-- Task type: [type]
-- Uncertainty: [LOW / MEDIUM / HIGH]
-- Phase 2 entered: [Yes / No]
-- Loop-backs: [count] / 3 (circuit breaker)
-- Artifacts created: N
-- Artifacts modified: N
-- Verification result: [PASS / partial / FAIL]
-- Confidence markers injected: [list]
-- Model disclosure: [요청 역할 / 실제 모델 / fallback 사유(있으면)]
-```
+`/haq`, `/haqq`, `/haqqq`가 `/ha`를 도구로 호출할 수 없으면 shim은 이 파일과 위 세 reference를 읽고 preset 설정을 적용해 같은 상태 흐름을 직접 수행한다. 이 경우에도 shim은 별도 질문 정책이나 모델 registry를 만들지 않는다.

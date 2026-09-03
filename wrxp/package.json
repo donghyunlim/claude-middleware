@@ -1,6 +1,6 @@
 {
   "name": "wrxp",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "description": "Intent refinement + recursive decomposition + dynamic agent matching + DAG-based autonomous execution for Claude Code",
   "author": "donghyunlim",
   "license": "MIT",
@@ -10,6 +10,7 @@
     "agents",
     "scripts/qwen.py",
     "docs/fast-worker-routing.md",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ]
 }

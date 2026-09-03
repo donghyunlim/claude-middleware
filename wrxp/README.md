@@ -1,8 +1,8 @@
 # wrxp — Universal Reasoning & Execution Pipeline for Claude Code
 
-> Opus는 조율(reason + synthesize), specialized subagents가 실행. 9가지 task type에 대해 불확실성 기반 질문과 Fleet Dispatching으로 publication-grade 산출물을 만드는 7-phase 파이프라인.
+> 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.24-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.25-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -12,31 +12,31 @@
 
 wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
-- **🗡️ Knife family (`ha` / `haq` / `haqq` / `haqqq`)** — **단일 agent, 단일 사고 갈래**. Fleet dispatching OFF. 문제가 한 갈래로 수렴하고 산출물이 단일일 때. /ha 가 canonical engine, 나머지 셋은 질문 깊이만 다른 thin shim.
+- **🗡️ Knife family (`ha` / `haq` / `haqq` / `haqqq`)** — **단일 사고 갈래, 직렬 실행**. 동시 dispatching OFF. 문제가 한 갈래로 수렴할 때 사용한다. `/ha`가 질문·라우팅·실행·검증의 canonical engine이며 나머지 셋은 질문 상한만 다른 thin shim이다.
 - **🛡️ Team family (`cast` / `castq` / `castqq` / `castqqq`)** — **Fleet ON, 병렬 specialized subagents**. Phase 1/5/6에서 3-20개 agent 병렬 dispatch. 다면 분석·교차 검증·여러 관점이 가치를 더할 때. /cast 가 canonical engine, 나머지 셋은 thin shim.
 
 두 family는 `shared/reasoning-framework.md`의 9원칙을 공유한다. 선택 기준: **사고의 흐름이 하나의 갈래면 /ha, 여러 갈래의 병렬 탐색이 본질이면 /cast**.
 
-### 0.1.24 Knife 모델 라우팅
+### Knife 모델 라우팅
 
-`/ha`가 유일한 registry다. Codex 5.6에서는 controller=`gpt-5.6-sol`/high, 표준 실행=`gpt-5.6-terra`/medium, 기계 작업=`gpt-5.6-luna`/low를 쓴다. Phase 0~3의 판단·계획·통합·blocker 분류는 controller가 소유하고, Phase 5·6은 관찰 가능한 작업·검증 속성으로 순차 라우팅한다. `fleet_mode: off`는 동시 fleet을 금지할 뿐, 한 번에 한 명의 worker/verifier를 순차 호출하는 것은 허용한다.
+`/ha`가 유일한 registry다. Codex에서는 종합 판단=`gpt-5.6-sol`, 일반 구현·중간 리팩터링=`gpt-5.6-terra`, 단순 탐색·국소 변경=`gpt-5.6-luna`를 선호한다. Claude에서는 같은 역할을 Opus 5, Sonnet 5, Haiku 4.5에 대응한다. 정확한 모델과 사고 수준은 런타임 가용성을 먼저 확인하고, 지원되지 않으면 같은 역할의 가용 모델 또는 런타임 기본 모델로 폴백한다.
 
-`/haq`·`/haqq`·`/haqqq`는 각각 cost-first·balanced·quality-first의 동률 해소 편향만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 따라서 깊은 질문 tier라고 Sol을 강제하지 않으며, 보안·비가역·아키텍처·교차 범위 같은 위험 조건은 언제나 controller로 승격한다. Claude Code에서는 같은 역할을 opus/sonnet/haiku로 대응한다.
+`/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** `max_concurrency: 1`은 동시 실행을 금지하지만 worker와 verifier를 한 명씩 순차 호출하는 것은 허용한다.
 
 추가로 `breakdown`, `decompose`, `agent-match` orchestration 축이 있다 (재귀 분해 + DAG 병렬). 총 11개 skill.
 
-**핵심 철학**: Opus는 조율에만 집중한다. Phase 0(dispatch 감지), Phase 1(Pre-Q Deep Reasoning), Phase 3(Post-Q 통합 추론), Phase 5/6(검증 synthesis)은 Opus가 직접 수행하지만, 실제 실행(code writing, document drafting, data processing)과 phase-specific 검증(code review, fact-check, sensitivity analysis)은 Fleet Dispatching으로 최대 20개의 specialized Haiku subagents에 분산 위임된다. 이렇게 하면 orchestrator의 context window는 보호되고, 전문가 인력은 필요할 때 병렬로 호출된다.
+**핵심 철학**: Knife family는 controller가 의도를 통합하고 작업 속성에 맞는 단일 executor와 verifier를 순차 사용한다. Team family는 독립적인 전문 관점의 병렬 탐색이 필요한 경우에만 Fleet Dispatching을 사용한다.
 
-wrxp의 **Uncertainty-Driven Questioning**은 Bayesian Optimal Experimental Design 이론에 기반한다. Phase 1이 $ARGUMENTS만으로 epistemic / aleatoric / pragmatic 3축 ambiguity ledger를 산출하고, Phase 2는 해당 ledger에 따라 EVPI(Expected Value of Perfect Information) 기반으로 질문을 선별한다. Phase 1이 LOW uncertainty로 판정하면 depth_budget이 20이어도 Phase 2는 skip되며, 이는 arXiv:2503.16419 "Stop Overthinking" 연구의 정상 동작이다.
+wrxp의 **Uncertainty-Driven Questioning**은 질문 전에 대화·파일·문서·도구를 먼저 확인한다. 그 뒤에도 남은 사용자 소유 결정을 `must_ask`와 `decision_quality`로 나눈다. 전자는 승인·보안·비가역성처럼 잘못 가정하면 안 되는 결정이고, 후자는 자료의 독자·용도·공유 범위·결정 권한처럼 산출물의 쓰임을 바꾸는 선택이다. 질문 예산은 항상 상한이므로 두 종류의 후보가 모두 없으면 모든 tier에서 질문 0개가 정상이다.
 
-wrxp의 **Fleet Dispatching**은 team family(`/cast` 계열)에 적용된다 — tier별로 dispatching 상한선을 정하여 공격적 병렬화를 허용하면서도 resource 폭주를 방지한다. /cast는 1-5, /castq는 phase당 5, /castqq는 8, /castqqq는 12(critical 시 20) agent를 Phase 1/5/6 각 phase에 dispatch한다. 총 cluster size는 15-60 agents, /castqqq는 unlimited budget이다. 반면 knife family(`/ha` 계열)는 tier 무관 **항상 single-agent** — fleet이 가치를 더하지 않는 단일-갈래 문제에 특화돼 있다.
+wrxp의 **Fleet Dispatching**은 team family(`/cast` 계열)에 적용된다 — tier별로 dispatching 상한선을 정하여 공격적 병렬화를 허용하면서도 resource 폭주를 방지한다. /cast는 1-5, /castq는 phase당 5, /castqq는 8, /castqqq는 12(critical 시 20) agent를 Phase 1/5/6 각 phase에 dispatch한다. 총 cluster size는 15-60 agents, /castqqq는 unlimited budget이다. 반면 knife family(`/ha` 계열)는 tier와 무관하게 `max_concurrency: 1`이며, 하나의 수렴하는 작업을 순차 실행한다.
 
 ## 왜 쓰는가 (Why use it?)
 
 - **환각 감소 (Hallucination reduction)**: Chain-of-Verification 4-step 프로세스(arXiv:2309.11495) 주입으로 longform generation hallucination 50-70% 감소. Reflexion(arXiv:2303.11366) self-reflection 루프로 HumanEval pass@1 80%→91% (+11%). Research/Decision task에서는 CoVe 적용이 mandatory다.
-- **질문 효율 (Question efficiency)**: EVPI-ordered questioning으로 불필요한 질문 1.5-2.7배 감소 (arXiv:2511.08798). Amazon Alexa 데이터상 사용자 top-intent가 이미 77% 정확하므로, default는 "묻지 않음"이며, Phase 1이 HIGH로 판정할 때만 Phase 2가 활성화된다.
+- **질문 효율 (Question efficiency)**: 증거로 확인할 사실은 먼저 조사하고, 반드시 확인해야 하는 결정과 산출물의 쓰임을 바꾸는 사용자 선택만 질문한다. 모든 질문 수는 상한이며, 어떤 tier에서도 0문항으로 종료할 수 있다.
 - **Task type 커버리지 (Task type coverage)**: NBER WP #34255 (2025년, 1.1M ChatGPT 대화 분석) 분류 체계와 Anthropic Clio 데이터를 매핑하여 9가지 task type 확정. analysis(신규)를 포함한 9 types은 사용자 workload 전 스펙트럼을 cover한다.
-- **병렬 전문가 투입 (Fleet Dispatching)**: tier별로 3-60개의 specialized subagent가 Phase 1(uncertainty 감지), Phase 5(execution), Phase 6(검증)에 동시 dispatch된다. 하드코딩된 agent 목록이 아니라 runtime enumerate → filter → diversify → rank 파이프라인을 거친 동적 매칭이다.
+- **병렬 전문가 투입 (Fleet Dispatching)**: Team family에서만 tier별 specialized subagent를 Phase 1(uncertainty 감지), Phase 5(execution), Phase 6(검증)에 동시 dispatch한다. Knife family는 `max_concurrency: 1`을 유지한다.
 - **Loop-Back Safety**: 8가지 loop-back 규칙(Ambiguity Spiral, Verification Fail, Scope Creep, Data Unavailable, Complexity Underestimate, Reviewer Deadlock, Token Exhaustion, User Timeout)과 Global Circuit Breaker가 무한 루프와 scope drift를 자동 차단한다.
 - **Expert Discovery 패턴 내재화**: 19개의 전문가 discovery 프로토콜(SPIKES, MI, SPIN, Sandler, Five Whys, JTBD, MECE, Calgary-Cambridge 등)에서 추출한 10개 Universal Principle이 파이프라인 설계 전반에 내재되어 있다. Sandler Upfront Contract는 Phase 2 preamble로, Five Whys는 Phase 1-2 depth probe로, MI Reflective Summarization은 Phase 3 통합으로 이어진다.
 - **Role Prompting Fix**: KAIST 2025 연구에 따라 persona 기반 prompting("You are a senior X")이 MMLU 등 factual task에서 성능을 떨어뜨린다. wrxp는 모든 agent prompt에서 persona를 제거하고 purpose-focused framing만 사용한다.
@@ -50,7 +50,7 @@ wrxp의 **Fleet Dispatching**은 team family(`/cast` 계열)에 적용된다 —
 claude plugin add donghyunlim/wrxp
 ```
 
-### 🗡️ Knife family (single-agent, single-thread)
+### 🗡️ Knife family (single-thread, serial execution)
 
 #### /wrxp:ha — 기본 knife (default)
 
@@ -58,7 +58,7 @@ claude plugin add donghyunlim/wrxp
 /wrxp:ha "이 함수의 off-by-one 버그 고쳐줘"
 ```
 
-depth_budget=0, 질문 없음. 단일 agent, Phase 0(cheap-signal only) → 1 → (2 skip) → 3 → (4 skip) → 5 → 6. 문제가 한 갈래로 수렴하는 trivial-simple task에 적합.
+자동 질문 상한은 4개이며, 적격 질문이 없으면 바로 실행한다. 하나의 사고 갈래로 수렴하는 작업에 적합하다.
 
 #### /wrxp:haq — 빠른 knife
 
@@ -66,7 +66,7 @@ depth_budget=0, 질문 없음. 단일 agent, Phase 0(cheap-signal only) → 1 �
 /wrxp:haq "결제 실패 시 재시도 로직 추가"
 ```
 
-depth_budget=0-4, question_rounds=1. AskUserQuestion 웹UI의 3-4지선다로 최대 4개 핵심 축 확인. 여전히 single-agent.
+`quick`, 질문 0~4개, 최대 1라운드. 한 번의 빠른 사용자 결정 확인이 필요할 때 사용한다.
 
 #### /wrxp:haqq — 중간 knife
 
@@ -74,7 +74,7 @@ depth_budget=0-4, question_rounds=1. AskUserQuestion 웹UI의 3-4지선다로 �
 /wrxp:haqq "이 분석 쿼리의 성능 문제 진단하고 개선"
 ```
 
-depth_budget=5-8, question_rounds=2. 단일 문제의 5-8개 세부 축을 선택형 질문으로 확정. Single-agent, moderate knife.
+`standard`, 질문 0~8개, 최대 2라운드. 첫 답변 뒤 남은 결정을 다시 평가하는 표준 발견에 사용한다.
 
 #### /wrxp:haqqq — 심층 knife
 
@@ -82,7 +82,7 @@ depth_budget=5-8, question_rounds=2. 단일 문제의 5-8개 세부 축을 선�
 /wrxp:haqqq "이 migration이 prod에 안전한지 tier 최상급으로 검증"
 ```
 
-depth_budget=9-12 (critical 시 최대 20), question_rounds=3-5. 한 문제를 10-20개 축(가정·감도·엣지)까지 끝까지 훑는 knife의 극한. Fleet 없이 **깊이로** 승부 — audit-ready single deliverable이 목표일 때.
+`deep`, 질문 0~12개, 최대 3라운드. 한 라운드에는 최대 4개만 묻는다. 기본 상한을 넘길 때는 사용자 동의를 받아 절대 상한 20개·5라운드까지 확장한다. 비가역·고위험 단일 문제에 적합하다.
 
 ### 🛡️ Team family (fleet-on, parallel)
 
@@ -124,7 +124,9 @@ Phase 1+2만 실행 — 분해 트리까지만 보고 실행은 나중으로 미
 
 Phase 4만 실행 — 이미 분해된 task list가 있을 때, dynamic agent matching과 DAG construction만 수행. 출력: `.wrxp/state/dag-{slug}.json`.
 
-## 7단계 파이프라인 (Phase 0-6 at a glance)
+## Team family 7단계 파이프라인 (Phase 0-6 at a glance)
+
+아래 그림은 병렬 Fleet을 사용하는 `/cast` 계열의 흐름이다. Knife family인 `/ha` 계열은 위에서 설명한 공통 상태 흐름과 `max_concurrency: 1` 직렬 계약을 사용한다.
 
 ```
 Phase 0: Context & Task-Type Detection
@@ -146,14 +148,14 @@ Final Output
 
 ## Tier 비교표
 
-### 🗡️ Knife family (fleet=off, single-agent)
+### 🗡️ Knife family (동시 실행 없음, `max_concurrency: 1`)
 
 | Tier | 질문 수 | Rounds | Fleet | 용도 |
 |---|---|---|---|---|
-| /wrxp:ha (default) | 0 (conditional) | — | 1 agent | 명확한 단일-갈래 task |
-| /wrxp:haq | 0-4 | 1 | 1 agent | 빠른 knife, 핵심 2축 확인 |
-| /wrxp:haqq | 5-8 | 2 | 1 agent | 단일 문제의 5-8개 세부 축 |
-| /wrxp:haqqq | 9-12 (max 20) | 3-5 | 1 agent | 한 문제 깊게, audit-ready |
+| /wrxp:ha (default) | 0-4 | 2 | 순차 | 균형형 자동 질문 |
+| /wrxp:haq | 0-4 | 1 | 순차 | 빠른 확인 |
+| /wrxp:haqq | 0-8 | 2 | 순차 | 표준 발견 |
+| /wrxp:haqqq | 0-12 (동의 시 max 20) | 3 (동의 시 5) | 순차 | 고위험 단일 문제 심층 확인 |
 
 ### 🛡️ Team family (fleet=on, parallel)
 
@@ -182,7 +184,7 @@ Final Output
 
 - **Pre-Q / Post-Q Deep Reasoning**: 15개 연구 논문 기반 (Self-Ask, ToT, Least-to-Most, Plan-and-Solve, Uncertainty of Thoughts, Reflexion, Self-Refine, Chain-of-Verification 등)
 - **Uncertainty-Driven Questioning**: Bayesian OED 이론 + arXiv:2503.16419 "Stop Overthinking" skip gate + Cowan 4-chunk working memory 한계 준수
-- **EVPI-Ordered Questions**: arXiv:2511.08798 기반 1.5-2.7x 질문 감소. 질문 카테고리 pool에서 plan-changing impact가 큰 순서대로 선별
+- **Decision-Gated Questions**: 증거로 확인할 수 있는 사실은 먼저 조사하고, `must_ask` 결정과 독자·용도·공유·권한을 바꾸는 `decision_quality` 선택을 우선순위대로 질문
 - **Dynamic Fleet Dispatching**: Runtime에 available subagent 목록을 enumerate → filter(task_type, phase) → diversify(중복 제거) → rank(fit score) → dispatch(top N)
 - **Task-Type-Aware Verification**: 9 types마다 전용 verification recipe. Research는 DOI/citation mandatory 검증, Decision은 alternatives audit + bias audit + sensitivity flagging
 - **Loop-Back Rules + Circuit Breaker**: 8 rules (LB1-LB8) + global abort threshold. Ambiguity Spiral / Verification Fail / Scope Creep / Data Unavailable / Complexity Underestimate / Reviewer Deadlock / Token Exhaustion / User Timeout
@@ -197,14 +199,14 @@ wrxp의 모든 설계 결정은 publicly verifiable 연구에 근거한다. 구�
 
 ## Composable usage
 
-### 🗡️ Knife family (single-agent, single-thread)
+### 🗡️ Knife family (single-thread, serial execution)
 
 | 호출 | 실행 범위 | 사용 시점 |
 |------|---------|---------|
-| `/wrxp:ha "요청"` | Phase 0-lite → 1 → (2 skip) → 3 → (4 skip) → 5 → 6 | 문제가 단일 갈래, 질문 없이 바로 (depth=0) |
-| `/wrxp:haq "요청"` | 위 + Phase 2 (1 round) | 0-4개 선택형 질문으로 단일 갈래 확정 |
-| `/wrxp:haqq "요청"` | 위 + Phase 2 (2 rounds) | 5-8개 선택형 질문, 단일 문제의 세부 축 |
-| `/wrxp:haqqq "요청"` | 위 + Phase 2 (3-5 rounds) | 9-20개 질문, 한 문제 깊게 파기 |
+| `/wrxp:ha "요청"` | 공통 상태 흐름 + 질문 0~4개 | 균형형 기본 실행 |
+| `/wrxp:haq "요청"` | 공통 상태 흐름 + 최대 1라운드 | 빠른 확인 |
+| `/wrxp:haqq "요청"` | 공통 상태 흐름 + 최대 2라운드 | 표준 발견 |
+| `/wrxp:haqqq "요청"` | 공통 상태 흐름 + 최대 3라운드(동의 시 5) | 고위험 단일 문제 심층 확인 |
 
 ### 🛡️ Team family (fleet-dispatching, parallel)
 

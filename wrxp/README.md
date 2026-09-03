@@ -29,6 +29,8 @@ wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
 wrxp의 **Uncertainty-Driven Questioning**은 질문 전에 대화·파일·문서·도구를 먼저 확인한다. 그 뒤에도 남은 사용자 소유 결정을 `must_ask`와 `decision_quality`로 나눈다. 전자는 승인·보안·비가역성처럼 잘못 가정하면 안 되는 결정이고, 후자는 자료의 독자·용도·공유 범위·결정 권한처럼 산출물의 쓰임을 바꾸는 선택이다. 질문 예산은 항상 상한이므로 두 종류의 후보가 모두 없으면 모든 tier에서 질문 0개가 정상이다.
 
+Knife family의 수정 루프는 실제 결함이 남아 있는 동안 횟수만으로 중단하지 않는다. 검증 뒤에도 수정이 더 필요하면 5·15·25회에는 에이전트가 원래 목적·계획·수정의 필수성을 점검하고, 10·20·30회에는 진행 상황과 다음 선택을 요약해 사용자 판단을 받는다. 모든 수용 기준이 충족되면 배수에 도달했더라도 바로 완료하며, 새 권한·외부 변경·보안 경계 확대는 체크포인트를 기다리지 않고 즉시 확인한다.
+
 wrxp의 **Fleet Dispatching**은 team family(`/cast` 계열)에 적용된다 — tier별로 dispatching 상한선을 정하여 공격적 병렬화를 허용하면서도 resource 폭주를 방지한다. /cast는 1-5, /castq는 phase당 5, /castqq는 8, /castqqq는 12(critical 시 20) agent를 Phase 1/5/6 각 phase에 dispatch한다. 총 cluster size는 15-60 agents, /castqqq는 unlimited budget이다. 반면 knife family(`/ha` 계열)는 tier와 무관하게 `max_concurrency: 1`이며, 하나의 수렴하는 작업을 순차 실행한다.
 
 ## 왜 쓰는가 (Why use it?)

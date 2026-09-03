@@ -32,6 +32,38 @@ def parse_flat_yaml_block_after(text: str, heading: str) -> dict[str, object]:
     return parsed
 
 
+def parse_named_flat_yaml_block_after(
+    text: str,
+    heading: str,
+    root_key: str,
+) -> dict[str, object]:
+    """Parse a named YAML mapping whose values are scalar policy settings."""
+    tail = text.split(heading, 1)[1]
+    match = re.search(r"```yaml\n(.*?)\n```", tail, re.DOTALL)
+    if not match:
+        raise AssertionError(f"missing YAML block after {heading}")
+
+    lines = match.group(1).splitlines()
+    if not lines or lines[0] != f"{root_key}:":
+        raise AssertionError(f"missing {root_key} root after {heading}")
+
+    parsed: dict[str, object] = {}
+    for line in lines[1:]:
+        if not line.startswith("  ") or line.startswith("    "):
+            continue
+        key, value = line.strip().split(":", 1)
+        value = value.strip()
+        if value == "null":
+            parsed[key] = None
+        elif value in ("true", "false"):
+            parsed[key] = value == "true"
+        elif value.isdigit():
+            parsed[key] = int(value)
+        else:
+            parsed[key] = value
+    return parsed
+
+
 class WrxpInvariantTests(unittest.TestCase):
     def test_packaging_and_docs_layout_is_installable(self):
         self.assertFalse((WRXP_ROOT / "CLAUDE.md").exists())
@@ -73,6 +105,9 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertIn("`max_concurrency=1`", haqqq)
         self.assertIn("`/cast`", haqqq)
         self.assertNotIn("여러 전문가 AI 동시 투입", haqqq)
+        self.assertNotIn("최대 3회까지 반복", ha)
+        self.assertIn("5·15·25", ha)
+        self.assertIn("10·20·30", ha)
         for current_row in (
             "| /wrxp:haq | 0-4 | 1 | 순차 |",
             "| /wrxp:haqq | 0-8 | 2 | 순차 |",
@@ -376,6 +411,69 @@ class WrxpInvariantTests(unittest.TestCase):
             "읽지 않았다면 관찰을 시작하지 말고 먼저 읽는다",
             skill,
         )
+
+    def test_repair_loop_routes_fifth_and_tenth_checkpoints_without_a_hard_cap(self):
+        """Valid repairs continue, with agent and user checkpoints at distinct multiples."""
+        verification = (
+            WRXP_ROOT / "skills/ha/references/verification.md"
+        ).read_text()
+        policy = parse_named_flat_yaml_block_after(
+            verification,
+            "## 수정 루프 체크포인트",
+            "RepairLoopPolicy",
+        )
+
+        self.assertEqual(
+            {
+                "hard_repair_limit": None,
+                "agent_checkpoint_interval": 5,
+                "user_checkpoint_interval": 10,
+                "user_checkpoint_precedence": True,
+                "checkpoint_requires_remaining_work": True,
+                "checkpoint_questions_count_toward_discovery_budget": False,
+                "approval_questions_count_toward_discovery_budget": False,
+                "security_waits_for_checkpoint": False,
+                "repair_requires_unmet_acceptance_criterion": True,
+                "progress_evidence_required": True,
+                "counter_resets_on_checkpoint": False,
+            },
+            policy,
+        )
+
+        section = verification.split("## 수정 루프 체크포인트", 1)[1]
+        table_start = section.index("| 검증 결과 | 수정 횟수 | 다음 행동 |")
+        table_end = section.index("\n\n", table_start)
+        table_lines = section[table_start:table_end].splitlines()[2:]
+        routes = [
+            tuple(cell.strip().strip("`") for cell in line.strip("|").split("|"))
+            for line in table_lines
+        ]
+        self.assertEqual(
+            [
+                ("수용 기준 충족", "모든 횟수", "complete"),
+                ("결함 잔존", "10의 배수", "user_checkpoint"),
+                (
+                    "결함 잔존",
+                    "10의 배수가 아닌 5의 배수",
+                    "agent_checkpoint",
+                ),
+                ("결함 잔존", "그 외", "continue"),
+            ],
+            routes,
+        )
+
+    def test_all_knife_presets_inherit_one_repair_checkpoint_policy(self):
+        verification = (
+            WRXP_ROOT / "skills/ha/references/verification.md"
+        ).read_text()
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+
+        self.assertEqual(1, verification.count("RepairLoopPolicy:"))
+        self.assertIn("references/verification.md", engine)
+        for name in ("haq", "haqq", "haqqq"):
+            shim = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
+            self.assertIn("../ha/references/verification.md", shim)
+            self.assertNotIn("RepairLoopPolicy:", shim)
 
     def test_ha_is_concise_common_engine_with_progressive_disclosure(self):
         skill_path = WRXP_ROOT / "skills/ha/SKILL.md"

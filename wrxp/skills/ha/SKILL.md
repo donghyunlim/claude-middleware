@@ -72,9 +72,15 @@ CAPABILITY_RESOLVE
   → COMMIT_INTENT
   → ROUTE_AND_EXECUTE
   → VERIFY
-      ├─ 국소 수정 가능 → ROUTE_AND_EXECUTE
+      ├─ 완료 → 최종 출력
+      ├─ 국소 수정 필요 → REPAIR_CHECKPOINT
       ├─ 사용자 결정 필요 → QUESTION_GATE
       └─ 완료 또는 blocker
+REPAIR_CHECKPOINT
+      ├─ 계속 → ROUTE_AND_EXECUTE
+      ├─ 재계획 → COMMIT_INTENT
+      ├─ 사용자 판단 → 사용자 체크포인트 후 REPAIR_CHECKPOINT
+      └─ blocker
 ```
 
 각 상태의 종료 조건을 만족한 뒤 다음 상태로 이동한다.
@@ -210,7 +216,10 @@ CommittedIntent:
 - 국소 결함은 수정하고 관련 검증을 다시 수행한다.
 - 의도·구조 결함은 COMMIT_INTENT로 돌아간다.
 - 사용자 결정이 새로 필요하면 QUESTION_GATE로 돌아간다.
-- 같은 원인의 반복이 한도에 도달하면 중단하고 원인과 남은 선택지를 보고한다.
+- 실제 수정 뒤에는 `RepairLoopPolicy`에 따라 누적 횟수를 기록한다. 수정 횟수 자체에는 상한을 두지 않는다.
+- 해결할 결함이 남은 10의 배수 수정에서는 현재 상태를 요약해 사용자 판단을 기다린다. 그 외 5의 배수 수정에서는 에이전트가 원래 목적·계획·현재 수정의 필수성을 판단한다.
+- 새 권한·외부 변경·파괴적 작업·보안 경계 확대는 횟수와 관계없이 즉시 승인 경계를 적용하며, 이 실행 통제 질문은 초기 질문 예산과 분리한다.
+- 동일한 입력·가설·행동을 새 증거 없이 반복하지 않는다.
 
 검증되지 않은 결과를 완료로 표시하지 않는다.
 

@@ -51,7 +51,9 @@ extension_requires_user_consent: boolean
 
 ## 필요한 참조
 
-- 모든 호출에서 CAPABILITY_RESOLVE 직후, OBSERVE 전에 [references/questioning.md](references/questioning.md)를 끝까지 읽는다. 이 순서를 질문 후보가 아직 없다는 이유로 건너뛰지 않는다.
+QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 못해도 질문 판정 자체는 건너뛸 수 없다. 상세 참조는 실제로 필요한 시점에 읽는다.
+
+- `QuestionGateVerdict`가 `ask`일 때 [references/questioning.md](references/questioning.md)를 끝까지 읽는다. 질문 예산, 배치 공식, 질문 작성 규칙이 여기에만 있다.
 - 첫 모델·에이전트 위임 전에 [references/model-routing.md](references/model-routing.md)를 끝까지 읽는다.
 - 실행 전에 검증 기준을 정할 때 [references/verification.md](references/verification.md)를 끝까지 읽는다.
 - 복잡한 의존성·위험 판단에는 [공통 reasoning framework](../../shared/reasoning-framework.md)를 적용한다. 원시 추론 전문은 출력하지 않는다.
@@ -98,7 +100,7 @@ REPAIR_CHECKPOINT
 
 사용자에게 질문하기 전에 이미 있는 답을 찾는다.
 
-이 상태에 들어오기 전에 `references/questioning.md`를 읽었어야 한다. 읽지 않았다면 관찰을 시작하지 말고 먼저 읽는다.
+관찰은 QuestionGate 판정의 입력이다. 관찰을 생략하면 후보를 평가할 수 없으므로 `pass_zero`로 진행할 수 없다.
 
 1. 현재 요청, 이전 대화, 첨부물과 지정 링크를 읽는다.
 2. 저장소의 `AGENTS.md`, `CLAUDE.md`, 관련 문서와 기존 구현을 확인한다.
@@ -137,31 +139,36 @@ Observation:
 
 ## 3. QUESTION_GATE
 
-`references/questioning.md`에 따라 각 후보를 `must_ask`, `decision_quality`, `skip`으로 분류한다.
+읽기 전용 탐색은 판정 전에도 허용한다. 그러나 실행 의도를 확정하거나 파일·외부 시스템에 쓰기 전에는 반드시 아래 판정을 마친다. 이 판정을 생략한 채 실행하지 않는다.
 
-- `must_ask`: 사용자 소유·미해결 상태이고 concrete next action blocked이며 `safe_default: null`인 승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계다. 실행 전에 반드시 묻고 discovery 예산에는 넣지 않는다.
-- `decision_quality`: 같은 세 기본 조건을 만족하고 산출물의 독자·용도·공유 범위·결정 권한·참석자·수용 기준을 바꾼다. 안전한 기본값이 있어도 새 문서·회의 자료·메시지·결정 기록의 쓰임을 바꾸면 tier 예산 안에서 선제적으로 묻는다.
-- `skip`: 증거로 확인할 수 있거나 모든 답이 같은 실행으로 이어지거나 표현만 달라지는 항목이다.
+다음 세 조건을 모두 만족하는 결정만 질문 후보다.
 
-질문 수는 할당량이 아니다. `none` 프리셋은 선제 discovery 질문을 0개로 두고, 실행 통제 게이트 외 후보는 관찰 근거 또는 기록한 안전한 기본값으로 진행한다. 안전한 기본값이 없으면 실행하지 말고 blocker로 보고한다. `quick`·`standard`·`deep` 프리셋은 질문 티어 계약에 따라 `decision_quality` 후보를 물을 수 있다. 후보가 없으면 0문항으로 바로 진행한다.
+1. `unresolved`: 관찰과 증거 확인을 마친 뒤에도 결정이 남아 있다.
+2. `answer_owner == user`: 사용자만 답할 수 있다. 승인, 비공개 조직 정책, 의도, 개인 선호가 여기에 해당한다.
+3. `materially_branching`: 답에 따라 실행 경로가 실제로 달라진다.
 
-`must_ask` 실행 통제 질문은 별도 전송 경로로 즉시 보낸다. 이 경로에는 QuestionBudgetState 사전검사 또는 discovery 배치 공식을 적용하지 않으며, discovery 카운터를 갱신하지 않는다. `remaining_total_budget`과 배치 크기 공식은 `decision_quality` 배치에만 적용한다.
+후보는 다음 세 가지로 분류한다.
 
-`decision_quality` 배치는 구조화 질문 도구의 런타임 스키마와 한도를 따르되, 한 라운드에 최대 4개만 묻는다. 호출당 한도가 양의 정수이면 `normalized_runtime_limit = runtime_limit`이고, `unknown`이거나 유효하지 않으면 `normalized_runtime_limit = 1`이다. 실제 배치 크기는 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`이다. 의미상 배타적인 선택지를 만들 수 없거나 구조화 도구가 없으면 가장 중요한 질문 하나를 짧은 자유 응답형으로 묻는다.
+- `must_ask`: 승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계이며 안전한 기본값이 없다. 질문 예산과 무관하게 즉시 묻는다.
+- `decision_quality`: 답이 산출물의 독자, 사용 목적, 공유·공개 범위, 결정의 상태·권한, 참석자 또는 수용 기준을 바꾼다. 되돌릴 수 있는 기본값이 있어도 후보에서 제외하지 않는다. 새 문서, 회의 자료, 메시지 또는 결정 기록을 만들면서 그 쓰임이 요청에 명시되어 있지 않다면 기본적으로 이 분류에 해당한다.
+- `skip`: 증거로 확인할 수 있거나, 모든 답이 같은 실행으로 이어지거나, 차이가 표현·형식뿐이다.
 
-다음 상태를 유지한다.
+분류를 마치면 판정을 하나 남긴다.
 
 ```yaml
-QuestionBudgetState:
-  questions_asked_total: integer
-  substantive_rounds_completed: integer
-  effective_max_questions: max_questions
-  effective_max_rounds: max_rounds
+QuestionGateVerdict:
+  verdict: ask | pass_zero | blocked
+  eligible_candidates: integer
+  basis: string
 ```
 
-`decision_quality` 배치를 보내기 전에 `questions_asked_total < effective_max_questions`와 `substantive_rounds_completed < effective_max_rounds`를 모두 확인한다. 배치를 실제로 보낸 직후 같은 상태 객체에 `questions_asked_total += batch_size`와 `substantive_rounds_completed += 1`을 적용한다. `batch_size`는 제안한 수가 아니라 실제로 보낸 질문 수다. 이어서 `remaining_total_budget = effective_max_questions - questions_asked_total`로 다시 계산한다. 각 답변 뒤에 결정을 다시 계산한다. 적격 질문이 사라지면 예산이 남아도 즉시 종료한다. 기본 상한에 도달하면 질문을 멈춘다.
+- `ask`: 적격 후보가 있다. 이 파일의 참조 목록에 있는 `questioning.md`를 끝까지 읽고, 프리셋 예산과 배치 공식에 따라 질문을 작성한다. 참조를 읽을 수 없으면 한 라운드 최대 4개 상한만 적용하되, 구조화 질문 도구를 쓸 수 없는 런타임에서는 선택지를 텍스트로 나열해 선택형을 흉내 내지 말고 우선순위가 가장 높은 질문 하나만 평문으로 묻는다. 질문 예산이 0인 `/ha` 직접 호출에서는 `must_ask`만 묻고, `decision_quality`는 안전한 기본값을 `assumptions`에 기록하거나 기본값이 없으면 `blocked`로 전환한다.
+- `pass_zero`: 적격 후보가 없다. 적용한 기본값을 `assumptions`에 기록하고 실행한다.
+- `blocked`: 안전한 기본값이 없는 후보가 남았는데 물을 수 없다. 실행하지 않고 남은 결정을 보고한다.
 
-`deep` 프리셋은 명시적인 확장 동의를 받은 뒤에만 `effective_max_questions = extended_max_questions`, `effective_max_rounds = extended_max_rounds`로 바꾼다. 확장 동의 제어 질문은 `questions_asked_total += 1`만 적용하고 `substantive_rounds_completed`는 증가시키지 않는다. 이 제어 질문은 기본 상한에 도달한 뒤에도 새 실질 질문이 남고 `questions_asked_total < extended_max_questions`일 때 한 번만 허용한다. 사용자가 동의하지 않으면 즉시 질문을 끝낸다. 질문 총수가 20개를 넘거나 실질 질문 라운드가 5개를 넘도록 확장하지 않는다. 질문 상한에 도달했는데 승인·보안·비가역 blocker가 남으면 임의로 진행하지 않는다.
+`pass_zero`는 후보를 실제로 평가한 결과가 0개일 때만 유효하다. 평가를 건너뛴 상태는 `pass_zero`가 아니다. 질문 수는 상한이며 할당량이 아니므로, 평가를 마친 0문항은 모든 프리셋에서 정상이다.
+
+질문 tier 스킬을 호출한 것 자체가 명확화를 요청하는 명시적 사용자 지시다. 런타임 기본 설정이 질문보다 가정을 선호하도록 안내하더라도, 이 계약이 정한 `must_ask`와 예산 안의 `decision_quality` 질문은 그 기본 선호보다 우선한다. 사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다.
 
 ## 4. COMMIT_INTENT
 

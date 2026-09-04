@@ -119,6 +119,18 @@ QuestionCandidate:
 
 `decision_quality` 질문 라운드는 서로 관련된 실질 결정 질문을 한 번에 전달하고 답을 받은 단위다. 한 라운드에는 최대 4개만 묻는다. 호출당 한도가 양의 정수이면 `normalized_runtime_limit = runtime_limit`이고, `unknown`이거나 유효하지 않으면 `normalized_runtime_limit = 1`이다. 실제 배치 크기는 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`이다. 구조화 질문 도구가 없으면 한 라운드에 자유 응답형 질문 하나만 묻는다.
 
+질문 예산은 다음 상태로 관리한다. 이 정의와 갱신 규칙은 이 문서에만 두며, 진입 파일은 값을 다시 기술하지 않는다.
+
+```yaml
+QuestionBudgetState:
+  questions_asked_total: integer
+  substantive_rounds_completed: integer
+  effective_max_questions: max_questions
+  effective_max_rounds: max_rounds
+```
+
+`decision_quality` 배치를 보내기 전에 `questions_asked_total < effective_max_questions`와 `substantive_rounds_completed < effective_max_rounds`를 모두 확인한다. `must_ask` 실행 통제 질문에는 이 사전검사를 적용하지 않는다.
+
 `decision_quality` 배치를 실제로 보낸 직후에는 같은 `QuestionBudgetState`에 `questions_asked_total += batch_size`와 `substantive_rounds_completed += 1`을 적용한다. `batch_size`는 실제 전송된 질문 수여야 한다. 그 뒤 `remaining_total_budget = effective_max_questions - questions_asked_total`로 다시 계산한 값으로 다음 배치를 제한한다. 따라서 새 라운드에서 예산을 초기화하거나 이전 배치 수를 다시 사용할 수 없다.
 
 | preset | 기본 질문 상한 | 라운드당 상한 | 기본 라운드 상한 | 용도 |
@@ -128,7 +140,7 @@ QuestionCandidate:
 | `standard` | 8 | 4 | 2 | 답변 후 재평가가 필요한 표준 발견 |
 | `deep` | 12 | 4 | 3 | 고위험 단일 문제의 단계적 확인 |
 
-`deep`의 12개 또는 3라운드를 넘겨야 한다면 먼저 사용자의 계속 진행 의사를 확인한다. 이 제어 질문은 기본 상한에 도달한 뒤에도 새 실질 질문이 남고 `questions_asked_total < extended_max_questions`일 때 한 번만 보낼 수 있다. 확장 동의 제어 질문은 `questions_asked_total += 1`만 적용하고 `substantive_rounds_completed`는 증가시키지 않는다. 동의한 경우에만 최대 5개의 실질 질문 라운드와 사용자에게 보낸 모든 질문을 합쳐 총 20개까지 확장한다. 동의하지 않으면 즉시 질문을 끝낸다. 따라서 동의 뒤에는 `20 - questions_asked_total`개보다 많이 물을 수 없다. 20개도 목표가 아니라 절대 상한이다.
+`deep` 프리셋은 명시적인 확장 동의를 받은 뒤에만 `effective_max_questions = extended_max_questions`, `effective_max_rounds = extended_max_rounds`로 바꾼다. `deep`의 12개 또는 3라운드를 넘겨야 한다면 먼저 사용자의 계속 진행 의사를 확인한다. 이 제어 질문은 기본 상한에 도달한 뒤에도 새 실질 질문이 남고 `questions_asked_total < extended_max_questions`일 때 한 번만 보낼 수 있다. 확장 동의 제어 질문은 `questions_asked_total += 1`만 적용하고 `substantive_rounds_completed`는 증가시키지 않는다. 동의한 경우에만 최대 5개의 실질 질문 라운드와 사용자에게 보낸 모든 질문을 합쳐 총 20개까지 확장한다. 동의하지 않으면 즉시 질문을 끝낸다. 따라서 동의 뒤에는 `20 - questions_asked_total`개보다 많이 물을 수 없다. 20개도 목표가 아니라 절대 상한이다.
 
 ## 질문 작성과 런타임 적응
 

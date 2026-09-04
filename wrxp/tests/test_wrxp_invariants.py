@@ -164,7 +164,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.26"},
+            {"0.1.27"},
             {plugin_version, package_version, marketplace_version},
         )
 
@@ -303,13 +303,18 @@ class WrxpInvariantTests(unittest.TestCase):
             WRXP_ROOT / "skills/ha/references/questioning.md"
         ).read_text()
 
-        for contract in (engine, questioning):
-            self.assertIn("별도 전송 경로", contract)
-            self.assertIn("QuestionBudgetState 사전검사", contract)
-            self.assertIn("갱신하지 않는다", contract)
-            self.assertIn("`decision_quality` 배치에만", contract)
+        for contract in ("별도 전송 경로", "QuestionBudgetState 사전검사",
+                         "갱신하지 않는다", "`decision_quality` 배치에만"):
+            self.assertIn(contract, questioning)
         self.assertIn("must_ask 있음 → EXECUTION_CONTROL_ASK", engine)
         self.assertIn("예산 내 decision_quality 있음 → DISCOVERY_ASK", engine)
+        self.assertIn(
+            "승인·보안·비밀·외부 변경·파괴적·불가역 경계는 discovery 예산 밖",
+            engine,
+        )
+        for name in ("ha", "haq", "haqq", "haqqq"):
+            entry = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
+            self.assertIn("질문 예산과 무관하게 즉시 묻는다", entry)
 
     def test_runtime_caps_and_dependency_waves_have_a_structured_contract(self):
         engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
@@ -386,17 +391,17 @@ class WrxpInvariantTests(unittest.TestCase):
 
         self.assertIn(
             "`min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`",
-            engine,
-        )
-        self.assertIn(
-            "`min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`",
             questioning,
         )
-        self.assertIn("`normalized_runtime_limit = 1`", engine)
         self.assertIn("`normalized_runtime_limit = 1`", questioning)
+        self.assertNotIn(
+            "normalized_runtime_limit",
+            engine,
+            "budget arithmetic must live only in questioning.md",
+        )
         budget_match = re.search(
             r"```yaml\nQuestionBudgetState:\n(.*?)\n```",
-            engine,
+            questioning,
             re.DOTALL,
         )
         self.assertIsNotNone(budget_match)
@@ -414,23 +419,23 @@ class WrxpInvariantTests(unittest.TestCase):
         )
         self.assertIn(
             "`questions_asked_total < effective_max_questions`",
-            engine,
+            questioning,
         )
         self.assertIn(
             "`substantive_rounds_completed < effective_max_rounds`",
-            engine,
+            questioning,
         )
         self.assertIn(
             "`effective_max_questions = extended_max_questions`",
-            engine,
+            questioning,
         )
         self.assertIn(
             "`effective_max_rounds = extended_max_rounds`",
-            engine,
+            questioning,
         )
         self.assertIn(
             "확장 동의 제어 질문은 `questions_asked_total += 1`만 적용",
-            engine,
+            questioning,
         )
         self.assertIn("최대 5개의 실질 질문 라운드", questioning)
         self.assertIn("20 - questions_asked_total", questioning)
@@ -442,29 +447,190 @@ class WrxpInvariantTests(unittest.TestCase):
             WRXP_ROOT / "skills/ha/references/questioning.md"
         ).read_text()
 
-        for contract in (engine, questioning):
-            self.assertIn("`questions_asked_total += batch_size`", contract)
-            self.assertIn("`substantive_rounds_completed += 1`", contract)
-            self.assertIn(
-                "`remaining_total_budget = effective_max_questions - "
-                "questions_asked_total`",
-                contract,
-            )
-            self.assertIn(
-                "`questions_asked_total += 1`만 적용하고 "
-                "`substantive_rounds_completed`는 증가시키지 않는다",
-                contract,
-            )
-
-    def test_question_policy_is_loaded_before_observation(self):
-        skill = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
-        reference_rule = skill.index("모든 호출에서 CAPABILITY_RESOLVE 직후")
-        observe_heading = skill.index("## 1. OBSERVE")
-        self.assertLess(reference_rule, observe_heading)
+        self.assertIn("`questions_asked_total += batch_size`", questioning)
+        self.assertIn("`substantive_rounds_completed += 1`", questioning)
         self.assertIn(
-            "읽지 않았다면 관찰을 시작하지 말고 먼저 읽는다",
+            "`remaining_total_budget = effective_max_questions - "
+            "questions_asked_total`",
+            questioning,
+        )
+        self.assertIn(
+            "`questions_asked_total += 1`만 적용하고 "
+            "`substantive_rounds_completed`는 증가시키지 않는다",
+            questioning,
+        )
+        self.assertNotIn(
+            "questions_asked_total",
+            engine,
+            "counter update rules must live only in questioning.md",
+        )
+
+    def test_question_gate_is_inline_so_it_survives_a_skipped_reference_read(self):
+        """The 0.1.26 failure: the gate lived 45KB away behind an unenforced read."""
+        skill = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+
+        self.assertIn(
+            "QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 못해도 "
+            "질문 판정 자체는 건너뛸 수 없다",
             skill,
         )
+        self.assertIn(
+            "`QuestionGateVerdict`가 `ask`일 때 "
+            "[references/questioning.md](references/questioning.md)",
+            skill,
+        )
+        self.assertNotIn("모든 호출에서 CAPABILITY_RESOLVE 직후", skill)
+        self.assertNotIn("읽지 않았다면 관찰을 시작하지 말고 먼저 읽는다", skill)
+
+        gate_heading = skill.index("## 3. QUESTION_GATE")
+        commit_heading = skill.index("## 4. COMMIT_INTENT")
+        self.assertLess(gate_heading, commit_heading)
+
+    def test_question_gate_contract_is_byte_identical_across_entry_files(self):
+        """Every entry file carries the same gate; shims never fork the policy."""
+        blocks = {}
+        for name in ("ha", "haq", "haqq", "haqqq"):
+            text = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
+            start = text.index("읽기 전용 탐색은 판정 전에도 허용한다")
+            tail = "사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다."
+            end = text.index(tail) + len(tail)
+            blocks[name] = text[start:end]
+
+        self.assertEqual(
+            1,
+            len(set(blocks.values())),
+            f"QuestionGate blocks diverged across {sorted(blocks)}",
+        )
+
+        gate = blocks["ha"]
+        verdict_match = re.search(
+            r"```yaml\nQuestionGateVerdict:\n(.*?)\n```", gate, re.DOTALL
+        )
+        self.assertIsNotNone(verdict_match)
+        self.assertEqual(
+            {"verdict", "eligible_candidates", "basis"},
+            set(re.findall(r"^  ([a-z_]+):", verdict_match.group(1), re.MULTILINE)),
+        )
+        for clause in (
+            "verdict: ask | pass_zero | blocked",
+            "`unresolved`",
+            "`answer_owner == user`",
+            "`materially_branching`",
+            "질문 예산과 무관하게 즉시 묻는다",
+            "평가를 건너뛴 상태는 `pass_zero`가 아니다",
+        ):
+            self.assertIn(clause, gate)
+
+    def test_gate_outranks_a_runtime_default_that_discourages_questions(self):
+        """Codex Default mode prefers assumptions over questions; the tier call overrides it."""
+        for name in ("ha", "haq", "haqq", "haqqq"):
+            entry = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
+            self.assertIn(
+                "질문 tier 스킬을 호출한 것 자체가 명확화를 요청하는 "
+                "명시적 사용자 지시다",
+                entry,
+            )
+            self.assertIn(
+                "런타임 기본 설정이 질문보다 가정을 선호하도록 안내하더라도, "
+                "이 계약이 정한 `must_ask`와 예산 안의 `decision_quality` 질문은 "
+                "그 기본 선호보다 우선한다",
+                entry,
+            )
+            self.assertIn(
+                "사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다",
+                entry,
+            )
+
+    def test_free_form_fallback_matches_runtimes_without_a_choice_widget(self):
+        """Codex forbids faking a multiple-choice question as assistant text."""
+        questioning = (
+            WRXP_ROOT / "skills/ha/references/questioning.md"
+        ).read_text()
+
+        self.assertIn(
+            "구조화 질문 도구가 없으면 텍스트로 선택형 UI를 흉내 내지 말고, "
+            "가장 높은 우선순위의 질문 하나를 간결하게 묻는다",
+            questioning,
+        )
+
+        # Observed in the 0.1.27 behavior run: with questioning.md unreadable the
+        # model asked four text questions with (a)/(b)/(c) options, which Codex
+        # forbids. The fallback has to survive a failed reference read.
+        for name in ("ha", "haq", "haqq", "haqqq"):
+            entry = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
+            self.assertIn(
+                "참조를 읽을 수 없으면 한 라운드 최대 4개 상한만 적용하되, "
+                "구조화 질문 도구를 쓸 수 없는 런타임에서는 선택지를 텍스트로 "
+                "나열해 선택형을 흉내 내지 말고 우선순위가 가장 높은 질문 하나만 "
+                "평문으로 묻는다",
+                entry,
+            )
+
+    def test_gate_covers_the_scenarios_that_regressed_in_0_1_26(self):
+        """Each observed scenario must map to a discriminating rule in the contract."""
+        gate = (WRXP_ROOT / "skills/haqq/SKILL.md").read_text()
+        questioning = (
+            WRXP_ROOT / "skills/ha/references/questioning.md"
+        ).read_text()
+
+        scenarios = (
+            # The reported RED case: a meeting brief whose use was never stated.
+            (
+                "회의 자료 준비",
+                gate,
+                "새 문서, 회의 자료, 메시지 또는 결정 기록을 만들면서 "
+                "그 쓰임이 요청에 명시되어 있지 않다면 기본적으로 이 분류에 해당한다",
+            ),
+            # A lookup answerable from the repository: never ask.
+            ("단순 조회", gate, "증거로 확인할 수 있거나"),
+            # A cosmetic preference with a safe default and no change of use.
+            (
+                "사소한 형식 선택",
+                questioning,
+                "낮은 위험의 세부 선호이며 안전한 기본값이 있고, "
+                "`decision_quality`의 쓰임 변화도 없는 경우",
+            ),
+            # A destructive or irreversible boundary: ask regardless of budget.
+            (
+                "고위험 외부 변경",
+                gate,
+                "승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계이며 "
+                "안전한 기본값이 없다",
+            ),
+        )
+        for label, document, rule in scenarios:
+            self.assertIn(rule, document, f"gate does not cover: {label}")
+
+    def test_reasoning_framework_does_not_suppress_user_owned_decisions(self):
+        """The always-loaded framework must not bias the model against asking."""
+        framework = (WRXP_ROOT / "shared/reasoning-framework.md").read_text()
+
+        self.assertIn(
+            "**This preference does NOT extend to user-owned decisions**",
+            framework,
+        )
+        self.assertIn(
+            "first resort for user-owned decisions",
+            framework,
+        )
+        self.assertNotIn(
+            "- **Prefer calling tools with available information over asking "
+            "the user**, unless",
+            framework,
+        )
+        self.assertNotIn(
+            "Information only available by asking the user (last resort)",
+            framework,
+        )
+
+    def test_entry_files_stay_small_enough_to_be_read_every_call(self):
+        """Progressive disclosure only works if the entry files are cheap."""
+        caps = {"ha": 16_000, "haq": 6_000, "haqq": 6_000, "haqqq": 6_000}
+        for name, cap in caps.items():
+            size = (WRXP_ROOT / f"skills/{name}/SKILL.md").stat().st_size
+            self.assertLessEqual(
+                size, cap, f"{name}/SKILL.md grew to {size} bytes (cap {cap})"
+            )
 
     def test_repair_loop_routes_fifth_and_tenth_checkpoints_without_a_hard_cap(self):
         """Valid repairs continue, with agent and user checkpoints at distinct multiples."""

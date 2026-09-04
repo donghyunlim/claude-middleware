@@ -14,7 +14,8 @@ Analyze the intended action against the following factors. Resolve conflicts in 
 What are the consequences of taking the action? Will the new state cause any future issues?
 
 - For exploratory tasks (like searches), missing optional parameters is LOW risk
-- **Prefer calling tools with available information over asking the user**, unless Rule 1 determines optional information is required for a later step
+- **For facts that evidence can resolve** (files, documentation, runtime metadata), **prefer calling tools with available information over asking the user**, unless Rule 1 determines optional information is required for a later step
+- **This preference does NOT extend to user-owned decisions**: approvals, private policy, intent, and choices that change a deliverable's audience, purpose, sharing scope, decision authority, or acceptance criteria. Defaulting silently on those is a HIGH-risk action, not a low-risk one. Resolve them by asking within the active question budget, or report them as blockers.
 
 ## 3. Abductive Reasoning and Hypothesis Exploration
 At each step, identify the most logical and likely reason for any problem encountered:
@@ -35,7 +36,7 @@ Incorporate all applicable sources of information:
 - Available tools and their capabilities
 - All policies, rules, checklists, constraints
 - Previous observations and conversation history
-- Information only available by asking the user (last resort)
+- Information only available by asking the user. This is the last resort for facts that evidence could have resolved, and the first resort for user-owned decisions.
 
 ## 6. Precision and Grounding
 Ensure your reasoning is extremely precise and relevant to each exact ongoing situation:

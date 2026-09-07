@@ -38,10 +38,12 @@ RuntimeCapabilities:
 
 | 논리 역할 | Codex 선호 후보 | Claude 선호 후보 | 주된 책임 |
 |---|---|---|---|
-| controller | `gpt-5.6-sol` + `high` | Claude Opus 5 (`claude-opus-5`) | 종합 판단, 의도 통합, 아키텍처·보안·비가역 결정, blocker 분류 |
+| controller | `gpt-6-astra` + `high` | Claude Opus 5 (`claude-opus-5`) | 종합 판단, 의도 통합, 아키텍처·보안·비가역 결정, blocker 분류 |
 | standard executor | `gpt-5.6-terra` + `medium` | Claude Sonnet 5 (`claude-sonnet-5`) | 일반 코드 구현, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서 작업 |
 | utility executor | `gpt-5.6-luna` + `low` | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) | 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경, 기계 검사 |
-| verifier | 보통 Terra, 고위험 Sol | 보통 Sonnet 5, 고위험 Opus 5 | 작성 결과와 분리된 검증 패스 |
+| verifier | 보통 Terra, 고위험 Astra | 보통 Sonnet 5, 고위험 Opus 5 | 작성 결과와 분리된 검증 패스 |
+
+`gpt-6-astra`는 런타임 기본 사고 수준이 `low`이므로, controller 역할에서는 `high`를 명시적으로 전달해야 표의 의도대로 실행된다. 사고 수준을 생략하면 이 모델은 최상위 모델이면서도 가장 낮은 추론으로 응답한다.
 
 Claude Code가 `opus`, `sonnet`, `haiku` 같은 계열 별칭만 받으면 해당 별칭을 사용하고 설치된 정확한 버전은 런타임에 맡긴다. Claude API 모델 ID를 받는 환경에서만 표의 정확한 ID를 사용한다. Codex 전용 `reasoning_effort` 필드를 Claude 위임에 강제하지 않는다. Claude 런타임이 effort를 명시적으로 지원할 때만 지원 목록의 교집합을 사용한다.
 

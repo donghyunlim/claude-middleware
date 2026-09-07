@@ -164,7 +164,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.27"},
+            {"0.1.28"},
             {plugin_version, package_version, marketplace_version},
         )
 
@@ -174,7 +174,7 @@ class WrxpInvariantTests(unittest.TestCase):
         ).read_text()
 
         expected_rows = (
-            "| controller | `gpt-5.6-sol` + `high` | Claude Opus 5 (`claude-opus-5`) |",
+            "| controller | `gpt-6-astra` + `high` | Claude Opus 5 (`claude-opus-5`) |",
             "| standard executor | `gpt-5.6-terra` + `medium` | Claude Sonnet 5 (`claude-sonnet-5`) |",
             "| utility executor | `gpt-5.6-luna` + `low` | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) |",
         )
@@ -374,6 +374,7 @@ class WrxpInvariantTests(unittest.TestCase):
             )
             self.assertNotIn("routing_bias:", skill)
             for model in (
+                "gpt-6-astra",
                 "gpt-5.6-sol",
                 "gpt-5.6-terra",
                 "gpt-5.6-luna",

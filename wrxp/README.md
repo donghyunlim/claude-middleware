@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.26-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.29-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -23,7 +23,7 @@ wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축이 있다 (재귀 분해 + DAG 병렬). 총 11개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축과 정본 기획서에 따라 사용자와 단계별로 협업하는 `staged-development`가 있다. 총 12개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다. Team family는 관점·가설 fleet으로 다면 탐색이 필요한 경우에 사용한다.
 
@@ -74,6 +74,28 @@ claude plugin install wrxp@donghyunlim
 claude plugin marketplace update donghyunlim
 claude plugin update wrxp@donghyunlim
 ```
+
+### 단계별 협업 개발
+
+```text
+/wrxp:staged-development "고객 선택 화면을 함께 기획하고 구현해 줘"
+```
+
+중·대규모 개발이나 제품 방향·주요 설계가 불명확한 작업에 사용한다. 작업별 기획서 하나를 정본으로 두고 **아웃라인 합의 → 핵심 흐름 구현·검토 → 상세 개발·검증** 순서로 진행한다. 기존 기획서와 사용자 합의를 재사용하므로 이어서 작업할 때 같은 승인을 반복하지 않는다.
+
+기획서에는 목적·범위·성공 조건, 합의된 결정과 미해결 질문, 현재 단계·진행 범위·다음 검토물, 검증 근거를 기록한다. 목적·범위·성공 조건의 중요한 변경은 사용자와 합의한 뒤 반영한다. 합의된 검토를 자동으로 위임할 수 있으며, 단순하고 영향이 작은 수정은 기획서와 단계 승인을 생략한다.
+
+이 스킬은 `ha`·`cast` 등 기존 엔진 전체를 연쇄 실행하지 않는다. 현재 단계에 필요한 작업만 선택하고, 핵심 불변조건은 초기부터 검증하며, 확정된 동작의 상세 개발에는 필요한 TDD를 적용한다. 사용자가 선택한 모델을 유지하므로 Codex의 Astra와 Claude Code에서 같은 협업 절차를 사용할 수 있다.
+
+자동 적용을 원하면 개인 또는 프로젝트 `AGENTS.md`(Claude Code에서는 해당 지침 파일)에 다음처럼 짧게 연결할 수 있다. 상세 절차는 [스킬 본문](./skills/staged-development/SKILL.md)에서 관리한다.
+
+```markdown
+- 중·대규모이거나 주요 의사결정이 불명확한 개발에는 wrxp의 staged-development 스킬을 적용합니다.
+- 정본 기획서를 기준으로 아웃라인 합의 → 핵심 구현·검토 → 상세 개발·검증 순서로 진행합니다. 이미 합의된 위임은 재사용하며, 다른 개발 스킬도 현재 단계의 범위에 맞춰 적용합니다.
+- 단순하고 영향이 작은 작업은 절차를 간소화합니다.
+```
+
+명시적 호출은 `/wrxp:staged-development` 또는 런타임의 스킬 선택기를 사용한다. 자동 선택에는 플러그인이 설치·활성화되어 있어야 한다. [Astra 행동 검증 기록](./docs/benchmark/staged-development-0.1.29.md)은 실제 시나리오 결과와 검증 범위를 설명한다.
 
 ### 🗡️ Knife family (runtime-bounded task graph)
 

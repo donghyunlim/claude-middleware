@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.29-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.30-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -23,7 +23,7 @@ wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축과 정본 기획서에 따라 사용자와 단계별로 협업하는 `staged-development`가 있다. 총 12개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 기존 검사 실행과 근거 수집의 `test-runner`가 있다. 총 13개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다. Team family는 관점·가설 fleet으로 다면 탐색이 필요한 경우에 사용한다.
 
@@ -96,6 +96,18 @@ claude plugin update wrxp@donghyunlim
 ```
 
 명시적 호출은 `/wrxp:staged-development` 또는 런타임의 스킬 선택기를 사용한다. 자동 선택에는 플러그인이 설치·활성화되어 있어야 한다. [Astra 행동 검증 기록](./docs/benchmark/staged-development-0.1.29.md)은 실제 시나리오 결과와 검증 범위를 설명한다.
+
+### 기존 테스트 실행과 근거 수집
+
+`/wrxp:test-runner`는 필요한 것으로 정한 기존 검사 명령을 실행하고 실제 근거를 주 모델에 전달한다. 별도 모델을 파견하거나 새 테스트·자동 수정·재실행 루프를 시작하지 않는다. 프로젝트 실행기가 충분한 근거를 남기면 이를 사용하고, 없으면 포함된 Python 표준 라이브러리 실행기로 감싼다.
+
+실행기는 명령·종료 코드·시각·로그·Git 메타데이터를 고유한 보관 디렉터리에 기록한다. 전체 로그를 보존하면서 반환 미리보기는 제한하고, 원인 설명에 필요한 파일만 `--source`로 명시해 첨부할 수 있다. 전체 소스 자동 수집이나 자동 캐시는 하지 않는다. `completed`는 프로세스 종료이며 테스트 발견·통과의 보증이 아니다. 자세한 사용법과 판정 기준은 [test-runner 스킬](./skills/test-runner/SKILL.md)에 있다.
+
+전역 지침에는 다음 연결 규칙만 두면 된다.
+
+```markdown
+테스트가 필요하면 사용 가능한 wrxp:test-runner 스킬을 따릅니다. 없으면 프로젝트의 기존 검사 명령을 실행하고 명령·종료 코드·원문 결과를 근거로 판정하며, 변경이나 실패 근거 없이 검증을 반복·확대하지 않습니다.
+```
 
 ### 🗡️ Knife family (runtime-bounded task graph)
 

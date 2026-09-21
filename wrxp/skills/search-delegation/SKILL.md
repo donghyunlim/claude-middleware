@@ -1,17 +1,26 @@
 ---
 name: search-delegation
-description: Use when delegating broad search or source investigation to workers, especially when many candidate documents would otherwise enter the primary model's context. Skip a known-file lookup, a small prepared source set, and requests only to discuss delegation.
+description: Use when a question requires broad discovery and compression across substantial scattered knowledge in multiple repositories, modules, or documents. Not for narrow lookups, small source sets, or merely large systems.
 ---
 
 # Search Delegation
 
-작업자는 넓게 탐색하고 주 모델은 현재 결정에 필요한 발견을 읽는다. 검색 결과를 전부 축약하는 대신 관련 후보를 선별한다. 사용자의 목적은 관련성 판단의 기준이지 원하는 결론에 증거를 맞추는 기준이 아니다.
+검색은 직접 수행하는 것이 기본이다. 이번 질문에 답하려면 여러 저장소·모듈·문서에 흩어진 대규모 지식을 넓게 탐색하고 압축해야 할 때만 위임한다. 작업자는 관련 후보를 선별하고 주 모델은 현재 판단에 필요한 발견과 근거를 읽는다.
+
+## 적용 경계
+
+- 시스템 전체의 크기가 아니라 이번 질문에 필요한 탐색 범위를 기준으로 판단한다. 로컬/Semble/MAGMA 같은 검색 수단이나 독립 질문 두 개가 있다는 사실만으로 위임하지 않는다.
+- 대상·위치가 명확한 조회, 소수 파일 확인, 짧은 사실 확인과 이미 준비된 작은 자료는 직접 처리한다. 위치를 모른다는 이유만으로 대규모 탐색이라고 보지 않는다.
+- 넓은 탐색을 위임했더라도 실제 변경을 좌우하는 중요한 조건과 충돌하는 근거는 주 모델이 직접 확인한다. 관련된 부분만 확인하며 전체 조사를 반복하지 않는다.
+- 속도 개선이나 위임·상세 검색 비율을 보장하거나 할당하지 않는다. 사용자의 목적은 관련성 판단의 기준이지 원하는 결론에 증거를 맞추는 기준이 아니다.
 
 ## 검색 의뢰
 
 파견 전에 [references/search-brief.md](references/search-brief.md)를 읽고 현재 대화와 정본에서 의뢰를 구성한다. 현재 작업·단계, 사용자 상황·목적, 이번 결정, 확정 제약·제외 범위, 기존 근거·공백, 담당 범위, 중요한 조건·반례, 종료 조건을 전달한다. 짧은 조사에는 간소화하며, 항목을 채우려고 이미 아는 내용을 다시 질문하지 않는다. 검색 방향을 바꾸는 사용자 소유 결정이 실제로 미정일 때만 묻는다.
 
-공통 맥락은 한 번 작성하고 작업자별 담당 후보·질문만 바꾼다. 대화 전체나 관계없는 개인정보·자격 증명은 넘기지 않는다. 후속 조사에는 유효한 근거와 기존 의뢰를 재사용하고 변경점만 전달한다. 별도 기획서를 매번 만들지 않는다.
+공통 맥락은 한 번 작성하고 작업자별 담당 후보·질문만 바꾼다. 대화 전체나 관계없는 개인정보·자격 증명은 넘기지 않는다. 후속 조사에는 유효한 근거와 기존 의뢰를 재사용하고 변경점만 전달한다. 별도 기획서나 계획 전용 모델 호출을 추가하지 않는다.
+
+작업자에게 질문에 필요한 자료 범위와 도구만 허용한다. 접근 제한이 실제로 강제되는지와 프롬프트상의 지시는 구분한다. 공급자 연결 실패는 상위 모델에 보고하며, 이를 해결하려고 홈 디렉터리·과거 세션·컴퓨터 상태로 탐색 범위를 넓히지 않는다.
 
 ## 검색 수단 선택
 

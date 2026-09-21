@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.31-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.32-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -77,14 +77,14 @@ claude plugin update wrxp@donghyunlim
 
 ### 맥락 기반 검색 위임
 
-`/wrxp:search-delegation`은 많은 검색 후보를 작업자가 나누어 조사하고, 주 모델에는 현재 결정에 필요한 발견과 근거만 전달할 때 사용한다. 현재 작업·사용자 목적·이번 결정·제약·기존 근거와 공백을 의뢰에 담고, 같은 맥락을 재사용하면서 담당 범위만 나눈다. 단순 조회에는 위임을 강제하지 않는다.
+`/wrxp:search-delegation`은 여러 저장소·모듈·문서에 흩어진 대규모 지식을 넓게 탐색·압축해야 할 때만 사용한다. 그 외의 검색은 직접 수행한다. 시스템 전체의 크기나 로컬/MAGMA 여부가 아니라 이번 질문의 탐색 범위가 기준이다. 맥락·질문·범위·종료 조건을 짧게 전달하고, 변경을 좌우하는 조건과 근거 충돌은 주 모델이 직접 확인한다.
 
 [스킬 본문](./skills/search-delegation/SKILL.md)과 [의뢰 예시](./skills/search-delegation/references/search-brief.md)에 실행 범위와 인계 계약이 있다. 실제 MCP 스키마·접근 가능성을 따르며 페이지네이션이나 근거 ID가 이미 구현됐다고 가정하지 않는다. 속도 개선율을 보장하는 규칙이 아니다.
 
 [검색 수단 선택](./skills/search-delegation/references/search-routing.md)에 따라 로컬 의미 검색은 Semble, MAGMA 레거시는 MAGMA MCP, 알려진 파일의 작은 조회는 직접 읽기로 나눈다. 검색 수단과 위임 여부는 별도로 결정하며 Codex·Claude의 기존 작업자 연결을 재사용한다. Semble과 다른 검색 에이전트를 같은 후보에 중복 파견하지 않는다.
 
 ```markdown
-- 넓은 검색을 위임할 때 사용 가능한 `wrxp:search-delegation`을 따릅니다. 없으면 현재 작업·판단 목적·제약·기존 근거와 공백·담당 범위를 전달하고, 핵심 발견·조건·원문 참조·미확인 사항만 인계받습니다. 단순 조회는 직접 처리합니다.
+- 검색은 직접 수행하는 것을 기본으로 합니다. 여러 저장소·모듈·문서에 흩어진 대규모 지식을 넓게 탐색·압축해야 할 때만 `wrxp:search-delegation`을 사용합니다. 없으면 같은 범위에 한해 맥락·질문·범위·종료 조건을 전달하고 원문 위치가 있는 요약을 인계받습니다. 시스템 크기나 로컬/MCP 여부만으로 위임하지 않으며, 변경을 좌우하는 조건·충돌 근거는 직접 확인합니다.
 ```
 
 ### 단계별 협업 개발

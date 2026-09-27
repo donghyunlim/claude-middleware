@@ -13,6 +13,8 @@ level: 4
 
 ## Requirements
 
+합의된 독립 코드 구현의 ROUTE·VERIFY에는 `wrxp:code-delegation`을 우선 적용한다. Sol medium/high를 명시하고, 작업자의 현재 코드 검증 근거가 충분하면 별도 verifier를 자동 추가하지 않는다.
+
 $ARGUMENTS
 
 ## 핵심 계약

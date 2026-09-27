@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.36-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.37-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -25,7 +25,7 @@ wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 기존 검사 실행과 근거 수집의 `test-runner`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 합의된 구현 위임의 `code-delegation`이 있다. 총 16개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 기존 검사 실행과 근거 수집의 `test-runner`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`이 있다. 총 17개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다. Team family는 관점·가설 fleet으로 다면 탐색이 필요한 경우에 사용한다.
 
@@ -61,6 +61,7 @@ codex plugin add wrxp@donghyunlim
 
 ```bash
 codex plugin marketplace upgrade donghyunlim
+codex plugin add wrxp@donghyunlim
 ```
 
 #### Claude Code
@@ -77,6 +78,18 @@ claude plugin marketplace update donghyunlim
 claude plugin update wrxp@donghyunlim
 ```
 
+### 신규 사용자 전역 셋업
+
+플러그인을 설치한 뒤 **Codex에서는 `$wrxp:setup`, Claude Code에서는 `/wrxp:setup`**을 호출하고 `Codex`, `Claude`, `양쪽` 중 대상을 지정한다. 예: `양쪽 전역 지침에 wrxp를 설정해 줘`. 플러그인이 스킬을 제공하므로 개인 skills 폴더에 스킬을 복제할 필요는 없다.
+
+셋업은 설치·활성 상태를 확인하고 전역 `AGENTS.md`/`CLAUDE.md`에 짧은 wrxp 관리 구역을 추가한다. 개발·테스트·검색·코드 위임은 필요한 상황에 연결하고, `ha`/`cast` 계열·분해 도구는 선택 용도를 안내하며, `handoff`는 명시 호출 제한을 유지한다. 전체 스킬 절차나 개인 업무 설정을 전역 파일에 복사하지 않는다.
+
+기존 사용자 설정과 OMC 구역을 보존하고, 변경 전 백업·읽기 전용 미리보기·재실행 시 중복 방지·관리 구역만 제거하는 기능을 제공한다. 플러그인 업데이트 후 `wrxp:setup`을 다시 실행하면 연결 규칙도 갱신된다. 상세 동작은 [셋업 스킬](./skills/setup/SKILL.md), 설치되는 짧은 규칙은 [관리 구역 원본](./skills/setup/assets/global-rules.md)에 있다. 플러그인 설치만으로 셋업을 자동 실행하지 않는다.
+
+기존 관리 표시가 깨졌거나 모호하면 원문을 고치거나 설치를 막지 않고 새 규칙만 추가한다. 갱신·제거는 안전하게 식별되는 추가분에 한정하며, 남아 있는 기존 규칙을 함께 보고한다. 잘못된 인코딩·심볼릭 링크·권한·동시 변경 등의 실제 파일 접근 오류는 이 추가 방식으로 우회하지 않는다. 공통 배포본은 다른 플러그인과의 우선순위를 지정하지 않는다.
+
+셋업 실행기는 Python 3.9 이상이 필요하다. 코드 위임은 `gpt-6-sol` medium/high를 명시할 수 있는 실행 경로가 필요하며, Claude에서 해당 경로가 없으면 코드 위임만 준비 미완료로 안내한다. Semble·MAGMA·Qwen·BWS나 다른 플러그인은 자동 설치하지 않는다. 전역 연결 설치와 실제 모델·도구 접근 가능 여부는 별도로 확인한다.
+
 ### 맥락 기반 검색 위임
 
 `/wrxp:search-delegation`은 여러 저장소·모듈·문서에 흩어진 대규모 지식을 넓게 탐색·압축해야 할 때만 사용한다. 그 외의 검색은 직접 수행한다. 시스템 전체의 크기나 로컬/MAGMA 여부가 아니라 이번 질문의 탐색 범위가 기준이다. 맥락·질문·범위·종료 조건을 짧게 전달하고, 변경을 좌우하는 조건과 근거 충돌은 주 모델이 직접 확인한다.
@@ -85,9 +98,7 @@ claude plugin update wrxp@donghyunlim
 
 [검색 수단 선택](./skills/search-delegation/references/search-routing.md)에 따라 로컬 의미 검색은 Semble, MAGMA 레거시는 MAGMA MCP, 알려진 파일의 작은 조회는 직접 읽기로 나눈다. 검색 수단과 위임 여부는 별도로 결정하며 Codex·Claude의 기존 작업자 연결을 재사용한다. Semble과 다른 검색 에이전트를 같은 후보에 중복 파견하지 않는다.
 
-```markdown
-- 검색은 직접 수행하는 것을 기본으로 합니다. 여러 저장소·모듈·문서에 흩어진 대규모 지식을 넓게 탐색·압축해야 할 때만 `wrxp:search-delegation`을 사용합니다. 없으면 같은 범위에 한해 맥락·질문·범위·종료 조건을 전달하고 원문 위치가 있는 요약을 인계받습니다. 시스템 크기나 로컬/MCP 여부만으로 위임하지 않으며, 변경을 좌우하는 조건·충돌 근거는 직접 확인합니다.
-```
+전역 연결은 `wrxp:setup`에서 관리한다.
 
 ### 단계별 협업 개발
 
@@ -101,13 +112,7 @@ claude plugin update wrxp@donghyunlim
 
 이 스킬은 `ha`·`cast` 등 기존 엔진 전체를 연쇄 실행하지 않는다. 현재 단계에 필요한 작업만 선택하고, 핵심 불변조건은 초기부터 검증하며, 확정된 동작의 상세 개발에는 필요한 TDD를 적용한다. 사용자가 선택한 모델을 유지하므로 Codex의 Astra와 Claude Code에서 같은 협업 절차를 사용할 수 있다.
 
-자동 적용을 원하면 개인 또는 프로젝트 `AGENTS.md`(Claude Code에서는 해당 지침 파일)에 다음처럼 짧게 연결할 수 있다. 상세 절차는 [스킬 본문](./skills/staged-development/SKILL.md)에서 관리한다.
-
-```markdown
-- 중·대규모이거나 주요 의사결정이 불명확한 개발에는 wrxp의 staged-development 스킬을 적용합니다.
-- 정본 기획서를 기준으로 아웃라인 합의 → 핵심 구현·검토 → 상세 개발·검증 순서로 진행합니다. 이미 합의된 위임은 재사용하며, 다른 개발 스킬도 현재 단계의 범위에 맞춰 적용합니다.
-- 단순하고 영향이 작은 작업은 절차를 간소화합니다.
-```
+자동 적용 연결은 `wrxp:setup`에서 관리한다. 상세 절차는 [스킬 본문](./skills/staged-development/SKILL.md)에 유지한다.
 
 명시적 호출은 `/wrxp:staged-development` 또는 런타임의 스킬 선택기를 사용한다. 자동 선택에는 플러그인이 설치·활성화되어 있어야 한다. [Astra 행동 검증 기록](./docs/benchmark/staged-development-0.1.29.md)은 실제 시나리오 결과와 검증 범위를 설명한다.
 
@@ -117,11 +122,7 @@ claude plugin update wrxp@donghyunlim
 
 실행기는 명령·종료 코드·시각·로그·Git 메타데이터를 고유한 보관 디렉터리에 기록한다. 전체 로그를 보존하면서 반환 미리보기는 제한하고, 원인 설명에 필요한 파일만 `--source`로 명시해 첨부할 수 있다. 전체 소스 자동 수집이나 자동 캐시는 하지 않는다. `completed`는 프로세스 종료이며 테스트 발견·통과의 보증이 아니다. 자세한 사용법과 판정 기준은 [test-runner 스킬](./skills/test-runner/SKILL.md)에 있다.
 
-전역 지침에는 다음 연결 규칙만 두면 된다.
-
-```markdown
-테스트가 필요하면 사용 가능한 wrxp:test-runner 스킬을 따릅니다. 없으면 프로젝트의 기존 검사 명령을 실행하고 명령·종료 코드·원문 결과를 근거로 판정하며, 변경이나 실패 근거 없이 검증을 반복·확대하지 않습니다.
-```
+전역 연결은 `wrxp:setup`에서 관리한다.
 
 ### 세션 핸드오프
 

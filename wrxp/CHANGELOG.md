@@ -2,6 +2,13 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.34] - 2026-09-27
+
+### Fixed
+
+- Claude Code 안에서 실행한 Codex처럼 두 런타임의 세션 ID가 함께 있는 환경에서 `handoff`의 원문 추출 스크립트가 Claude 세션을 읽던 문제를 고쳤습니다. 이제 `CLAUDE_CODE_SESSION_ID`와 `CODEX_THREAD_ID` 중 로그가 가장 최근에 기록된 세션을 사용합니다.
+- `handoff` 스킬 설명에 Codex 호출 방식(`$wrxp:handoff`)을 명시했습니다. Codex는 `disable-model-invocation`을 적용하지 않으므로 사용자가 명시적으로 호출할 때만 사용하도록 설명문으로 제한합니다.
+
 ## [0.1.33] - 2026-09-27
 
 ### Added

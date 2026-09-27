@@ -213,6 +213,35 @@ class FormatDetectionTests(unittest.TestCase):
         self.assertFalse(user_turns.is_codex_log(claude))
 
 
+class ResolveTests(unittest.TestCase):
+    def test_newest_log_wins_when_both_runtimes_set_ids(self):
+        import os
+        import time
+        from types import SimpleNamespace
+        from unittest import mock
+
+        root = Path(tempfile.mkdtemp())
+        claude_dir, codex_dir = root / "claude" / "proj", root / "codex" / "2026"
+        claude_dir.mkdir(parents=True)
+        codex_dir.mkdir(parents=True)
+        claude_log = claude_dir / "c-id.jsonl"
+        codex_log = codex_dir / "rollout-2026-x-k-id.jsonl"
+        claude_log.write_text("{}\n")
+        codex_log.write_text("{}\n")
+        now = time.time()
+        os.utime(claude_log, (now - 60, now - 60))
+        os.utime(codex_log, (now, now))
+
+        env = {"CLAUDE_CODE_SESSION_ID": "c-id", "CODEX_THREAD_ID": "k-id"}
+        with mock.patch.object(user_turns, "CLAUDE_PROJECTS", root / "claude"), \
+                mock.patch.object(user_turns, "CODEX_SESSIONS", root / "codex"), \
+                mock.patch.dict(os.environ, env):
+            args = SimpleNamespace(log=None, session_id=None)
+            self.assertEqual(codex_log, user_turns.resolve(args))
+            os.utime(claude_log, (now + 60, now + 60))
+            self.assertEqual(claude_log, user_turns.resolve(args))
+
+
 class RenderTests(unittest.TestCase):
     def test_folds_resends_and_truncates(self):
         turns = [

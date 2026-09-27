@@ -229,18 +229,27 @@ def latest_codex_log_for(cwd: str) -> Path | None:
 def resolve(args) -> Path:
     if args.log:
         return Path(args.log).expanduser()
-    session_id = args.session_id or os.environ.get("CLAUDE_CODE_SESSION_ID")
-    if session_id:
-        found = find_claude_log(session_id) or find_codex_log(session_id)
+    if args.session_id:
+        found = find_claude_log(args.session_id) or find_codex_log(args.session_id)
         if found:
             return found
-        sys.exit(f"no session log found for {session_id}")
+        sys.exit(f"no session log found for {args.session_id}")
+    # A Codex run started from Claude Code (or the reverse) inherits both ids;
+    # the session doing the work is the one whose log was written last.
+    candidates = [
+        log for log in (
+            find_claude_log(os.environ.get("CLAUDE_CODE_SESSION_ID", "") or "-"),
+            find_codex_log(os.environ.get("CODEX_THREAD_ID", "") or "-"),
+        ) if log
+    ]
+    if candidates:
+        return max(candidates, key=lambda log: log.stat().st_mtime)
     found = latest_codex_log_for(os.getcwd())
     if found:
         print(f"# warning: no session id; using the newest Codex session in {os.getcwd()}",
               file=sys.stderr)
         return found
-    sys.exit("pass --log PATH or --session-id ID (CLAUDE_CODE_SESSION_ID is unset)")
+    sys.exit("pass --log PATH or --session-id ID (no session id in the environment)")
 
 
 def render(turns, max_chars: int):

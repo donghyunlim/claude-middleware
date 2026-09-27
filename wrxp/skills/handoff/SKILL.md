@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Use only when the user runs /wrxp:handoff to hand the current work to a new session. Records the user's original intent, decisions, and final intent, the AI's plan, current state, and problems as plain facts. Not for progress reports, retrospectives, or routine summaries.
+description: Use only when the user explicitly invokes this skill (/wrxp:handoff in Claude Code, $wrxp:handoff in Codex) to hand the current work to a new session. Records the user's original intent, decisions, and final intent, the AI's plan, current state, and problems as plain facts. Not for progress reports, retrospectives, or routine summaries.
 disable-model-invocation: true
 ---
 
@@ -23,12 +23,12 @@ disable-model-invocation: true
 2. **사용자 원문을 확보한다.** 스크립트는 이 스킬의 기본 디렉터리(스킬을 불러올 때 표시되는 경로) 아래에 있다. 디렉터리를 옮기지 말고 절대 경로로 실행한다.
 
    ```bash
-   python3 "<skill-dir>/scripts/user_turns.py"                    # Claude Code: 현재 세션을 자동으로 찾는다
+   python3 "<skill-dir>/scripts/user_turns.py"                    # 현재 세션을 자동으로 찾는다 (Claude Code·Codex)
    python3 "<skill-dir>/scripts/user_turns.py" --session-id <id>  # 다른 세션
    python3 "<skill-dir>/scripts/user_turns.py" --log <path.jsonl> # 로그 경로를 직접 지정
    ```
 
-   출력은 `U1`, `U2`… 번호와 시각이 붙은 사용자 입력 목록이다. 작업 중 보낸 메시지와 질문 도구의 답(`[question tool answer]`)도 같은 번호 체계에 포함된다. 답 없이 닫힌 질문은 결정으로 기록하지 않는다. Codex에서 세션 ID가 없으면 현재 디렉터리의 최신 Codex 세션을 사용하며 경고를 출력하므로, 첫 메시지가 이 작업과 맞는지 확인한다. 잘린 메시지가 인용에 필요하면 `--max-chars 0`으로 다시 읽는다. 로그를 찾지 못하거나 스크립트가 경고와 함께 종료되면 대화 기억으로 작성하되 §1에 "원문 미확인"을 명시한다.
+   출력은 `U1`, `U2`… 번호와 시각이 붙은 사용자 입력 목록이다. 작업 중 보낸 메시지와 질문 도구의 답(`[question tool answer]`)도 같은 번호 체계에 포함된다. 답 없이 닫힌 질문은 결정으로 기록하지 않는다. 현재 세션은 `CLAUDE_CODE_SESSION_ID`(Claude Code)와 `CODEX_THREAD_ID`(Codex)로 찾고, 둘 다 있으면 로그가 가장 최근에 기록된 세션을 사용한다. 둘 다 없으면 현재 디렉터리의 최신 Codex 세션을 사용하며 경고를 출력하므로, 첫 메시지가 이 작업과 맞는지 확인한다. 잘린 메시지가 인용에 필요하면 `--max-chars 0`으로 다시 읽는다. 로그를 찾지 못하거나 스크립트가 경고와 함께 종료되면 대화 기억으로 작성하되 §1에 "원문 미확인"을 명시한다.
 3. **이전 핸드오프를 확인한다.** 이 세션이 다른 핸드오프에서 시작했는지는 사용자 입력에 언급된 핸드오프 경로로 판단한다. 경로가 없으면 프로젝트 폴더의 `handoffs/`에서 같은 작업의 최신 문서를 찾고, 특정할 수 없으면 "이전 핸드오프: 미확인"으로 쓴다. 이전 문서가 있으면:
    - 이전 문서는 수정하지 않고 새 파일을 만든다.
    - 최초 의도는 이전 문서의 §1-1을 그대로 승계한다. 새 세션의 첫 메시지를 최초 의도로 쓰지 않는다.

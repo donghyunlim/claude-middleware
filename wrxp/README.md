@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.37-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.38-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -25,7 +25,7 @@ wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 기존 검사 실행과 근거 수집의 `test-runner`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`이 있다. 총 17개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 기존 검사 실행과 근거 수집의 `test-runner`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`가 있다. 총 18개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다. Team family는 관점·가설 fleet으로 다면 탐색이 필요한 경우에 사용한다.
 
@@ -129,6 +129,18 @@ claude plugin update wrxp@donghyunlim
 `/wrxp:handoff`(Codex에서는 `$wrxp:handoff`)는 사용자가 필요하다고 판단한 시점에 현재 작업을 새 세션이 이어받을 문서로 기록한다. 사용자가 명시적으로 호출할 때만 실행되며 AI가 임의로 시작하지 않는다.
 
 문서는 사용자 의도 세트(최초 의도·작업 중 결정·최종 의도)를 AI 기획과 분리해 기록하고, 현재 상태·문제점·미결 사항을 평가 없이 사실과 근거로 남긴다. 압축된 세션에서도 최초 의도를 원문으로 인용할 수 있도록 포함된 스크립트가 Claude Code·Codex 세션 로그에서 사용자 메시지를 추출한다. 저장 위치는 프로젝트 폴더의 `handoffs/`이며, 저장 후 새 서브에이전트가 문서만 읽고 재개에 필요한 질문에 답하는지 확인한다. 자세한 구조는 [handoff 스킬](./skills/handoff/SKILL.md)에 있다.
+
+### 클라우드 인프라 요청 검토
+
+`/wrxp:cloudinfra-review`(Codex에서는 `$wrxp:cloudinfra-review`)로 요청 초안이나 Slack 스레드를 전달하면, 필요한 정보·표준 신청 경로·담당 범위·적용 및 검증 조건을 검토하고 복사해 보낼 문안을 작성합니다. 명시적으로 호출할 때만 실행되며 일반 배포 요청이나 기존 파이프라인에 자동 연결하지 않습니다.
+
+```text
+$wrxp:cloudinfra-review 이 외부 API 구성 요청을 검토하고 제출 문안으로 다듬어 줘. [초안 또는 스레드]
+```
+
+작업 요청·검토 문의·장애 조사 단계에 맞춰 필수 누락과 권고를 구분합니다. 확인되지 않은 값은 만들지 않고, 단순 표준 요청에는 불필요한 설계 항목을 요구하지 않습니다. 검토 호출만으로 Slack 게시·배포·인프라 변경을 수행하지 않습니다. [스킬 본문](./skills/cloudinfra-review/SKILL.md), [유형별 검토 기준](./skills/cloudinfra-review/references/review-rubric.md), [문안 예시](./skills/cloudinfra-review/references/request-examples.md), [행동 검증 기록](./docs/benchmark/cloudinfra-review-0.1.38.md)을 참고하세요.
+
+Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경로별 기준](./skills/cloudinfra-review/references/deployment-paths.md)으로 검토합니다. 도구 이름만으로 전환을 요구하지 않고 서비스·환경의 합의와 실제 실행·적용 상태를 구분합니다.
 
 ### 🗡️ Knife family (runtime-bounded task graph)
 

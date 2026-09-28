@@ -1,0 +1,6 @@
+interface:
+  display_name: "Cloud Infra Review"
+  short_description: "클라우드 인프라 요청의 필수 정보와 담당 범위를 검토하고 제출 문안을 작성합니다"
+  default_prompt: "$wrxp:cloudinfra-review로 이 인프라 요청의 필수 정보와 신청 경로를 검토하고, 확인된 사실만으로 제출 문안을 작성해 줘."
+policy:
+  allow_implicit_invocation: false

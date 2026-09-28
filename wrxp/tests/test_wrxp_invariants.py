@@ -65,6 +65,24 @@ def parse_named_flat_yaml_block_after(
 
 
 class WrxpInvariantTests(unittest.TestCase):
+    def test_cloudinfra_review_requires_explicit_invocation_on_both_runtimes(self):
+        skill_dir = WRXP_ROOT / "skills/cloudinfra-review"
+        frontmatter = (skill_dir / "SKILL.md").read_text().split("---", 2)[1]
+        self.assertRegex(frontmatter, r"(?m)^disable-model-invocation: true$")
+        metadata = (skill_dir / "agents/openai.yaml").read_text()
+        self.assertRegex(metadata, r"(?m)^policy:\n  allow_implicit_invocation: false$")
+
+    def test_cloudinfra_review_has_no_automatic_pipeline_or_hook_connections(self):
+        entrypoints = list((WRXP_ROOT / "skills").glob("*/SKILL.md"))
+        entrypoints += list((WRXP_ROOT / "shared").rglob("*.md"))
+        entrypoints += [WRXP_ROOT / "skills/setup/assets/global-rules.md"]
+        for hooks in (REPO_ROOT / "hooks", WRXP_ROOT / "hooks"):
+            if hooks.exists():
+                entrypoints += [path for path in hooks.rglob("*") if path.is_file()]
+        for path in entrypoints:
+            if path.parent.name != "cloudinfra-review":
+                self.assertNotIn("cloudinfra-review", path.read_text(), str(path))
+
     def test_packaging_and_docs_layout_is_installable(self):
         self.assertFalse((WRXP_ROOT / "CLAUDE.md").exists())
         self.assertTrue((WRXP_ROOT / "docs/fast-worker-routing.md").exists())
@@ -164,7 +182,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.37"},
+            {"0.1.38"},
             {plugin_version, package_version, marketplace_version},
         )
 

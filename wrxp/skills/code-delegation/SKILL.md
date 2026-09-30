@@ -13,10 +13,10 @@ description: Use when implementing an approved, bounded coding task that can be 
 
 ## 모델과 실행 경로
 
-- 코드 작업자는 **`gpt-6-sol`**을 사용한다. 기본 사고 수준은 **`medium`**이며, 복잡한 상태 전이·동시성·여러 모듈의 계약을 다루는 경우 AI가 **`high`**를 선택하고 이유를 짧게 기록한다.
+- 코드 작업자는 **`gpt-6.1-sol`**을 사용한다. 기본 사고 수준은 **`medium`**이며, 복잡한 상태 전이·동시성·여러 모듈의 계약을 다루는 경우 AI가 **`high`**를 선택하고 이유를 짧게 기록한다.
 - 허용 선택지는 `medium`과 `high`뿐이다. `low`를 포함한 다른 수준, 사고 수준 생략, Terra/Luna 또는 런타임 기본 모델로의 무단 폴백은 금지한다. 이 제한은 코드 위임에 적용하며 검색·문서·메인 모델의 설정을 바꾸지 않는다.
 - 네이티브 위임 도구가 해당 모델과 사고 수준을 모두 지원할 때만 사용한다. 지원하지 않으면 설치된 Codex CLI나 두 값을 명시적으로 고정할 수 있는 검증된 연결 경로를 사용한다. Claude의 `Agent.model`에 OpenAI 모델 ID를 넣지 않는다.
-- Codex CLI 예시: `codex exec -C <approved-workdir> -m gpt-6-sol -c 'model_reasoning_effort="medium"' -`. 작업 지시는 표준 입력으로 전달한다. `high`를 선택했다면 해당 값만 바꾼다. 기존 사용자 설정·권한·격리를 유지하며 우회 옵션을 추가하지 않는다.
+- Codex CLI 예시: `codex exec -C <approved-workdir> -m gpt-6.1-sol -c 'model_reasoning_effort="medium"' -`. 작업 지시는 표준 입력으로 전달한다. `high`를 선택했다면 해당 값만 바꾼다. 기존 사용자 설정·권한·격리를 유지하며 우회 옵션을 추가하지 않는다.
 - 실제 실행 모델과 사고 수준을 확인할 수 있는 실행 기록을 남긴다. 지원 오류·용량 제한으로 실행할 수 없으면 그 사실을 보고하고 대안을 협의한다. 공급자 오류를 구현 품질 실패로 집계하거나 모델을 몰래 바꾸지 않는다.
 
 ## 인계할 내용

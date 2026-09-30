@@ -214,9 +214,9 @@ class WrxpInvariantTests(unittest.TestCase):
         ).read_text()
 
         expected_rows = (
-            "| controller | `gpt-6-astra` + `high` | Claude Opus 5 (`claude-opus-5`) |",
-            "| standard executor | `gpt-5.6-terra` + `medium` | Claude Sonnet 5 (`claude-sonnet-5`) |",
-            "| utility executor | `gpt-5.6-luna` + `low` | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) |",
+            "| controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) |",
+            "| standard executor | `gpt-5.6-terra` + `medium` | Claude Sonnet 5.5 (`claude-sonnet-5-5`) |",
+            "| utility executor | `gpt-6-luna` + `low` | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) |",
         )
         for row in expected_rows:
             self.assertIn(row, routing)
@@ -418,6 +418,9 @@ class WrxpInvariantTests(unittest.TestCase):
                 "gpt-5.6-sol",
                 "gpt-5.6-terra",
                 "gpt-5.6-luna",
+                "gpt-6-luna",
+                "gpt-6-sol",
+                "gpt-6.1-sol",
                 "claude-opus",
                 "claude-sonnet",
                 "claude-haiku",

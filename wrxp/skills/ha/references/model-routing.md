@@ -1,6 +1,6 @@
 # Model and Agent Routing
 
-**코드 위임 예외:** 합의된 독립 구현은 `wrxp:code-delegation`이 우선한다. Codex와 Claude 모두 작업자는 `gpt-6-sol` + 명시적인 `medium`(기본) 또는 `high`(AI 선택)를 사용한다. 아래 일반 역할표·사고 수준 생략·기본 모델 폴백·자동 verifier 규칙을 이 경로에 적용하지 않는다. 실행할 수 없으면 보고하고 대안을 협의한다. 검색·문서 등 다른 역할의 라우팅은 유지한다.
+**코드 위임 예외:** 합의된 독립 구현은 `wrxp:code-delegation`이 우선한다. Codex와 Claude 모두 작업자는 `gpt-6.1-sol` + 명시적인 `medium`(기본) 또는 `high`(AI 선택)를 사용한다. 아래 일반 역할표·사고 수준 생략·기본 모델 폴백·자동 verifier 규칙을 이 경로에 적용하지 않는다. 실행할 수 없으면 보고하고 대안을 협의한다. 검색·문서 등 다른 역할의 라우팅은 유지한다.
 
 이 문서는 `/ha` 계열의 역할 기반 모델·에이전트 라우팅 정본이다. 질문 프리셋은 모델 라우팅에 영향을 주지 않는다. 모델 이름은 선호 후보이며, 실제 런타임이 제공한 목록과 기능이 항상 우선한다.
 
@@ -40,10 +40,10 @@ RuntimeCapabilities:
 
 | 논리 역할 | Codex 선호 후보 | Claude 선호 후보 | 주된 책임 |
 |---|---|---|---|
-| controller | `gpt-6-astra` + `high` | Claude Opus 5 (`claude-opus-5`) | 종합 판단, 의도 통합, 아키텍처·보안·비가역 결정, blocker 분류 |
-| standard executor | `gpt-5.6-terra` + `medium` | Claude Sonnet 5 (`claude-sonnet-5`) | 일반 코드 구현, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서 작업 |
-| utility executor | `gpt-5.6-luna` + `low` | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) | 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경, 기계 검사 |
-| verifier | 보통 Terra, 고위험 Astra | 보통 Sonnet 5, 고위험 Opus 5 | 작성 결과와 분리된 검증 패스 |
+| controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) | 종합 판단, 의도 통합, 아키텍처·보안·비가역 결정, blocker 분류 |
+| standard executor | `gpt-5.6-terra` + `medium` | Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 일반 코드 구현, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서 작업 |
+| utility executor | `gpt-6-luna` + `low` | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) | 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경, 기계 검사 |
+| verifier | 보통 Terra, 고위험 Astra | 보통 Sonnet 5.5, 고위험 Opus 5.5 | 작성 결과와 분리된 검증 패스 |
 
 `gpt-6-astra`는 런타임 기본 사고 수준이 `low`이므로, controller 역할에서는 `high`를 명시적으로 전달해야 표의 의도대로 실행된다. 사고 수준을 생략하면 이 모델은 최상위 모델이면서도 가장 낮은 추론으로 응답한다.
 

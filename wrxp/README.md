@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.38-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.39-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -25,7 +25,7 @@ wrxp의 reasoning 축은 **2개 대칭 family**로 구성된다:
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 기존 검사 실행과 근거 수집의 `test-runner`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`가 있다. 총 18개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 기존 검사 실행과 근거 수집의 `test-runner`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`가 있다. 총 19개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다. Team family는 관점·가설 fleet으로 다면 탐색이 필요한 경우에 사용한다.
 
@@ -129,6 +129,9 @@ claude plugin update wrxp@donghyunlim
 `/wrxp:handoff`(Codex에서는 `$wrxp:handoff`)는 사용자가 필요하다고 판단한 시점에 현재 작업을 새 세션이 이어받을 문서로 기록한다. 사용자가 명시적으로 호출할 때만 실행되며 AI가 임의로 시작하지 않는다.
 
 문서는 사용자 의도 세트(최초 의도·작업 중 결정·최종 의도)를 AI 기획과 분리해 기록하고, 현재 상태·문제점·미결 사항을 평가 없이 사실과 근거로 남긴다. 압축된 세션에서도 최초 의도를 원문으로 인용할 수 있도록 포함된 스크립트가 Claude Code·Codex 세션 로그에서 사용자 메시지를 추출한다. 저장 위치는 프로젝트 폴더의 `handoffs/`이며, 저장 후 새 서브에이전트가 문서만 읽고 재개에 필요한 질문에 답하는지 확인한다. 자세한 구조는 [handoff 스킬](./skills/handoff/SKILL.md)에 있다.
+
+`/wrxp:intent-anchor`(Codex에서는 `$wrxp:intent-anchor`)는 작업이 사용자의 원래 의도에서 벗어났는지 사용자 발화 원문 전부를 기준으로 다른 맥락의 최고 수준 모델과 대조한다. 사용자가 작업 방향 자체를 바로잡거나 같은 목표의 재시도가 계속 쌓일 때는 드물게 자동으로 실행된다. 방향 변화의 근거가 사용자 발화에 있으면 허용하고, 벗어났으면 작업을 멈춘 뒤 질문 하나를 한다. 리뷰어는 읽기 전용으로 실행되며 기록은 프로젝트 폴더의 `handoffs/realign/`에 남는다. 자세한 절차는 [intent-anchor 스킬](./skills/intent-anchor/SKILL.md)에 있다.
+
 
 ### 클라우드 인프라 요청 검토
 

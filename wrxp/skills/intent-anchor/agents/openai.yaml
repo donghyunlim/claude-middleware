@@ -1,0 +1,6 @@
+interface:
+  display_name: "Intent Anchor"
+  short_description: "사용자 발화 원문을 기준으로 작업이 원래 의도에서 벗어났는지 다른 모델과 대조합니다"
+  default_prompt: "$wrxp:intent-anchor로 지금 작업이 내 원래 의도와 결정에서 벗어났는지 원문 기준으로 대조해 줘."
+policy:
+  allow_implicit_invocation: true

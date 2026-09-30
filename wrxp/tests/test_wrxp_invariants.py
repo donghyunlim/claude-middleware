@@ -83,6 +83,32 @@ class WrxpInvariantTests(unittest.TestCase):
             if path.parent.name != "cloudinfra-review":
                 self.assertNotIn("cloudinfra-review", path.read_text(), str(path))
 
+    def test_intent_anchor_allows_rare_implicit_invocation_on_both_runtimes(self):
+        skill_dir = WRXP_ROOT / "skills/intent-anchor"
+        frontmatter = (skill_dir / "SKILL.md").read_text().split("---", 2)[1]
+        self.assertNotIn("disable-model-invocation", frontmatter)
+        for phrase in ("strongly corrects", "retried", "Not for ordinary bug reports"):
+            self.assertIn(phrase, frontmatter)
+        metadata = (skill_dir / "agents/openai.yaml").read_text()
+        self.assertRegex(metadata, r"(?m)^policy:\n  allow_implicit_invocation: true$")
+
+    def test_intent_anchor_reviewer_commands_are_read_only(self):
+        source = (WRXP_ROOT / "skills/intent-anchor/scripts/run_reviewer.py").read_text()
+        self.assertIn('"Read,Grep,Glob"', source)
+        self.assertIn('"read-only"', source)
+        for forbidden in ("dangerously", "bypassPermissions",
+                          "workspace-write", "danger-full-access"):
+            self.assertNotIn(forbidden, source)
+        prompt = (WRXP_ROOT / "skills/intent-anchor/references/reviewer-prompt.md").read_text()
+        self.assertIn("판정: 드리프트 있음 | 없음 | 부분", prompt)
+
+    def test_intent_anchor_is_not_wired_into_other_skills(self):
+        entrypoints = [path for path in (WRXP_ROOT / "skills").glob("*/SKILL.md")
+                       if path.parent.name != "intent-anchor"]
+        entrypoints += list((WRXP_ROOT / "shared").rglob("*.md"))
+        for path in entrypoints:
+            self.assertNotIn("intent-anchor", path.read_text(), str(path))
+
     def test_packaging_and_docs_layout_is_installable(self):
         self.assertFalse((WRXP_ROOT / "CLAUDE.md").exists())
         self.assertTrue((WRXP_ROOT / "docs/fast-worker-routing.md").exists())

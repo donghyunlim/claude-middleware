@@ -54,6 +54,17 @@ class SharedExtractorTests(unittest.TestCase):
             list(ut.numbered(turns)),
         )
 
+    def test_codex_goal_context_is_not_a_user_turn(self):
+        ut = load(SHARED, "shared_user_turns")
+        injected = {"type": "response_item", "timestamp": "t", "payload": {
+            "type": "message", "role": "user", "content": [{"type": "input_text",
+                "text": '<codex_internal_context source="goal">목표 계속</codex_internal_context>'}]}}
+        real = {"type": "response_item", "timestamp": "t", "payload": {
+            "type": "message", "role": "user",
+            "content": [{"type": "input_text", "text": "실제 요청"}]}}
+        path = write_jsonl([injected, real])
+        self.assertEqual(["실제 요청"], [t for _, t, k in ut.codex_turns(path) if k == "user"])
+
     def test_handoff_wrapper_exposes_patchable_globals(self):
         wrapper = load(WRAPPER, "handoff_user_turns_wrapper")
         self.assertTrue(callable(wrapper.numbered))

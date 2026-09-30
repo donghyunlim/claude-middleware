@@ -42,6 +42,7 @@ CODEX_INJECTED_PREFIXES = (
     "<in-app-browser-context",
     "<codex_delegation",
     "<recommended_plugins",
+    "<codex_internal_context",
 )
 CODEX_USER_SOURCES = ("cli", "vscode")
 DISMISSED = "doesn't want to proceed"

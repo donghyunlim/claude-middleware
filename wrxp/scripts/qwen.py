@@ -27,7 +27,7 @@
 Exit codes (fallback 라우팅용):
   0 — 성공
   2 — HTTP 4xx 또는 요청 측 오류 (prompt/schema 문제). prompt 수정 후 재시도.
-  3 — 서버·네트워크·응답 형식 오류. **haiku fallback 권장**.
+  3 — 서버·네트워크·응답 형식 오류. **Claude fallback 권장**.
 """
 
 from __future__ import annotations
@@ -387,7 +387,7 @@ def main() -> None:
         elif exit_code == 3:
             sys.stderr.write(
                 f"qwen.py: server/response error ({type(exc).__name__}): {exc}. "
-                "haiku fallback 권장. exit=3.\n"
+                "Claude fallback 권장. exit=3.\n"
             )
         else:
             sys.stderr.write(f"qwen.py: request error ({type(exc).__name__}): {exc}. exit=2.\n")
@@ -399,7 +399,7 @@ def main() -> None:
         except ResponseContractError as exc:
             sys.stderr.write(
                 f"qwen.py: server/response error ({type(exc).__name__}): {exc}. "
-                "haiku fallback 권장. exit=3.\n"
+                "Claude fallback 권장. exit=3.\n"
             )
             sys.exit(3)
         json.dump(data, sys.stdout, ensure_ascii=False, indent=2)
@@ -412,7 +412,7 @@ def main() -> None:
     except ResponseContractError as exc:
         sys.stderr.write(
             f"qwen.py: server/response error ({type(exc).__name__}): {exc}. "
-            "haiku fallback 권장. exit=3.\n"
+            "Claude fallback 권장. exit=3.\n"
         )
         sys.exit(3)
 

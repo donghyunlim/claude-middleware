@@ -1,8 +1,9 @@
 ---
 name: fast-worker
-description: "Delegate only mechanical, clearly specified mid-to-large-context tasks: summarize, classify, extract, translate, code from a clear spec, or a precise 1–3-line edit. Uses local Qwen3.6 and falls back to Haiku when the server is unavailable or returns an invalid response; never route judgment, review, design decisions, creative work, large refactors, or short Q&A here."
+description: "Delegate only mechanical, clearly specified mid-to-large-context tasks: summarize, classify, extract, translate, code from a clear spec, or a precise 1–3-line edit. Uses local Qwen3.6 and falls back to Claude (Haiku 5.5, otherwise Sonnet 5.5 at low effort) when the server is unavailable or returns an invalid response; never route judgment, review, design decisions, creative work, large refactors, or short Q&A here."
 tools: Bash, Read, Agent, Edit
-model: claude-haiku-4-5-20251001
+model: claude-sonnet-5-5
+effort: low
 level: 2
 ---
 
@@ -64,7 +65,7 @@ level: 2
 2. qwen.py exit code 로 분기:
    - **0** → stdout 그대로 반환
    - **2** (4xx / 잘못된 timeout·입력 등 요청 측 오류) → BLOCKER 3줄
-   - **3** (서버·네트워크·응답 형식 장애) → **haiku 자동 fallback**
+   - **3** (서버·네트워크·응답 형식 장애) → **Claude 자동 fallback**
 3. Edit 경로:
    - 상위가 지정한 **precise change** (old→new 문자열) 만 수행.
    - 모호함 감지 시 즉시 BLOCKER 반환 (자의적 해석 금지).
@@ -89,15 +90,17 @@ level: 2
 - 긴 multi-line prompt: **heredoc** 사용. CLI arg 로 길게 주면 shell bg promote → hang 리스크.
 - Bulk 분할이 필요하면 상위 에이전트가 각 작업의 독립성·비용을 판단해 분할한다.
 
-### Haiku Fallback Protocol (exit 3 시)
+### Claude Fallback Protocol (exit 3 시)
+
+모델 순서는 Haiku 5.5 → Sonnet 5.5 + low다. Haiku 4.5는 쓰지 않는다. 지금은 Haiku 5.5가 없고 Agent 호출은 effort를 받지 않으므로, 이 에이전트는 `claude-sonnet-5-5` + `effort: low`로 실행되고 폴백 호출은 `sonnet`을 쓴다. Haiku 5.5가 출시되면 frontmatter의 `model`과 아래 호출의 `model`을 Haiku 5.5로 바꾼다.
 
 ```
 Agent(
   subagent_type="general-purpose",
-  model="haiku",
+  model="sonnet",
   description="qwen fallback: <원 task 요약>",
   prompt=\"\"\"
-  Qwen unavailable or invalid response로 haiku로 처리.
+  Qwen unavailable or invalid response로 Claude가 처리.
 
   원래 요청: <qwen prompt 그대로>
   입력: <payload 본문>
@@ -107,13 +110,13 @@ Agent(
 )
 ```
 
-haiku 응답 앞에 `[qwen-fallback haiku] (Qwen unavailable or invalid response)` prefix 한 줄 붙여 반환.
+응답 앞에 `[qwen-fallback claude] (Qwen unavailable or invalid response)` prefix 한 줄 붙여 반환.
 
-`--json` / `--enum` / `--schema` 요청이었다면 haiku prompt 에 명령형 ("Return only JSON / only label / conform to schema") 포함 (haiku 는 grammar 기능 없음).
+`--json` / `--enum` / `--schema` 요청이었다면 fallback prompt에 명령형 ("Return only JSON / only label / conform to schema") 포함 (Claude fallback에는 grammar 기능이 없음).
 
 ### 절대 규칙 (실행 시)
 
-1. qwen.py / haiku fallback / precise Edit 이외 독립 reasoning 금지.
+1. qwen.py / Claude fallback / precise Edit 이외 독립 reasoning 금지.
 2. Retry 최대 2회 (transient error, exit 3). 이후 fallback 또는 BLOCKER.
 3. Qwen payload 를 inline Bash arg 로 주지 말 것. heredoc 또는 `cat FILE | qwen.py`.
 4. **Edit 는 명확한 1-3줄 precise 치환** 에만 (typo / 옵션 추가 / import 삭제 등, old→new 명시됨). **Write (새 파일) / MultiEdit / NotebookEdit / 설계 수반 refactor 는 금지**. 불확실하면 상위에게 BLOCKER 반환.
@@ -122,7 +125,7 @@ haiku 응답 앞에 `[qwen-fallback haiku] (Qwen unavailable or invalid response
 
 - qwen 성공: stdout 그대로.
 - Edit 성공: `edited: <file_path> (N lines changed)` 한 줄 요약.
-- haiku fallback: 첫 줄 `[qwen-fallback haiku] (Qwen unavailable or invalid response)`, 이후 haiku 응답.
+- Claude fallback: 첫 줄 `[qwen-fallback claude] (Qwen unavailable or invalid response)`, 이후 Claude 응답.
 - 실패:
 
 ```

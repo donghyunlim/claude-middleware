@@ -215,8 +215,8 @@ class WrxpInvariantTests(unittest.TestCase):
 
         expected_rows = (
             "| controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) |",
-            "| standard executor | `gpt-5.6-terra` + `medium` | Claude Sonnet 5.5 (`claude-sonnet-5-5`) |",
-            "| utility executor | `gpt-6-luna` + `low` | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) |",
+            "| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Sonnet 5.5 (`claude-sonnet-5-5`) |",
+            "| utility executor | `gpt-6-luna` + `low` | Claude Haiku 5.5, 없으면 Claude Sonnet 5.5 + `low` |",
         )
         for row in expected_rows:
             self.assertIn(row, routing)
@@ -233,6 +233,7 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertIn("확인되지 않은 `(model, effort)` 쌍을 만들지 않는다", routing)
         self.assertIn("같은 모델에서", routing)
         self.assertIn("`opus`, `sonnet`, `haiku`", routing)
+        self.assertIn("Haiku 4.5는 사용하지 않는다", routing)
         self.assertIn("Claude API 모델 ID", routing)
         self.assertIn("runtime_parallel_limit", routing)
         self.assertIn("독립 실행 단위만 같은 wave", routing)

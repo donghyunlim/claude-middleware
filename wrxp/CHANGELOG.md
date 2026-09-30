@@ -6,7 +6,8 @@
 
 - 사용하지 않는 `cast`, `castq`, `castqq`, `castqqq`(Team family)와 `test-runner` 스킬을 제거했습니다. 세션 기록상 cast 계열의 마지막 사용은 2026-06이었고, test-runner는 호출 기록이 없었습니다.
 - `ha`·`staged-development`·`code-delegation`·전역 셋업 규칙·README에서 제거한 스킬에 대한 안내를 지웠습니다. 테스트는 기존 프로젝트 명령으로 실행하고 명령·종료 코드·근거를 남기는 규칙을 유지합니다.
-- 모델 지정을 최신화했습니다. 코드 위임은 `gpt-6.1-sol`, `/ha` 역할표는 Claude Opus 5.5·Sonnet 5.5·Haiku 4.5, Codex utility는 `gpt-6-luna`입니다. Codex controller(`gpt-6-astra`)와 standard(`gpt-5.6-terra`)는 이미 각 계열의 최신입니다.
+- 모델 지정을 최신화했습니다. 코드 위임은 `gpt-6.1-sol`, `/ha` 역할표는 Claude Opus 5.5·Sonnet 5.5·Haiku 4.5, Codex utility는 `gpt-6-luna`입니다. Codex controller는 `gpt-6-astra`를 유지하고, standard executor는 `gpt-5.6-terra`에서 `gpt-6.1-sol`(medium, 가벼운 작업 low)로 바꿨습니다. verifier 기본값도 Sol입니다.
+- Claude utility와 fast-worker는 Haiku 5.5 → Sonnet 5.5 low 순서를 따르며 Haiku 4.5는 쓰지 않습니다. Haiku 5.5가 아직 없으므로 fast-worker는 `claude-sonnet-5-5` + `effort: low`로 실행되고, 출시 후 모델 줄만 바꾸면 됩니다.
 
 ## [0.1.39] - 2026-09-30
 

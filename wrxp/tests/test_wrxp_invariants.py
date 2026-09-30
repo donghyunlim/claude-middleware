@@ -158,13 +158,9 @@ class WrxpInvariantTests(unittest.TestCase):
         ):
             self.assertIn(current_row, readme)
         self.assertIn("질문 깊이와 모델 라우팅은 서로 독립적인 축", readme)
-        self.assertIn("## Team family 7단계 파이프라인", readme)
-        self.assertIn(
-            "Knife family인 `/ha` 계열은 위에서 설명한 runtime-bounded dependency task graph 계약",
-            readme,
-        )
+        for removed in ("/wrxp:cast", "Team family", "test-runner"):
+            self.assertNotIn(removed, readme)
         self.assertIn("어떤 tier에서도 0문항으로 종료", readme)
-        self.assertIn("관점·가설 fleet", readme)
         self.assertNotIn("Phase 1이 HIGH로 판정할 때만", readme)
         self.assertLess(
             research.index("현재 계약 정정 (0.1.26)"),
@@ -208,7 +204,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.39"},
+            {"0.1.40"},
             {plugin_version, package_version, marketplace_version},
         )
 

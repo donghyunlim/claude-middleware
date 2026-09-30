@@ -706,7 +706,8 @@ class ReviewerRunTests(unittest.TestCase):
         self.codex_home = self.tmp / "codex-home"
         self.codex_home.mkdir()
         (self.codex_home / "models_cache.json").write_text(json.dumps({"models": [
-            {"slug": "gpt-5.6-sol"}, {"slug": "gpt-6-sol"}, {"slug": "gpt-6-astra"},
+            {"slug": "gpt-5.6-sol"}, {"slug": "gpt-6-sol"}, {"slug": "gpt-6.1-sol"},
+            {"slug": "gpt-6-astra"},
             {"slug": "gpt-6-luna"}, {"slug": "gpt-5.6-terra"},
         ]}))
         self.log = write_jsonl([claude_user("첫 요청"), claude_assistant(),
@@ -740,7 +741,7 @@ class ReviewerRunTests(unittest.TestCase):
 
     def test_codex_models_rank_astra_over_sol_newest_generation(self):
         rr = reviewer()
-        self.assertEqual(["gpt-6-astra", "gpt-6-sol"],
+        self.assertEqual(["gpt-6-astra", "gpt-6.1-sol"],
                          rr.codex_models(self.codex_home / "models_cache.json"))
 
     def test_candidates_put_opposite_family_first(self):
@@ -748,7 +749,7 @@ class ReviewerRunTests(unittest.TestCase):
         cache = self.codex_home / "models_cache.json"
         both = {"claude": True, "codex": True}
         self.assertEqual(
-            [("codex", "gpt-6-astra"), ("codex", "gpt-6-sol"), ("claude", "opus")],
+            [("codex", "gpt-6-astra"), ("codex", "gpt-6.1-sol"), ("claude", "opus")],
             rr.candidates("claude", both, cache))
         self.assertEqual(
             [("claude", "opus"), ("claude", "sonnet"), ("codex", "gpt-6-astra")],
@@ -1141,7 +1142,7 @@ if __name__ == "__main__":
 Run: `python3 -m pytest -q tests/test_intent_anchor.py`
 Expected: PASS (Task 1~4 전체)
 
-`test_fallback_is_recorded_when_opposite_family_hits_limit`는 Astra와 Sol 두 번의 실패 뒤 같은 계열인 Opus가 선택되는지를 확인한다.
+`test_fallback_is_recorded_when_opposite_family_hits_limit`는 Astra와 Sol(`gpt-6.1-sol`) 두 번의 실패 뒤 같은 계열인 Opus가 선택되는지를 확인한다.
 
 - [ ] **Step 5: 커밋**
 

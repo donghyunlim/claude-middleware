@@ -72,6 +72,24 @@ class WrxpInvariantTests(unittest.TestCase):
         metadata = (skill_dir / "agents/openai.yaml").read_text()
         self.assertRegex(metadata, r"(?m)^policy:\n  allow_implicit_invocation: false$")
 
+    def test_worxsales_qa_executor_requires_explicit_invocation_on_both_runtimes(self):
+        skill_dir = WRXP_ROOT / "skills/worxsales-qa-executor"
+        frontmatter = (skill_dir / "SKILL.md").read_text().split("---", 2)[1]
+        self.assertRegex(frontmatter, r"(?m)^disable-model-invocation: true$")
+        metadata = (skill_dir / "agents/openai.yaml").read_text()
+        self.assertRegex(metadata, r"(?m)^policy:\n  allow_implicit_invocation: false$")
+
+    def test_worxsales_qa_executor_driver_never_closes_the_app(self):
+        driver = (WRXP_ROOT / "skills/worxsales-qa-executor/scripts/app.mjs").read_text()
+        self.assertNotIn("browser.close(", driver.replace("never browser.close()", ""))
+
+    def test_worxsales_qa_executor_is_not_wired_into_other_skills(self):
+        entrypoints = [path for path in (WRXP_ROOT / "skills").glob("*/SKILL.md")
+                       if path.parent.name != "worxsales-qa-executor"]
+        entrypoints += [WRXP_ROOT / "skills/setup/assets/global-rules.md"]
+        for path in entrypoints:
+            self.assertNotIn("worxsales-qa-executor", path.read_text(), str(path))
+
     def test_cloudinfra_review_has_no_automatic_pipeline_or_hook_connections(self):
         entrypoints = list((WRXP_ROOT / "skills").glob("*/SKILL.md"))
         entrypoints += list((WRXP_ROOT / "shared").rglob("*.md"))
@@ -204,7 +222,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.40"},
+            {"0.1.41"},
             {plugin_version, package_version, marketplace_version},
         )
 

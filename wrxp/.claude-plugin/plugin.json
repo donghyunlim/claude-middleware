@@ -1,6 +1,6 @@
 {
   "name": "wrxp",
-  "version": "0.1.40",
+  "version": "0.1.41",
   "description": "Intent refinement + recursive decomposition + dynamic agent matching + DAG-based autonomous execution for Claude Code. Includes fast-worker subagent (local Qwen3.6 with Claude fallback: Haiku 5.5, otherwise Sonnet 5.5 low) for mechanical mid-to-large context tasks.",
   "author": {
     "name": "donghyunlim"

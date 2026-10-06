@@ -24,7 +24,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`가 있다. 총 14개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`가 있다. 총 15개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -129,6 +129,16 @@ $wrxp:cloudinfra-review 이 외부 API 구성 요청을 검토하고 제출 문�
 작업 요청·검토 문의·장애 조사 단계에 맞춰 필수 누락과 권고를 구분합니다. 확인되지 않은 값은 만들지 않고, 단순 표준 요청에는 불필요한 설계 항목을 요구하지 않습니다. 검토 호출만으로 Slack 게시·배포·인프라 변경을 수행하지 않습니다. [스킬 본문](./skills/cloudinfra-review/SKILL.md), [유형별 검토 기준](./skills/cloudinfra-review/references/review-rubric.md), [문안 예시](./skills/cloudinfra-review/references/request-examples.md), [행동 검증 기록](./docs/benchmark/cloudinfra-review-0.1.38.md)을 참고하세요.
 
 Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경로별 기준](./skills/cloudinfra-review/references/deployment-paths.md)으로 검토합니다. 도구 이름만으로 전환을 요구하지 않고 서비스·환경의 합의와 실제 실행·적용 상태를 구분합니다.
+
+### WorxSales 시나리오 실행
+
+`/wrxp:worxsales-qa-executor`(Codex에서는 `$wrxp:worxsales-qa-executor`)로 WorxSales 테스트 시나리오 DB의 행을 지정하면, 로그인된 실제 Electron 앱을 한 행씩 조작해 판정(OK·문제·미구현·실행 불가·보류-기록·알려진 차이)하고 번호 박스 증거를 남깁니다. 결과는 Notion 행 페이지에 「결과 한눈에 → 증거(그림·번호) → 상세 기록」 순서로 반영합니다. 명시적으로 호출할 때만 실행되며, 쓰기 범위를 정하지 않으면 조회·차단 확인만 합니다.
+
+```
+/wrxp:worxsales-qa-executor 고객 메뉴 P0 행 중 20개를 조회·차단 확인 범위로 실행해 줘
+```
+
+행마다 locator나 스크립트를 미리 만들지 않고 에이전트가 화면을 보고 같은 개념의 요소를 찾습니다. [스킬 본문](./skills/worxsales-qa-executor/SKILL.md), [실행 환경](./skills/worxsales-qa-executor/references/environment.md), [결과 형식](./skills/worxsales-qa-executor/references/result-schema.md), [보고 형식](./skills/worxsales-qa-executor/references/report-format.md)을 참고하세요.
 
 ### 🗡️ Knife family (runtime-bounded task graph)
 

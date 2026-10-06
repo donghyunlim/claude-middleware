@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorxSales QA Executor"
+  short_description: "WorxSales 테스트 시나리오 행을 실제 앱에서 실행하고 판정·번호 박스 증거·읽기 쉬운 결과 보고를 남깁니다"
+  default_prompt: "$wrxp:worxsales-qa-executor로 시나리오 DB의 지정한 행을 로그인된 WorxSales 앱에서 실행하고, 판정과 증거를 Notion에 반영해 줘."
+policy:
+  allow_implicit_invocation: false

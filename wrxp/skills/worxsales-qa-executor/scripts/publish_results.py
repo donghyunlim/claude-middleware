@@ -15,7 +15,14 @@ API, VERSION = "https://api.notion.com/v1", "2022-06-28"
 ICON = {"OK": "✅", "문제": "❌", "미구현": "🚧", "보류-기록": "⏸️", "알려진 차이": "↔️", "실행 불가": "⚠️"}
 COLOR = {"OK": "green_background", "문제": "red_background", "미구현": "gray_background",
          "보류-기록": "yellow_background", "알려진 차이": "blue_background", "실행 불가": "orange_background"}
-CIRCLED = lambda n: chr(0x2460 + n - 1) if 1 <= n <= 20 else str(n)
+MARKER = "🤖 자동 실행 결과"  # everything from this heading down is regenerated; human notes above it are kept
+LEGACY = ("실행 기록 · ",)  # pilot-01 bodies had no marker
+
+
+def CIRCLED(n):
+    if isinstance(n, int) and 1 <= n <= 20: return chr(0x2460 + n - 1)
+    if isinstance(n, str) and len(n) == 1 and "A" <= n <= "Z": return chr(0x24B6 + ord(n) - 65)
+    return str(n)
 
 
 def call(method, path, body=None, raw=None, ctype="application/json; charset=utf-8"):
@@ -46,7 +53,6 @@ def rt(s, bold=False):
 
 def p(s, bold=False): return {"type": "paragraph", "paragraph": {"rich_text": rt(s, bold)}}
 def li(s): return {"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": rt(s)}}
-def num(s): return {"type": "numbered_list_item", "numbered_list_item": {"rich_text": rt(s)}}
 def h3(s): return {"type": "heading_3", "heading_3": {"rich_text": rt(s)}}
 def toggle(s, kids): return {"type": "toggle", "toggle": {"rich_text": rt(s, True), "children": kids[:90]}}
 def labeled(label, value):
@@ -74,6 +80,30 @@ def rows_by_tc(db):
         cur = r["next_cursor"]
 
 
+def text_of(b):
+    v = b.get(b["type"], {})
+    return "".join(t.get("plain_text", "") for t in v.get("rich_text", [])) if isinstance(v, dict) else ""
+
+
+def managed_blocks(pid):
+    """Blocks this script owns: the marker heading and everything after it.
+    Without a marker, only a body that starts with a legacy run log is treated as generated."""
+    allb, cur = [], None
+    while True:
+        ch = call("GET", f"/blocks/{pid}/children?page_size=100" + (f"&start_cursor={cur}" if cur else ""))
+        allb += ch["results"]
+        if not ch.get("has_more"): break
+        cur = ch["next_cursor"]
+    for i, b in enumerate(allb):
+        if b["type"] == "heading_2" and text_of(b).startswith(MARKER):
+            return allb[i:]
+    if allb and allb[0]["type"] == "heading_2" and text_of(allb[0]).startswith(LEGACY):
+        return allb
+    if allb and allb[0]["type"] == "callout" and any(text_of(allb[0]).startswith(v + " · ") for v in ICON):
+        return allb  # 0.1.41 body without marker
+    return []
+
+
 def resolve(path, base):
     return path if os.path.isabs(path) else next((c for c in (os.path.join(base, path), os.path.join(os.getcwd(), path)) if os.path.exists(c)), path)
 
@@ -83,8 +113,9 @@ def body(r, base, older, dry):
     head = [labeled("확인한 것", r.get("checked", "")), labeled("결과", r.get("outcome", ""))]
     if r.get("repro"):
         head.append(p("재현 순서", True))
-        head += [num(s) for s in r["repro"]]
-    blocks = [{"type": "callout", "callout": {"icon": {"emoji": ICON.get(v, "•")}, "color": COLOR.get(v, "default"),
+        head += [p(s) for s in r["repro"]]  # steps already carry ①②③ matching the figure marks; no list numbering
+    blocks = [{"type": "heading_2", "heading_2": {"rich_text": rt(MARKER)}},
+              {"type": "callout", "callout": {"icon": {"emoji": ICON.get(v, "•")}, "color": COLOR.get(v, "default"),
                "rich_text": rt(f"{v} · {r.get('headline', '')}", True), "children": head}}]
     figs = r.get("figures", [])
     if figs:
@@ -148,10 +179,7 @@ def main():
             "최근 실행일": {"date": {"start": day} if day else None},
             "최근 실행 빌드": {"rich_text": rt(r.get("build", ""))},
             "최근 요약": {"rich_text": rt(r.get("headline", ""))}}})
-        while True:  # re-read the first page after each batch of deletes; cursors go stale once blocks are removed
-            ch = call("GET", f"/blocks/{pid}/children?page_size=100")
-            if not ch["results"]: break
-            for b in ch["results"]: call("DELETE", f"/blocks/{b['id']}")
+        for b in managed_blocks(pid): call("DELETE", f"/blocks/{b['id']}")
         for j in range(0, len(blocks), 80):
             call("PATCH", f"/blocks/{pid}/children", {"children": blocks[j:j + 80]})
         done += 1

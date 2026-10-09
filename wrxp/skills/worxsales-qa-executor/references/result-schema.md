@@ -41,3 +41,9 @@
 | repro | 문제·알려진 차이일 때만. 번호는 그림의 번호표와 같은 번호를 씀 |
 | figures | 판정 근거가 되는 장면만, 보통 1~3장. `marks`의 `n`은 그림 안 번호표와 같아야 함. 숫자는 repro 단계, `"A"`·`"B"`는 보조 표시 |
 | details | 개발자용. 액션 로그, 판정 근거 조항, 이름 대응, 시나리오 문제, 행 범위 밖 관찰 |
+| details.role_before / role_after | 첫 조작 직전·마지막 조작 직후 「역할 전환」에 보인 역할 |
+| details.role_sanity | 비영업자 역할 배치의 첫 행에만. `[{"signal", "observed"}]` ([역할과 권한](roles.md)) |
+| details.shared_figure_with | 같은 차단 화면 그림을 앞 행과 함께 쓸 때 그 행의 TC ID |
+| details.verdict_revision | 판정을 나중에 고쳤을 때 `{"from", "to", "reason", "at"}` |
+
+권한 미적용으로 `미구현`을 판정하면 outcome을 「권한 미적용: 」으로 시작한다. `started_at`·`ended_at`은 행을 시작하고 끝낼 때 실제로 `date`를 실행한 값이다.

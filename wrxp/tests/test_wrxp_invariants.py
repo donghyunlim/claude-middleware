@@ -222,7 +222,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.43"},
+            {"0.1.44"},
             {plugin_version, package_version, marketplace_version},
         )
 

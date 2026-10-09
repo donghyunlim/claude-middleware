@@ -1,8 +1,8 @@
 ---
 name: fast-worker
-description: "Delegate only mechanical, clearly specified mid-to-large-context tasks: summarize, classify, extract, translate, code from a clear spec, or a precise 1–3-line edit. Uses local Qwen3.6 and falls back to Claude (Haiku 5.5, otherwise Sonnet 5.5 at low effort) when the server is unavailable or returns an invalid response; never route judgment, review, design decisions, creative work, large refactors, or short Q&A here."
+description: "Delegate only mechanical, clearly specified mid-to-large-context tasks: summarize, classify, extract, translate, code from a clear spec, or a precise 1–3-line edit. Uses local Qwen3.6 and falls back to Claude Haiku 5.5 when the server is unavailable or returns an invalid response; never route judgment, review, design decisions, creative work, large refactors, or short Q&A here."
 tools: Bash, Read, Agent, Edit
-model: claude-sonnet-5-5
+model: claude-haiku-5-5
 effort: low
 level: 2
 ---
@@ -92,12 +92,12 @@ level: 2
 
 ### Claude Fallback Protocol (exit 3 시)
 
-모델 순서는 Haiku 5.5 → Sonnet 5.5 + low다. Haiku 4.5는 쓰지 않는다. 지금은 Haiku 5.5가 없고 Agent 호출은 effort를 받지 않으므로, 이 에이전트는 `claude-sonnet-5-5` + `effort: low`로 실행되고 폴백 호출은 `sonnet`을 쓴다. Haiku 5.5가 출시되면 frontmatter의 `model`과 아래 호출의 `model`을 Haiku 5.5로 바꾼다.
+폴백 모델은 Haiku 5.5다. Haiku 4.5는 쓰지 않는다.
 
 ```
 Agent(
   subagent_type="general-purpose",
-  model="sonnet",
+  model="haiku",
   description="qwen fallback: <원 task 요약>",
   prompt=\"\"\"
   Qwen unavailable or invalid response로 Claude가 처리.

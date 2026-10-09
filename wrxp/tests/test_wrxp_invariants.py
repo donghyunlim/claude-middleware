@@ -222,7 +222,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.42"},
+            {"0.1.43"},
             {plugin_version, package_version, marketplace_version},
         )
 
@@ -233,8 +233,8 @@ class WrxpInvariantTests(unittest.TestCase):
 
         expected_rows = (
             "| controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) |",
-            "| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Sonnet 5.5 (`claude-sonnet-5-5`) |",
-            "| utility executor | `gpt-6-luna` + `low` | Claude Haiku 5.5, 없으면 Claude Sonnet 5.5 + `low` |",
+            "| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Haiku 5.5 (`claude-haiku-5-5`), 어려운 작업은 Claude Sonnet 5.5 (`claude-sonnet-5-5`) |",
+            "| utility executor | `gpt-6-luna` + `low` | Claude Haiku 5.5 (`claude-haiku-5-5`) |",
         )
         for row in expected_rows:
             self.assertIn(row, routing)

@@ -20,7 +20,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 합의된 독립 코드 구현은 아래 일반 라우팅보다 [`code-delegation`](skills/code-delegation/SKILL.md)이 우선한다. Codex·Claude 모두 `gpt-6.1-sol`의 `medium`을 기본으로, 복잡한 구현에는 AI가 `high`를 선택한다. `low`·사고 수준 생략·무단 모델 폴백은 허용하지 않는다. 작업자가 구현과 자체 검증을 수행하며, 충분한 최신 근거가 있으면 메인의 전체 재검증을 자동으로 추가하지 않는다. 기존 Terra 실험은 Sol의 성능 측정 결과가 아니다.
 
-`/ha`가 유일한 registry다. Codex에서는 종합 판단=`gpt-6-astra`, 일반 구현·중간 리팩터링=`gpt-6.1-sol`(medium, 가벼운 작업 low), 단순 탐색·국소 변경=`gpt-6-luna`를 선호한다. Claude에서는 같은 역할을 Opus 5.5, Sonnet 5.5, Haiku 5.5(없으면 Sonnet 5.5 low)에 대응한다. 정확한 모델과 사고 수준은 런타임 가용성을 먼저 확인하고, 지원되지 않으면 같은 역할의 가용 모델 또는 런타임 기본 모델로 폴백한다.
+`/ha`가 유일한 registry다. Codex에서는 종합 판단=`gpt-6-astra`, 일반 구현·중간 리팩터링=`gpt-6.1-sol`(medium, 가벼운 작업 low), 단순 탐색·국소 변경=`gpt-6-luna`를 선호한다. Claude에서는 종합 판단을 Opus 5.5에 맡기고, 일반 구현과 단순 작업은 Haiku 5.5, 어려운 대리 작업은 Sonnet 5.5에 맡긴다. 정확한 모델과 사고 수준은 런타임 가용성을 먼저 확인하고, 지원되지 않으면 같은 역할의 가용 모델 또는 런타임 기본 모델로 폴백한다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 

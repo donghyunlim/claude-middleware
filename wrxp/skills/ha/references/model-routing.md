@@ -41,11 +41,11 @@ RuntimeCapabilities:
 | 논리 역할 | Codex 선호 후보 | Claude 선호 후보 | 주된 책임 |
 |---|---|---|---|
 | controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) | 종합 판단, 의도 통합, 아키텍처·보안·비가역 결정, blocker 분류 |
-| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 일반 코드 구현, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서 작업 |
-| utility executor | `gpt-6-luna` + `low` | Claude Haiku 5.5, 없으면 Claude Sonnet 5.5 + `low` | 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경, 기계 검사 |
+| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Haiku 5.5 (`claude-haiku-5-5`), 어려운 작업은 Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 일반 코드 구현, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서 작업 |
+| utility executor | `gpt-6-luna` + `low` | Claude Haiku 5.5 (`claude-haiku-5-5`) | 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경, 기계 검사 |
 | verifier | 보통 Sol, 고위험 Astra | 보통 Sonnet 5.5, 고위험 Opus 5.5 | 작성 결과와 분리된 검증 패스 |
 
-Claude utility는 Haiku 5.5 → Sonnet 5.5 + `low` 순서로 고른다. Haiku 5.5는 런타임이 그 모델을 정확한 이름·ID로 제공할 때만 쓰고, ID를 추측하지 않는다. `haiku` 별칭이 5.5보다 낮은 버전으로 해석되면 쓰지 않으며, Haiku 4.5는 사용하지 않는다. 런타임이 effort를 지원하지 않으면 Sonnet 5.5를 effort 없이 쓴다.
+Claude 실행자는 Haiku 5.5를 기본으로 한다. Haiku 5.5는 런타임이 그 모델을 정확한 이름·ID로 제공할 때만 쓰고, ID를 추측하지 않는다. `haiku` 별칭이 5.5보다 낮은 버전으로 해석되면 쓰지 않고 Sonnet 5.5를 쓰며, Haiku 4.5는 사용하지 않는다.
 
 `gpt-6-astra`는 런타임 기본 사고 수준이 `low`이므로, controller 역할에서는 `high`를 명시적으로 전달해야 표의 의도대로 실행된다. 사고 수준을 생략하면 이 모델은 최상위 모델이면서도 가장 낮은 추론으로 응답한다.
 
@@ -68,6 +68,14 @@ Codex 위임 API가 모델과 사고 수준을 별도 인자로 받으면 검증
 ### standard executor
 
 경계와 수용 기준이 정해진 일반 구현·중간 규모 리팩터링·디버깅·테스트·공식 문서 조사는 standard executor에 맡긴다. 여러 파일을 수정한다는 이유만으로 controller나 병렬 체계로 올리지 않는다.
+
+Claude에서는 애매하면 Haiku 5.5로 시작하고, 다음 작업만 Sonnet 5.5로 올린다.
+
+- 여러 단계를 스스로 판단하며 길게 진행하는 작업(예: 앱을 직접 조작하는 QA)
+- 화면·이미지를 보고 판단하는 작업
+- 원인이 불분명한 디버깅
+- 설계 판단이 필요한 여러 파일 수정
+- Haiku 5.5가 한 번 실패한 작업
 
 ### utility executor
 

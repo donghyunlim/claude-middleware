@@ -11,7 +11,7 @@ Claude 는 다음 중 하나라도 해당하면 `Agent(subagent_type="wrxp:fast-
 - **JSON object / enum / N-item list** 처럼 **구조화된 output** 이 필요
 - 로그 / stacktrace / 긴 문서 요약
 
-`fast-worker`는 로컬 Qwen3.6(무과금, ~82 tok/s, 262K context, llama.cpp grammar로 JSON·enum·schema 서버 레벨 강제)을 호출한다. 실패 사유가 **`Qwen unavailable or invalid response`로 분류되면 자동으로 Claude fallback**(Haiku 5.5, 없으면 Sonnet 5.5 low)한다. 호출자는 서버 장애·응답 형식 장애를 구분하지 않아도 동일한 UX를 얻는다.
+`fast-worker`는 로컬 Qwen3.6(무과금, ~82 tok/s, 262K context, llama.cpp grammar로 JSON·enum·schema 서버 레벨 강제)을 호출한다. 실패 사유가 **`Qwen unavailable or invalid response`로 분류되면 자동으로 Claude fallback**(Haiku 5.5)한다. 호출자는 서버 장애·응답 형식 장애를 구분하지 않아도 동일한 UX를 얻는다.
 
 ## Claude 직접 유지할 상황
 

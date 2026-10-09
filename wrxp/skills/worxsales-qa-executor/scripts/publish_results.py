@@ -12,8 +12,8 @@ Stdlib only.
 import argparse, glob, json, mimetypes, os, time, urllib.error, urllib.request, uuid
 
 API, VERSION = "https://api.notion.com/v1", "2022-06-28"
-ICON = {"OK": "✅", "문제": "❌", "미구현": "🚧", "보류-기록": "⏸️", "알려진 차이": "↔️", "실행 불가": "⚠️"}
-COLOR = {"OK": "green_background", "문제": "red_background", "미구현": "gray_background",
+ICON = {"OK": "✅", "부분 OK": "☑️", "문제": "❌", "미구현": "🚧", "보류-기록": "⏸️", "알려진 차이": "↔️", "실행 불가": "⚠️"}
+COLOR = {"OK": "green_background", "부분 OK": "green_background", "문제": "red_background", "미구현": "gray_background",
          "보류-기록": "yellow_background", "알려진 차이": "blue_background", "실행 불가": "orange_background"}
 MARKER = "🤖 자동 실행 결과"  # everything from this heading down is regenerated; human notes above it are kept
 LEGACY = ("실행 기록 · ",)  # pilot-01 bodies had no marker
@@ -165,7 +165,9 @@ def main():
         older = []
         for g in glob.glob(os.path.join(runs_root, "*", r["tc_id"] + ".json")):
             if os.path.abspath(g) != os.path.abspath(f):
-                o = json.load(open(g, encoding="utf-8")); o.setdefault("run_id", os.path.basename(os.path.dirname(g))); older.append(o)
+                o = json.load(open(g, encoding="utf-8")); o.setdefault("run_id", os.path.basename(os.path.dirname(g)))
+                if o.get("verdict"):  # re-verification records carry final_verdict instead and are merged into details
+                    older.append(o)
         older.sort(key=lambda o: o.get("ended_at", ""), reverse=True)
         blocks = body(r, os.path.dirname(f), older, a.dry_run)
         if a.dry_run:

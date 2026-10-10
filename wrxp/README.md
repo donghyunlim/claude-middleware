@@ -24,7 +24,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`가 있다. 총 15개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`가 있다. 총 16개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -139,6 +139,16 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 ```
 
 행마다 locator나 스크립트를 미리 만들지 않고 에이전트가 화면을 보고 같은 개념의 요소를 찾습니다. [스킬 본문](./skills/worxsales-qa-executor/SKILL.md), [실행 환경](./skills/worxsales-qa-executor/references/environment.md), [결과 형식](./skills/worxsales-qa-executor/references/result-schema.md), [보고 형식](./skills/worxsales-qa-executor/references/report-format.md)을 참고하세요.
+
+### WorxSales QA 최신화
+
+`/wrxp:worxsales-qa-refresh`(Codex에서는 `$wrxp:worxsales-qa-refresh`)는 시간이 지나며 바뀌는 기능정의서, 목업 버전, develop 코드, Notion 시나리오 DB, Notion 상황판을 한 번에 따라잡습니다. 기능정의서와 목업은 매번 **상위 페이지·DB부터 전부 다시 읽어** 새 하위 페이지, 열·토글 안의 페이지, 새 DB 행, 새 첨부 버전을 놓치지 않습니다. 로컬 사본이 없는 페이지, 열 수 없는 페이지, 범위 밖 링크, 지도에 없는 코드 경로는 모두 「확인 필요」로 올리고, 목업 최신 버전은 첨부 순서가 아니라 번호로 정합니다. 모든 점검이 통과한 뒤에만 기준점을 옮기므로, 중간에 실패한 갱신은 다음 실행에서 다시 잡힙니다. 명시적으로 호출할 때만 실행되며 행 실행은 하지 않습니다.
+
+```
+/wrxp:worxsales-qa-refresh 기획서·목업·코드 변경 확인하고 시나리오랑 노션 DB·상황판까지 맞춰 줘
+```
+
+[스킬 본문](./skills/worxsales-qa-refresh/SKILL.md), [변경 항목 처리표](./skills/worxsales-qa-refresh/references/change-types.md), [재실행 행 고르기](./skills/worxsales-qa-refresh/references/rerun.md), [상황판 점검표](./skills/worxsales-qa-refresh/references/dashboard.md)를 참고하세요.
 
 ### 🗡️ Knife family (runtime-bounded task graph)
 

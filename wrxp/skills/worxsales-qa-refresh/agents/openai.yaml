@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorxSales QA Refresh"
+  short_description: "기능정의서·목업·develop 코드 변경을 루트부터 다시 읽어 찾고, 시나리오·재실행 행·Notion DB·상황판을 최신으로 맞춥니다"
+  default_prompt: "$wrxp:worxsales-qa-refresh로 기획서·목업·코드 변경을 확인하고 시나리오와 Notion DB·상황판을 최신으로 맞춰 줘."
+policy:
+  allow_implicit_invocation: false

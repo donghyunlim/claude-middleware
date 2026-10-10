@@ -2,6 +2,11 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.52] - 2026-10-10
+
+- 새 skill `worxsales-qa-dashboard-update`: QA 결과 레인을 최초 회차부터 다시 모아 회차 이력(`history.py`)을 만들고, Notion 상황판의 요약 블록과 인라인 표 두 개(회차 이력, 메뉴별 구현도 이력)를 갱신하며(`sync_notion.py`), 회차별 구현도 점도표 페이지를 만듭니다(`render_html.py`). 명시적으로 호출할 때만 실행됩니다.
+- 새 skill `worxsales-qa-all-in-one`: refresh → executor 조율 → dashboard-update를 한 번에 돕니다. 쓰기 범위는 `refresh/write_scope.json`을 따르고, 새로 쓰기 범위 밖이 된 행이 있으면 끝에 허용 여부를 한 번 묻습니다. 명시적으로 호출할 때만 실행됩니다.
+
 ## [0.1.51] - 2026-10-10
 
 - `worxsales-qa-executor` 판정 규칙: 백엔드가 「원천 미연결」 코드(예: `CORE_SOURCE_UNAVAILABLE`)를 의도적으로 돌려주는 화면은 장애가 아니라 `미구현`(outcome 「백엔드 원천 미연결: 」)입니다. 새 화면이 백엔드 병합 직후에만 「찾을 수 없습니다」를 보이면 배포 전일 수 있으니 몇 분 뒤 다시 확인합니다.

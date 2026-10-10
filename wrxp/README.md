@@ -24,7 +24,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`가 있다. 총 16개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`이 있다. 총 18개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -149,6 +149,26 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 ```
 
 [스킬 본문](./skills/worxsales-qa-refresh/SKILL.md), [변경 항목 처리표](./skills/worxsales-qa-refresh/references/change-types.md), [재실행 행 고르기](./skills/worxsales-qa-refresh/references/rerun.md), [상황판 점검표](./skills/worxsales-qa-refresh/references/dashboard.md)를 참고하세요.
+
+### WorxSales QA 상황판 업데이트
+
+`/wrxp:worxsales-qa-dashboard-update`(Codex에서는 `$wrxp:worxsales-qa-dashboard-update`)는 QA 실행 결과 폴더를 **최초 회차부터 전부 다시 모아** 회차 이력과 누적 통계를 만듭니다. Notion 상황판 맨 위의 「현재 요약」 블록과 인라인 표 두 개(회차 이력, 메뉴별 구현도 이력)를 갱신하고, 회차별 구현도를 점도표로 보이는 「WorxSales QA 진척판」 페이지를 같은 주소로 다시 게시합니다. 지표는 진척, 구현도, 품질(문제 신규·해소), 막힘(실행 불가 사유별), 역할(권한 미적용), 쓰기 범위 밖입니다. 마지막 회차가 시나리오 DB 점검 결과와 다르면 게시하지 않습니다.
+
+```
+/wrxp:worxsales-qa-dashboard-update 회차 이력 다시 모아서 상황판이랑 진척판 갱신해 줘
+```
+
+[스킬 본문](./skills/worxsales-qa-dashboard-update/SKILL.md), [지표 정의](./skills/worxsales-qa-dashboard-update/references/metrics.md)를 참고하세요.
+
+### WorxSales QA 한 바퀴
+
+`/wrxp:worxsales-qa-all-in-one`(Codex에서는 `$wrxp:worxsales-qa-all-in-one`)은 최신화(`worxsales-qa-refresh`) → 바뀐 행 재실행(`worxsales-qa-executor` 작업자 조율) → 상황판 업데이트(`worxsales-qa-dashboard-update`)를 순서대로 돕니다. 실행의 쓰기 범위는 `refresh/write_scope.json`을 따르고, 없으면 사용자가 정한 기본값을 씁니다. 기획 범위가 늘어 새로 쓰기 범위 밖이 된 행이 생기면 끝에서 그 조작을 허용할지 한 번 묻습니다. 기준점은 상황판까지 맞은 뒤에 옮깁니다.
+
+```
+/wrxp:worxsales-qa-all-in-one 최신화부터 재실행, 상황판까지 한 번에 돌려 줘
+```
+
+[스킬 본문](./skills/worxsales-qa-all-in-one/SKILL.md), [조율 규칙](./skills/worxsales-qa-all-in-one/references/orchestration.md), [쓰기 범위](./skills/worxsales-qa-all-in-one/references/write-scope.md)를 참고하세요.
 
 ### 🗡️ Knife family (runtime-bounded task graph)
 

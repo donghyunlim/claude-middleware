@@ -150,7 +150,7 @@ class RefreshInvariantTests(unittest.TestCase):
 
     def test_is_not_wired_into_other_skills(self):
         for path in (WRXP_ROOT / "skills").glob("*/SKILL.md"):
-            if path.parent.name != "worxsales-qa-refresh":
+            if path.parent.name not in ("worxsales-qa-refresh", "worxsales-qa-all-in-one"):
                 self.assertNotIn("worxsales-qa-refresh", path.read_text(), str(path))
 
     def test_baseline_moves_only_through_state_commit(self):

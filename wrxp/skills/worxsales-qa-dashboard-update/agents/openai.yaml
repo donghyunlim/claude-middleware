@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorxSales QA Dashboard Update"
+  short_description: "QA 실행 결과를 최초 회차부터 다시 모아 회차 이력·누적 통계를 만들고, Notion 상황판 요약·이력 표와 구현도 점도표 페이지를 갱신합니다"
+  default_prompt: "$wrxp:worxsales-qa-dashboard-update로 회차 이력을 다시 모으고 Notion 상황판과 진척판을 갱신해 줘."
+policy:
+  allow_implicit_invocation: false

@@ -85,7 +85,7 @@ class WrxpInvariantTests(unittest.TestCase):
 
     def test_worxsales_qa_executor_is_not_wired_into_other_skills(self):
         entrypoints = [path for path in (WRXP_ROOT / "skills").glob("*/SKILL.md")
-                       if path.parent.name != "worxsales-qa-executor"]
+                       if path.parent.name not in ("worxsales-qa-executor", "worxsales-qa-all-in-one")]
         entrypoints += [WRXP_ROOT / "skills/setup/assets/global-rules.md"]
         for path in entrypoints:
             self.assertNotIn("worxsales-qa-executor", path.read_text(), str(path))
@@ -222,7 +222,7 @@ class WrxpInvariantTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"0.1.51"},
+            {"0.1.52"},
             {plugin_version, package_version, marketplace_version},
         )
 

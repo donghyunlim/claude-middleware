@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorxSales QA All-in-One"
+  short_description: "refresh로 기획서·목업·코드 변경을 따라잡고, 바뀐 행을 실제 앱에서 다시 실행해 게시한 뒤, 상황판 회차 이력까지 한 번에 갱신합니다"
+  default_prompt: "$wrxp:worxsales-qa-all-in-one으로 최신화부터 재실행, 상황판 업데이트까지 한 번에 돌려 줘."
+policy:
+  allow_implicit_invocation: false

@@ -65,5 +65,40 @@ class SummaryBlockTests(unittest.TestCase):
         self.assertNotIn("—", text)
 
 
+class PortabilityTests(unittest.TestCase):
+    def test_skill_files_carry_no_personal_paths_or_ids(self):
+        for skill in (DASH, CHAIN):
+            for path in skill.rglob("*"):
+                if path.is_file() and path.suffix in (".md", ".py", ".sh", ".pl", ".yaml") and ".omc" not in path.parts:
+                    text = path.read_text()
+                    for bad in ("/Users/", "/private/tmp", "claude-501", "2230116"):
+                        self.assertNotIn(bad, text, str(path))
+
+    def test_publish_without_config_stays_local(self):
+        import json, subprocess, tempfile
+        d = Path(tempfile.mkdtemp())
+        (d / "watch.json").write_text(json.dumps({"dashboard": {"page_id": "x"}}))
+        (d / "p.html").write_text("<!doctype html><title>t</title>")
+        out = subprocess.run([sys.executable, str(DASH / "scripts/publish_page.py"), str(d / "watch.json"), str(d / "p.html")],
+                             capture_output=True, text=True, check=True).stdout
+        self.assertIn("local only: file://", out)
+
+    def test_rendered_page_is_a_complete_document(self):
+        src = (DASH / "scripts/render_html.py").read_text()
+        self.assertIn("<!doctype html>", src)
+        self.assertIn('<meta charset="utf-8">', src)
+
+    def test_queue_only_ids_limits_rows(self):
+        import json, subprocess, tempfile
+        d = Path(tempfile.mkdtemp())
+        (d / "scenarios/07").mkdir(parents=True)
+        rows = [{"tc_id": t, "policy": "결정 완료", "role": "영업자", "access": "수정 가능", "external": False, "menu": "7. 고객"} for t in ("TC-A", "TC-B")]
+        (d / "scenarios/07/a.json").write_text(json.dumps(rows, ensure_ascii=False))
+        (d / "ids.txt").write_text("TC-B\n")
+        (d / "run").mkdir()
+        subprocess.run([sys.executable, str(CHAIN / "scripts/qa_queue.py"), "build", "run", "--only-ids", "ids.txt"], cwd=d, check=True, capture_output=True)
+        self.assertEqual([r["tc_id"] for r in json.loads((d / "run/queue.json").read_text())], ["TC-B"])
+
+
 if __name__ == "__main__":
     unittest.main()

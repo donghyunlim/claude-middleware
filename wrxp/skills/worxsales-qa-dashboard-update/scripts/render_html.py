@@ -1,4 +1,4 @@
-"""Render refresh/history.json as the QA round dashboard page (artifact HTML, no external scripts).
+"""Render refresh/history.json as the QA round dashboard page: one self-contained HTML file, no scripts.
 
 Usage: python3 render_html.py <history.json> <out.html> [--notion-url URL]
 Dot plots are drawn as inline SVG from one scale each; every metric also appears in a table.
@@ -77,11 +77,11 @@ def pct(v): return "—" if v is None else f"{v:.1f}%"
 
 def round_plot(rounds):
     """구현도 by round: ● 구현도(OK+부분 OK) ○ OK only ○ 미구현, ▪ 실행률. y = 0..100%."""
-    W, H, L, R, T, B = max(560, 92 * len(rounds) + 70), 300, 48, 22, 16, 64
+    W, H, L, R, T, B = max(560, 92 * len(rounds) + 90), 300, 48, 44, 16, 64  # R: half a build label, so the last round is not clipped
     xw = (W - L - R) / max(1, len(rounds) - 1)
     x = lambda i: L + i * xw
     y = lambda v: T + (H - T - B) * (1 - v / 100)
-    out = [f'<svg viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="회차별 구현도 점도표">']
+    out = [f'<svg viewBox="0 0 {W} {H}" style="width:100%;min-width:560px;max-width:{W}px;height:auto" role="img" aria-label="회차별 구현도 점도표">']
     for g in range(0, 101, 20):
         out.append(f'<line class="grid" x1="{L}" x2="{W-R}" y1="{y(g):.1f}" y2="{y(g):.1f}"/><text x="{L-8}" y="{y(g)+4:.1f}" text-anchor="end">{g}%</text>')
     out.append(f'<line class="axis" x1="{L}" x2="{W-R}" y1="{y(0):.1f}" y2="{y(0):.1f}"/>')
@@ -183,10 +183,13 @@ def main():
                 f'<th>첫 측정</th><th>현재 구현도</th><th>변화</th></tr></thead><tbody>{"".join(mrows)}</tbody></table></div>')
 
     notion = f' · <a href="{E(a.notion_url)}">Notion 상황판</a>' if a.notion_url else ""
-    page = f"""<title>WorxSales QA 진척판</title>
+    page = f"""<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WorxSales QA 진척판</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
-<style>{CSS}</style>
+<style>*,*::before,*::after{{box-sizing:border-box}} body{{margin:0}} img{{max-width:100%}}
+{CSS}</style></head><body>
 <main class="wrap">
 <header><h1>WorxSales QA 진척판</h1>
 <p class="sub">최신 회차 {cur["round"]} · desktop <span class="num">{E(cur["build"])}</span> · {E(cur["end"].replace("T", " "))} 기준 · 생성 {E(h["generated_at"][:16].replace("T", " "))}{notion}</p></header>
@@ -203,7 +206,7 @@ def main():
 <section><h2>메뉴별 현황</h2>{menu_tbl}</section>
 <footer><span>대상 행은 시나리오의 생성 배치 날짜부터 셉니다. 범위 제외 날짜는 행마다 기록되지 않아, 지금 범위 제외인 행은 앞선 회차에서도 뺐습니다.</span>
 <span>각 회차의 판정은 그 시점까지 끝난 레인 가운데 우선순위가 가장 높은 결과입니다. 마지막 회차는 Notion 시나리오 DB와 같습니다.</span></footer>
-</main>"""
+</main></body></html>"""
     open(a.out, "w", encoding="utf-8").write(page)
     print("wrote", a.out, len(page), "bytes")
 

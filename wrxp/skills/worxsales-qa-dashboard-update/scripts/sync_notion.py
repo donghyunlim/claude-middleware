@@ -66,7 +66,7 @@ def upsert(db, title_prop, rows, dry):
     return n
 
 
-def summary_blocks(h, artifact_url):
+def summary_blocks(h, page_url):
     rs = h["rounds"]; c = rs[-1]; p = rs[-2] if len(rs) > 1 else c
     d = None if c["impl_rate"] is None or p["impl_rate"] is None else round(c["impl_rate"] - p["impl_rate"], 1)
     li = lambda s: {"type": "bulleted_list_item", "bulleted_list_item": {"rich_text": rt(s)}}
@@ -82,10 +82,10 @@ def summary_blocks(h, artifact_url):
            {"type": "callout", "callout": {"icon": {"emoji": "🧭"}, "color": "gray_background",
             "rich_text": rt(f'회차 {c["round"]} · desktop {c["build"]} · {c["end"].replace("T", " ")} 기준')}}]
     out += [li(s) for s in items]
-    if artifact_url:
+    if page_url:
         out.append({"type": "paragraph", "paragraph": {"rich_text": [
             {"type": "text", "text": {"content": "회차별 구현도 점도표와 전체 표: "}},
-            {"type": "text", "text": {"content": "WorxSales QA 진척판", "link": {"url": artifact_url}}}]}})
+            {"type": "text", "text": {"content": "WorxSales QA 진척판", "link": {"url": page_url}}}]}})
     out.append({"type": "divider", "divider": {}})
     return out
 
@@ -134,7 +134,7 @@ def main():
                 "미구현": {"number": e["unimpl"]}, "문제": {"number": e["problem"]}, "구현도": {"number": frac(e["impl_rate"])}}))
     n1 = upsert(rdb, "회차", rrows, dry) if rdb or dry else 0
     n2 = upsert(mdb, "회차·메뉴", mrows, dry) if mdb or dry else 0
-    old, new = replace_summary(page, summary_blocks(h, w["dashboard"].get("artifact_url")), dry)
+    old, new = replace_summary(page, summary_blocks(h, w["dashboard"].get("publish", {}).get("url")), dry)
     print(f"{'dry run' if dry else 'synced'}: rounds={n1} menu_rows={n2} summary blocks replaced {old} → {new}")
 
 

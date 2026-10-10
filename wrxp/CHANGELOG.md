@@ -2,6 +2,11 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.53] - 2026-10-10
+
+- `worxsales-qa-dashboard-update`: 진척판을 claude.ai 아티팩트 대신 HTML 파일 하나로 만들고, `publish_page.py`가 `watch.json`의 `dashboard.publish`(ssh 호스트·경로·주소)로 올린 뒤 받은 내용이 같은지 확인합니다. 설정이 없으면 로컬 파일로 둡니다. `serve_setup.sh`는 sudo 없이 맥에 사용자 LaunchAgent로 읽기 전용 서버(`serve_page.pl`, 기본 Perl만 사용)를 띄웁니다. 상황판 요약의 진척판 링크도 이 주소를 씁니다. 회차 점도표의 마지막 회차가 잘리던 문제를 고쳤습니다.
+- `worxsales-qa-all-in-one`: 작업 폴더에만 있던 조율 스크립트(`qa_queue.py`, `qa_rollout.sh`, `publish_pending.py`, `merge_reverify.py`)와 작업자 지시 틀(`references/worker-template.md`)을 스킬에 넣었습니다. `qa_queue.py build --only-ids`로 재실행 행만 큐에 넣고, `qa_rollout.sh`는 개인 경로 대신 빌드 정보 파일과 `QA_USERDATA_ROOT`를 받습니다.
+
 ## [0.1.52] - 2026-10-10
 
 - 새 skill `worxsales-qa-dashboard-update`: QA 결과 레인을 최초 회차부터 다시 모아 회차 이력(`history.py`)을 만들고, Notion 상황판의 요약 블록과 인라인 표 두 개(회차 이력, 메뉴별 구현도 이력)를 갱신하며(`sync_notion.py`), 회차별 구현도 점도표 페이지를 만듭니다(`render_html.py`). 명시적으로 호출할 때만 실행됩니다.

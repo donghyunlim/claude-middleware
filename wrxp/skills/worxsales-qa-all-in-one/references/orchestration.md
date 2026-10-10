@@ -2,16 +2,18 @@
 
 조율자(이 스킬을 실행하는 메인 세션)는 큐·묶음·감사·재배정·게시만 합니다. 행 실행과 판정은 작업자가 `worxsales-qa-executor` 규칙대로 합니다. 2026-10-10까지의 실제 운영에서 얻은 규칙입니다.
 
-## 작업 폴더 스크립트
+## 조율 스크립트 (`<skill>/scripts/`)
+
+작업 폴더(QA_HOME)에서 실행합니다. `<run_dir>`는 `runs/run-…/`입니다.
 
 | 스크립트 | 용도 |
 |---|---|
-| `scripts/qa_queue.py build <run_dir> [--exclude-run DIR]` | 대상 행으로 `queue.json` 작성. 역할·권한 순서로 정렬 |
-| `scripts/qa_queue.py next <run_dir> <n> [--group=역할/권한]` | 다음 묶음 파일 작성, 경로 출력 |
-| `scripts/qa_queue.py status <run_dir>` | 완료·대기·판정별 수 |
-| `scripts/qa_rollout.sh <port> <작업 폴더>` | 쉬는 앱 슬롯을 최신 빌드로 다시 띄우고 DEV 로그인. 빌드 정보는 `runs/run-2026-10-09-full/_latest_build.json` |
-| `scripts/publish_pending.py <run_dir> list / mark <ids>` | 게시 안 된 결과 목록, 게시 기록 |
-| `scripts/merge_reverify.py <reverify_dir> <run_dir>` | 재검증 결과를 원래 결과에 합침 |
+| `qa_queue.py build <run_dir> [--exclude-run DIR] [--only-ids FILE]` | 대상 행으로 `queue.json` 작성. `--only-ids`는 재실행으로 고른 TC ID 목록. 역할·권한 순서로 정렬 |
+| `qa_queue.py next <run_dir> <n> [--group=역할/권한]` | 다음 묶음 파일 작성, 경로 출력 |
+| `qa_queue.py status <run_dir>` | 완료·대기·판정별 수 |
+| `qa_rollout.sh <port> <작업 폴더> <build.json>` | 쉬는 앱 슬롯을 그 빌드로 다시 띄우고 DEV 로그인. 9333 외 슬롯의 사용자 데이터는 `$QA_USERDATA_ROOT/<port>`(기본 `<작업 폴더>/.userdata`). 종료 코드 4는 사람이 로그인해야 함 |
+| `publish_pending.py <run_dir> list / mark <ids>` | 게시 안 된 결과 목록, 게시 기록 |
+| `merge_reverify.py <reverify_dir> <run_dir>` | 재검증 결과를 원래 결과에 합침 |
 
 큐 도구는 묶음 파일에 들어간 행을 「이미 배정됨」으로 봅니다. 다시 맡길 행은 새 묶음 파일로 직접 만듭니다.
 

@@ -85,6 +85,27 @@ class DiffSourcesTests(unittest.TestCase):
         code, rep = self.run_diff(second, first)
         self.assertEqual([x["id"] for x in rep["discovered_new"]], [d2])
 
+    def test_property_only_change_on_a_policy_row_is_detected(self):
+        a = "a" * 32
+        self.local(a, "[속성] 상태: 결정 필요\n\n본문")
+        new = self.crawl("n", [page(a, "정책", None, kind="db_row")], {a: "[속성] 상태: 결정 완료\n\n본문"})
+        code, rep = self.run_diff(new)
+        self.assertEqual([x["id"] for x in rep["local_stale"]], [a])
+
+    def test_copy_missing_row_properties_is_stale(self):
+        a = "a" * 32
+        self.local(a, "본문")
+        new = self.crawl("n", [page(a, "정책", None, kind="db_row")], {a: "[속성] 상태: 결정 완료\n\n본문"})
+        code, rep = self.run_diff(new)
+        self.assertEqual([x["id"] for x in rep["local_stale"]], [a])
+
+    def test_old_style_copy_without_markers_matches_crawl_with_markers(self):
+        a = "a" * 32
+        self.local(a, "본문")
+        new = self.crawl("n", [page(a, "화면", None)], {a: "본문\n[파일] 그림.png"})
+        code, rep = self.run_diff(new)
+        self.assertEqual(rep["local_stale"], [])
+
     def test_unreadable_page_and_stale_local_copy_are_attention(self):
         a, b = "a" * 32, "b" * 32
         new = self.crawl("n", [page(a, "10. 견적", None), {"id": b, "kind": "error", "parent": a, "path": [], "root": "기능정의서", "error": "404"}], {a: "new"})

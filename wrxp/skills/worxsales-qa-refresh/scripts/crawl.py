@@ -30,6 +30,25 @@ def mentions(rt):
             for t in rt or [] if t.get("type") == "mention" and t["mention"].get("type") in ("page", "database")]
 
 
+def prop_value(v):
+    t = v.get("type"); x = v.get(t)
+    if t in ("title", "rich_text"): return rich(x)
+    if t in ("select", "status"): return (x or {}).get("name") or ""
+    if t == "multi_select": return ", ".join(o["name"] for o in x or [])
+    if t == "date": return " ~ ".join(filter(None, [(x or {}).get("start"), (x or {}).get("end")]))
+    if t in ("number", "checkbox", "url", "email", "phone_number"): return "" if x is None else str(x)
+    if t == "people": return ", ".join(u.get("name") or u.get("id", "") for u in x or [])
+    if t == "relation": return ", ".join(norm(r["id"]) for r in x or [])
+    if t == "files": return ", ".join(f["name"] for f in x or [])
+    return ""  # created_time, last_edited_time, formula, rollup: derived, not authored
+
+
+def prop_lines(p):
+    out = [f"[속성] {k}: {prop_value(v)}" for k, v in sorted(p.get("properties", {}).items())
+           if v.get("type") != "title" and prop_value(v)]
+    return out + [""] if out else []
+
+
 class Crawler:
     def __init__(self, out):
         self.out, self.nodes, self.seen, self.lock, self.stop = out, {}, set(), threading.Lock(), set()
@@ -89,7 +108,10 @@ class Crawler:
         for prop in p.get("properties", {}).values():  # database rows keep files and links in properties
             if prop.get("type") == "files": found["files"] += [f["name"] for f in prop["files"]]
             if prop.get("type") == "rich_text": found["links"] += mentions(prop["rich_text"])
-        body = self.render(pid, 0, found)
+        # Database rows (e.g. policy decisions) keep 상태·결정 내용 in properties, not in the body, so a decision
+        # can change without any body edit. Properties go into the text and the hash.
+        props = prop_lines(p) if row_of else []
+        body = props + self.render(pid, 0, found)
         text = f"# {title}\n\nsource: https://app.notion.com/p/{pid}\nlast_edited: {p['last_edited_time']}\n\n" + "\n".join(body) + "\n"
         open(os.path.join(self.out, "pages", pid + ".md"), "w", encoding="utf-8").write(text)
         self.add(pid, kind="db_row" if row_of else "page", title=title, parent=parent, path=path, root=root,

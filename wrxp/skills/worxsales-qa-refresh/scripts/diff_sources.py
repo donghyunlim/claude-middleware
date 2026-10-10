@@ -17,12 +17,20 @@ def load(d):
 
 
 MARKERS = ("[파일] ", "[링크] ")  # crawl.py adds these; fetch_spec.py copies do not have them
+# "[속성] " lines (DB row properties) are never stripped: a copy without a row's 상태·결정 내용 is stale.
 
 
-def body(text):
+def body(text, strip=True):
     parts = text.split("\n\n", 2)  # "# title", "source/last_edited", body
     lines = (parts[2] if len(parts) == 3 else "").splitlines()
-    return "\n".join(l for l in lines if not l.lstrip().startswith(MARKERS)).strip()
+    return "\n".join(l for l in lines if not (strip and l.lstrip().startswith(MARKERS))).strip()
+
+
+def same_text(local, crawled):
+    """Old fetch_spec.py copies have no marker lines, so compare them without markers. Copies written by
+    apply_sources.py carry [속성] lines, and a decision that changes only a property must still count."""
+    old_style = not any(l.lstrip().startswith(MARKERS) for l in local.splitlines())
+    return body(local, old_style) == body(crawled, old_style)
 
 
 def vtuple(v):
@@ -79,7 +87,7 @@ def main():
         if len(files) > 1: rep["local_duplicate"].append({"id": k, "files": files})
         new_text = open(os.path.join(a.new, "pages", k + ".md"), encoding="utf-8").read()
         for f in files:
-            if body(open(f, encoding="utf-8").read()) != body(new_text):
+            if not same_text(open(f, encoding="utf-8").read(), new_text):
                 rep["local_stale"].append({"id": k, "title": n["title"], "file": f, "now_edited": n.get("last_edited")})
     for k, files in src.items():
         if k not in pages and k not in ignore:

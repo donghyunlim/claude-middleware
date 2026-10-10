@@ -2,6 +2,10 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.54] - 2026-10-10
+
+- `worxsales-qa-dashboard-update`: 진척판을 이 맥에서 띄울 수 있습니다. `serve_setup.sh local …`과 `dashboard.publish.ssh_host: "local"`을 지원하고, 사람이 여는 주소(`url`, 예: `http://<LocalHostName>.local:8090/`)와 게시 확인 주소(`verify_url`)를 나눴습니다. `serve_setup.sh --remove`로 서버를 내립니다.
+
 ## [0.1.53] - 2026-10-10
 
 - `worxsales-qa-dashboard-update`: 진척판을 claude.ai 아티팩트 대신 HTML 파일 하나로 만들고, `publish_page.py`가 `watch.json`의 `dashboard.publish`(ssh 호스트·경로·주소)로 올린 뒤 받은 내용이 같은지 확인합니다. 설정이 없으면 로컬 파일로 둡니다. `serve_setup.sh`는 sudo 없이 맥에 사용자 LaunchAgent로 읽기 전용 서버(`serve_page.pl`, 기본 Perl만 사용)를 띄웁니다. 상황판 요약의 진척판 링크도 이 주소를 씁니다. 회차 점도표의 마지막 회차가 잘리던 문제를 고쳤습니다.

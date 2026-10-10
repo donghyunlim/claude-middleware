@@ -83,6 +83,25 @@ class PortabilityTests(unittest.TestCase):
                              capture_output=True, text=True, check=True).stdout
         self.assertIn("local only: file://", out)
 
+    def test_local_publish_writes_home_dir_and_checks_verify_url(self):
+        import http.server, json, os, tempfile, threading
+        home = Path(tempfile.mkdtemp()); d = Path(tempfile.mkdtemp())
+        served = home / "dash"
+        handler = lambda *a, **k: http.server.SimpleHTTPRequestHandler(*a, directory=str(served), **k)
+        srv = http.server.HTTPServer(("127.0.0.1", 0), handler)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        verify = f"http://127.0.0.1:{srv.server_address[1]}/index.html"
+        (d / "watch.json").write_text(json.dumps({"dashboard": {"publish": {"ssh_host": "local", "remote_dir": "dash",
+                                                  "url": "http://example.local:8090/", "verify_url": verify}}}))
+        (d / "p.html").write_text("<!doctype html><title>t</title>")
+        import subprocess
+        out = subprocess.run([sys.executable, str(DASH / "scripts/publish_page.py"), str(d / "watch.json"), str(d / "p.html")],
+                             capture_output=True, text=True, env={**os.environ, "HOME": str(home)})
+        srv.shutdown()
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn("published: http://example.local:8090/", out.stdout)
+        self.assertEqual((served / "index.html").read_text(), "<!doctype html><title>t</title>")
+
     def test_rendered_page_is_a_complete_document(self):
         src = (DASH / "scripts/render_html.py").read_text()
         self.assertIn("<!doctype html>", src)

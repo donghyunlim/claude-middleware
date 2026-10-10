@@ -152,7 +152,7 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 
 ### WorxSales QA 상황판 업데이트
 
-`/wrxp:worxsales-qa-dashboard-update`(Codex에서는 `$wrxp:worxsales-qa-dashboard-update`)는 QA 실행 결과 폴더를 **최초 회차부터 전부 다시 모아** 회차 이력과 누적 통계를 만듭니다. Notion 상황판 맨 위의 「현재 요약」 블록과 인라인 표 두 개(회차 이력, 메뉴별 구현도 이력)를 갱신하고, 회차별 구현도를 점도표로 보이는 「WorxSales QA 진척판」 HTML 한 장을 만듭니다. 진척판은 ssh로 닿는 맥(예: 서버실 맥북)에 올려 사내망에서 같은 주소로 보거나, 설정이 없으면 로컬 파일로 엽니다. 서버는 sudo 없이 `serve_setup.sh`로 한 번 준비합니다. 지표는 진척, 구현도, 품질(문제 신규·해소), 막힘(실행 불가 사유별), 역할(권한 미적용), 쓰기 범위 밖입니다. 마지막 회차가 시나리오 DB 점검 결과와 다르면 게시하지 않습니다.
+`/wrxp:worxsales-qa-dashboard-update`(Codex에서는 `$wrxp:worxsales-qa-dashboard-update`)는 QA 실행 결과 폴더를 **최초 회차부터 전부 다시 모아** 회차 이력과 누적 통계를 만듭니다. Notion 상황판 맨 위의 「현재 요약」 블록과 인라인 표 두 개(회차 이력, 메뉴별 구현도 이력)를 갱신하고, 회차별 구현도를 점도표로 보이는 「WorxSales QA 진척판」 HTML 한 장을 만듭니다. 진척판은 이 맥이나 ssh로 닿는 맥에서 띄워 같은 Wi-Fi에서 같은 주소로 보거나, 설정이 없으면 로컬 파일로 엽니다. 서버는 sudo 없이 `serve_setup.sh`로 한 번 준비합니다. 지표는 진척, 구현도, 품질(문제 신규·해소), 막힘(실행 불가 사유별), 역할(권한 미적용), 쓰기 범위 밖입니다. 마지막 회차가 시나리오 DB 점검 결과와 다르면 게시하지 않습니다.
 
 ```
 /wrxp:worxsales-qa-dashboard-update 회차 이력 다시 모아서 상황판이랑 진척판 갱신해 줘

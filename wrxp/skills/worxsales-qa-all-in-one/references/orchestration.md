@@ -11,7 +11,7 @@
 | `qa_queue.py build <run_dir> [--exclude-run DIR] [--only-ids FILE]` | 대상 행으로 `queue.json` 작성. `--only-ids`는 재실행으로 고른 TC ID 목록. 역할·권한 순서로 정렬 |
 | `qa_queue.py next <run_dir> <n> [--group=역할/권한]` | 다음 묶음 파일 작성, 경로 출력 |
 | `qa_queue.py status <run_dir>` | 완료·대기·판정별 수 |
-| `qa_rollout.sh <port> <작업 폴더> <build.json>` | 쉬는 앱 슬롯을 그 빌드로 다시 띄우고 DEV 로그인. 9333 외 슬롯의 사용자 데이터는 `$QA_USERDATA_ROOT/<port>`(기본 `<작업 폴더>/.userdata`). 종료 코드 4는 사람이 로그인해야 함 |
+| `qa_rollout.sh <port> <작업 폴더> <build.json>` | 쉬는 앱 슬롯을 그 빌드로 다시 띄우고 DEV 로그인. 9333 외 슬롯의 사용자 데이터는 `$QA_USERDATA_ROOT/<port>`(기본 `<작업 폴더>/.userdata`). 종료 코드 4는 사람이 로그인해야 함. 슬롯마다 그 슬롯의 `config.json`이 있는 폴더를 `<작업 폴더>` 자리에 넘기고, 여러 슬롯은 **하나씩** 띄웁니다(동시에 띄우면 브라우저 인증이 엇갈려 「브라우저 인증 대기」에 멈춥니다) |
 | `publish_pending.py <run_dir> list / mark <ids>` | 게시 안 된 결과 목록, 게시 기록 |
 | `merge_reverify.py <reverify_dir> <run_dir>` | 재검증 결과를 원래 결과에 합침 |
 

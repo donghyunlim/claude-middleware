@@ -2,6 +2,10 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.55] - 2026-10-11
+
+- `worxsales-qa-all-in-one`: `qa_rollout.sh`가 로그인 확인을 `config.json`의 CDP(대개 9333)로 보내, 다른 슬롯이 로그인 화면에 남아도 「ready」로 보고하던 버그를 고쳤습니다. 이제 넘긴 포트로 확인합니다. 슬롯마다 자기 `<qa_home>`(그 슬롯의 `config.json`)을 넘기고, 여러 슬롯은 브라우저 인증이 엇갈리지 않게 하나씩 띄웁니다.
+
 ## [0.1.54] - 2026-10-10
 
 - `worxsales-qa-dashboard-update`: 진척판을 이 맥에서 띄울 수 있습니다. `serve_setup.sh local …`과 `dashboard.publish.ssh_host: "local"`을 지원하고, 사람이 여는 주소(`url`, 예: `http://<LocalHostName>.local:8090/`)와 게시 확인 주소(`verify_url`)를 나눴습니다. `serve_setup.sh --remove`로 서버를 내립니다.

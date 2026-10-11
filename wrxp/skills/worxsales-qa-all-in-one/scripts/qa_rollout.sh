@@ -23,7 +23,7 @@ python3 -I - "$HOME_DIR/config.json" "$APP" "$WT" "$BUILD" <<'PY'
 import json,sys
 p,app,wt,b=sys.argv[1:]; c=json.load(open(p)); c.update(app_path=app,desktop_worktree=wt,build=b); json.dump(c,open(p,'w'),ensure_ascii=False,indent=2)
 PY
-sleep 6; export QA_HOME=$HOME_DIR
+sleep 6; export QA_HOME=$HOME_DIR CDP=http://127.0.0.1:$PORT  # talk to this slot, not config.cdp (bug fixed 2026-10-11)
 node "$A" click '{"text":"DEV","scope":"body"}' >/dev/null 2>&1 || true
 node "$A" click '{"role":"button","name":"로그인","scope":"body"}' >/dev/null 2>&1 || true
 for t in 1 2 3 4 5 6 7 8 9 10; do sleep 5; T=$(node "$A" text body 2>/dev/null || true)

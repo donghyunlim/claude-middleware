@@ -47,6 +47,14 @@ class ManagedBlocksTests(unittest.TestCase):
         mod = load()
         self.assertEqual((mod.CIRCLED(1), mod.CIRCLED("A"), mod.CIRCLED("B")), ("①", "Ⓐ", "Ⓑ"))
 
+    def test_string_marks_are_numbered_in_order(self):
+        mod = load()
+        blocks = mod.body({"verdict": "문제", "headline": "h", "checked": "c", "outcome": "o",
+                           "figures": [{"caption": "c", "marks": ["저장 버튼", {"n": 2, "label": "오류 문구"}]}],
+                           "details": {}}, ".", [], True)
+        text = [b["bulleted_list_item"]["rich_text"][0]["text"]["content"] for b in blocks if b["type"] == "bulleted_list_item"]
+        self.assertEqual(text[:2], ["① 저장 버튼", "② 오류 문구"])
+
 
 if __name__ == "__main__":
     unittest.main()

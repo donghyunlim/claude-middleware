@@ -29,7 +29,7 @@ QA 한 바퀴를 순서대로 돕니다.
 3. **레인과 앱 준비.** 새 커밋이 있으면 executor의 `build_dev_app.sh`로 빌드하고, 쉬는 슬롯마다 `<skill>/scripts/qa_rollout.sh <port> <작업 폴더> <build.json>`으로 새 빌드를 띄웁니다. `build.json`은 빌드의 `app_path`·`desktop_worktree`·`build`를 담아 조율자가 레인 폴더에 씁니다. `runs/run-<날짜>-b<커밋 4~5자리>/`를 만들고, [작업자 지시 틀](references/worker-template.md)을 복사해 자리표시자(`{RUN_ID}` 등)를 채우고 「Write scope」 절을 `write_scope.json`대로 씁니다. 직전 레인의 WORKER.md에 그 뒤 더해진 규칙이 있으면 함께 옮깁니다. `lanes.json` 맨 앞에 넣습니다. 슬롯을 모두 새 빌드로 바꾼 뒤에 `<skill>/scripts/prune_builds.sh <desktop repo> <새 빌드 worktree>`로 이전 빌드 worktree를 지웁니다(빌드 하나가 수 GB라 남기면 디스크가 찹니다).
 4. **실행 조율.** [조율 규칙](references/orchestration.md)을 따릅니다. 요지는 다음과 같습니다.
    - 작업자는 Sonnet 에이전트입니다. 조율자는 행을 직접 실행하지 않습니다.
-   - 영업자 행은 11~20행 묶음으로 앱 슬롯마다 한 작업자에게 맡깁니다. 역할 행은 영업자 묶음이 모두 끝난 뒤 작업자 한 명이 순차로 실행합니다.
+   - 영업자 행은 11~20행 묶음으로 앱 슬롯마다 한 작업자에게 맡깁니다. 역할 행은 영업자 묶음과 재검증이 끝난 뒤 실행합니다. 이미 있는 부여로 도는 묶음은 슬롯마다 병렬로, 부여를 바꿔야 하는 묶음은 한 명이 순차로 실행합니다(references/orchestration.md).
    - 묶음이 끝날 때마다 감사하고, 일시 장애·배포 직후 실패는 조율자가 직접 다시 확인한 뒤 재배정합니다.
    - 「문제」와 「문제」에서 바뀐 판정은 Opus 재검증 후 합칩니다.
 5. **게시.** 레인의 작업자가 모두 끝나면 레인의 `_tmp/`(작업자 임시 캡처·스크립트)를 지웁니다. 증거 그림은 레인 폴더 바로 아래에 있으므로 남습니다. 이어서 레인 결과를 오래된 레인부터 게시하고, `check_notion.py`로 최신 결과와 DB가 맞는지 확인합니다.

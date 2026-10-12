@@ -127,7 +127,9 @@ def body(r, base, older, dry):
                     img = resolve(f[key], base)
                     if os.path.exists(img):
                         blocks.append({"type": "image", "image": {"type": "external", "external": {"url": "https://example.invalid"}}} if dry else upload(img))
-            blocks += [li(f"{CIRCLED(m['n'])} {m.get('label', '')}") for m in f.get("marks", [])]
+            # a worker may write marks as plain strings; number them in order
+            blocks += [li(f"{CIRCLED(m['n'])} {m.get('label', '')}" if isinstance(m, dict) else f"{CIRCLED(j)} {m}")
+                       for j, m in enumerate(f.get("marks", []), 1)]
     d = r.get("details", {})
     kids = [labeled("판정 근거", d.get("verdict_reason", "")),
             labeled("실행 환경", f"{r.get('run_id', '')} · {r.get('started_at', '')} ~ {r.get('ended_at', '')} · 빌드 {r.get('build', '')} · 역할 {r.get('role_context', '')} · 대상 {r.get('target_data', '')}"),

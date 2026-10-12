@@ -24,7 +24,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`이 있다. 총 18개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`가 있다. 총 20개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -169,6 +169,18 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 ```
 
 [스킬 본문](./skills/worxsales-qa-all-in-one/SKILL.md), [조율 규칙](./skills/worxsales-qa-all-in-one/references/orchestration.md), [쓰기 범위](./skills/worxsales-qa-all-in-one/references/write-scope.md)를 참고하세요.
+
+### WorxSales QA OK 아닌 행 재실행
+
+`/wrxp:worxsales-qa-rerun-not-ok`(Codex에서는 `$wrxp:worxsales-qa-rerun-not-ok`)는 코드가 바뀐 메뉴만 고르지 않고, **최신 판정이 OK가 아닌 모든 행**을 실제 앱에서 다시 실행합니다. 대상은 미실행 행, 부분 OK·미구현·문제·실행 불가·보류-기록·알려진 차이 행, 그리고 OK였지만 그 뒤 기대결과가 바뀐 행입니다. OK 행은 다시 보지 않습니다. 행 고르기는 `select_not_ok.py`가 하고, 조율·게시는 한 바퀴 스킬과 같은 규칙과 스크립트를 씁니다.
+
+`/wrxp:worxsales-qa-all-in-one-not-ok`는 최신화 → OK 아닌 행 재실행 → 상황판 업데이트를 한 번에 돕니다.
+
+```
+/wrxp:worxsales-qa-all-in-one-not-ok 최신화하고 OK 아닌 행 전부 다시 돌려서 상황판까지
+```
+
+[재실행 스킬](./skills/worxsales-qa-rerun-not-ok/SKILL.md), [한 바퀴 스킬](./skills/worxsales-qa-all-in-one-not-ok/SKILL.md)을 참고하세요.
 
 ### 🗡️ Knife family (runtime-bounded task graph)
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorxSales QA Rerun Not-OK"
+  short_description: "메뉴를 가리지 않고 최신 판정이 OK가 아닌 모든 시나리오 행을 실제 앱에서 다시 실행하고 게시합니다. OK 행은 기대결과가 바뀌었을 때만 다시 봅니다"
+  default_prompt: "$wrxp:worxsales-qa-rerun-not-ok로 OK가 아닌 행을 모두 다시 돌려 줘."
+policy:
+  allow_implicit_invocation: false

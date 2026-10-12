@@ -2,6 +2,12 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.56] - 2026-10-12
+
+- 새 skill `worxsales-qa-rerun-not-ok`: 메뉴와 관계없이 최신 판정이 OK가 아닌 모든 행(미실행·부분 OK 포함)과, OK 결과 뒤 기대결과가 바뀐 행을 다시 실행합니다(`select_not_ok.py`). 명시적으로 호출할 때만 실행됩니다.
+- 새 skill `worxsales-qa-all-in-one-not-ok`: refresh → rerun-not-ok → dashboard-update 한 바퀴. 명시적으로 호출할 때만 실행됩니다.
+- `worxsales-qa-refresh`: 시나리오를 고치면 메뉴마다 `_changed_ids_<날짜>.txt`·`_oos_ids_<날짜>.txt`를 남긴다고 명시했습니다. 크롤 중 재시도를 다 쓴 연결 오류(예: SSL EOF)가 크롤 전체를 멈추지 않고 그 페이지만 오류로 기록합니다.
+
 ## [0.1.55] - 2026-10-11
 
 - `worxsales-qa-all-in-one`: `qa_rollout.sh`가 로그인 확인을 `config.json`의 CDP(대개 9333)로 보내, 다른 슬롯이 로그인 화면에 남아도 「ready」로 보고하던 버그를 고쳤습니다. 이제 넘긴 포트로 확인합니다. 슬롯마다 자기 `<qa_home>`(그 슬롯의 `config.json`)을 넘기고, 여러 슬롯은 브라우저 인증이 엇갈리지 않게 하나씩 띄웁니다.

@@ -6,6 +6,15 @@ from pathlib import Path
 WRXP_ROOT = Path(__file__).resolve().parents[1]
 DASH = WRXP_ROOT / "skills/worxsales-qa-dashboard-update"
 CHAIN = WRXP_ROOT / "skills/worxsales-qa-all-in-one"
+RERUN = WRXP_ROOT / "skills/worxsales-qa-rerun-not-ok"
+CHAIN_NOT_OK = WRXP_ROOT / "skills/worxsales-qa-all-in-one-not-ok"
+# which skill entry points may name which QA skills
+MAY_NAME = {
+    "worxsales-qa-dashboard-update": {"worxsales-qa-all-in-one", "worxsales-qa-all-in-one-not-ok"},
+    "worxsales-qa-all-in-one": {"worxsales-qa-rerun-not-ok", "worxsales-qa-all-in-one-not-ok"},
+    "worxsales-qa-rerun-not-ok": {"worxsales-qa-all-in-one-not-ok"},
+    "worxsales-qa-all-in-one-not-ok": set(),
+}
 
 
 def load(name):
@@ -18,20 +27,43 @@ def load(name):
 
 class ExplicitInvocationTests(unittest.TestCase):
     def test_new_skills_require_explicit_invocation_on_both_runtimes(self):
-        for skill in (DASH, CHAIN):
+        for skill in (DASH, CHAIN, RERUN, CHAIN_NOT_OK):
             frontmatter = (skill / "SKILL.md").read_text().split("---", 2)[1]
             self.assertRegex(frontmatter, r"(?m)^disable-model-invocation: true$", skill.name)
             self.assertRegex((skill / "agents/openai.yaml").read_text(), r"(?m)^policy:\n  allow_implicit_invocation: false$", skill.name)
 
-    def test_only_the_chain_names_the_qa_skills(self):
-        names = ("worxsales-qa-dashboard-update", "worxsales-qa-all-in-one")
+    def test_only_the_chains_name_the_qa_skills(self):
         for path in (WRXP_ROOT / "skills").glob("*/SKILL.md"):
-            for name in names:
-                if path.parent.name not in (name, "worxsales-qa-all-in-one"):
-                    self.assertNotIn(name, path.read_text(), str(path))
+            text = path.read_text()
+            for name, allowed in MAY_NAME.items():
+                if path.parent.name != name and path.parent.name not in allowed:
+                    self.assertNotIn(name, text, f"{path} names {name}")
         chain = (CHAIN / "SKILL.md").read_text()
         for name in ("worxsales-qa-refresh", "worxsales-qa-executor", "worxsales-qa-dashboard-update"):
             self.assertIn(name, chain)
+        chain_not_ok = (CHAIN_NOT_OK / "SKILL.md").read_text()
+        for name in ("worxsales-qa-refresh", "worxsales-qa-rerun-not-ok", "worxsales-qa-dashboard-update"):
+            self.assertIn(name, chain_not_ok)
+
+
+class SelectNotOkTests(unittest.TestCase):
+    def test_picks_not_ok_unrun_and_ok_rows_changed_after_the_ok(self):
+        import json, subprocess, tempfile
+        d = Path(tempfile.mkdtemp())
+        (d / "scenarios/07").mkdir(parents=True); (d / "runs/lane").mkdir(parents=True); (d / "refresh").mkdir()
+        rows = [{"tc_id": t, "menu": "7. 고객", "policy": p} for t, p in
+                (("TC-OK", "확정"), ("TC-OKCHG", "확정"), ("TC-PART", "확정"), ("TC-NEW", "확정"), ("TC-OOS", "범위 제외"), ("TC-OKOLD", "확정"))]
+        (d / "scenarios/07/a.json").write_text(json.dumps(rows, ensure_ascii=False))
+        res = {"TC-OK": "OK", "TC-OKCHG": "OK", "TC-PART": "부분 OK", "TC-OOS": "미구현", "TC-OKOLD": "OK"}
+        for t, v in res.items():
+            day = "2026-10-13" if t == "TC-OKOLD" else "2026-10-11"
+            (d / f"runs/lane/{t}.json").write_text(json.dumps({"verdict": v, "ended_at": f"{day}T10:00:00+0900"}, ensure_ascii=False))
+        (d / "scenarios/07/_changed_ids_2026-10-12.txt").write_text("TC-OKCHG\nTC-OKOLD\n")
+        (d / "refresh/lanes.json").write_text(json.dumps([{"dir": "runs/lane"}]))
+        (d / "refresh/watch.json").write_text(json.dumps({"lanes": "refresh/lanes.json"}))
+        subprocess.run([sys.executable, str(RERUN / "scripts/select_not_ok.py"), "refresh/watch.json", "--out", "ids.txt"],
+                       cwd=d, check=True, capture_output=True)
+        self.assertEqual((d / "ids.txt").read_text().split(), ["TC-OKCHG", "TC-PART", "TC-NEW"])
 
 
 class BlockReasonTests(unittest.TestCase):
@@ -67,7 +99,7 @@ class SummaryBlockTests(unittest.TestCase):
 
 class PortabilityTests(unittest.TestCase):
     def test_skill_files_carry_no_personal_paths_or_ids(self):
-        for skill in (DASH, CHAIN):
+        for skill in (DASH, CHAIN, RERUN, CHAIN_NOT_OK):
             for path in skill.rglob("*"):
                 if path.is_file() and path.suffix in (".md", ".py", ".sh", ".pl", ".yaml") and ".omc" not in path.parts:
                     text = path.read_text()

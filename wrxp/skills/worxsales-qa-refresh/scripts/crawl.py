@@ -101,7 +101,7 @@ class Crawler:
         if not self.claim(pid): return []
         try:
             p = call("GET", f"/pages/{pid}")
-        except RuntimeError as e:
+        except (RuntimeError, OSError) as e:  # OSError: URLError after all retries (2026-10-12 SSL EOF)
             self.add(pid, kind="error", parent=parent, path=path, root=root, error=str(e)[:200]); return []
         title = page_title(p)
         found = {"pages": [], "dbs": [], "links": [], "files": []}
@@ -128,7 +128,7 @@ class Crawler:
         try:
             d = call("GET", f"/databases/{did}")
             rows = query(did, limit)
-        except RuntimeError as e:
+        except (RuntimeError, OSError) as e:  # OSError: URLError after all retries (2026-10-12 SSL EOF)
             self.add(did, kind="error", parent=parent, path=path, root=root, error=str(e)[:200]); return []
         title = page_title(d)
         self.add(did, kind="database", title=title, parent=parent, path=path, root=root, last_edited=d["last_edited_time"],

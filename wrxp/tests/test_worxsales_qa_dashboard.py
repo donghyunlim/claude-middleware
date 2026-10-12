@@ -46,6 +46,24 @@ class ExplicitInvocationTests(unittest.TestCase):
             self.assertIn(name, chain_not_ok)
 
 
+class ServePageTests(unittest.TestCase):
+    def test_a_hanging_client_does_not_block_other_viewers(self):
+        import socket, subprocess, tempfile, time, urllib.request
+        d = Path(tempfile.mkdtemp()); (d / "index.html").write_text("<p>ok</p>")
+        s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
+        srv = subprocess.Popen(["/usr/bin/perl", str(DASH / "scripts/serve_page.pl"), str(d), str(port)])
+        try:
+            for _ in range(50):
+                try: socket.create_connection(("127.0.0.1", port), timeout=1).close(); break
+                except OSError: time.sleep(0.1)
+            hang = socket.create_connection(("127.0.0.1", port))  # connects, never sends a request
+            body = urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=5).read()
+            self.assertEqual(body, b"<p>ok</p>")
+            hang.close()
+        finally:
+            srv.kill(); srv.wait()
+
+
 class PruneBuildsTests(unittest.TestCase):
     def test_removes_only_sibling_qa_build_worktrees_except_the_kept_one(self):
         import subprocess, tempfile

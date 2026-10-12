@@ -1,19 +1,27 @@
 #!/usr/bin/perl
 # Minimal read-only HTTP server for the 진척판: serves <dir>/index.html for any GET path.
 # Uses only core Perl, which every macOS ships (python3 there may be an install-prompt shim).
+# Each connection is handled in its own child with a 10 s alarm, so a client that connects and
+# never finishes its request cannot block other viewers (seen 2026-10-13: the single-loop server hung).
 # Usage: serve_page.pl <dir> <port>
 use strict; use warnings; use IO::Socket::INET;
 my ($dir, $port) = @ARGV;
-my $srv = IO::Socket::INET->new(LocalAddr => '0.0.0.0', LocalPort => $port, Listen => 16, ReuseAddr => 1) or die "listen $port: $!";
-$SIG{PIPE} = 'IGNORE';
-while (my $c = $srv->accept) {
-    $c->timeout(10);
+my $srv = IO::Socket::INET->new(LocalAddr => '0.0.0.0', LocalPort => $port, Listen => 64, ReuseAddr => 1) or die "listen $port: $!";
+$SIG{PIPE} = 'IGNORE'; $SIG{CHLD} = 'IGNORE';
+while (1) {
+    my $c = $srv->accept or next;
+    my $pid = fork;
+    if (!defined $pid) { close $c; next }
+    if ($pid) { close $c; next }
+    close $srv;
+    local $SIG{ALRM} = sub { close $c; exit 0 };
+    alarm 10;
     my $line = <$c> // ''; while (my $h = <$c>) { last if $h =~ /^\r?\n$/ }
     my ($method) = $line =~ /^(\S+)/;
-    if (!$method || ($method ne 'GET' && $method ne 'HEAD')) { print $c "HTTP/1.0 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n"; close $c; next }
+    if (!$method || ($method ne 'GET' && $method ne 'HEAD')) { print $c "HTTP/1.0 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n"; close $c; exit 0 }
     my $body = '';
     if (open my $f, '<:raw', "$dir/index.html") { local $/; $body = <$f>; close $f }
     print $c "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nCache-Control: no-cache\r\nContent-Length: " . length($body) . "\r\n\r\n";
     print $c $body if $method eq 'GET';
-    close $c;
+    close $c; exit 0;
 }

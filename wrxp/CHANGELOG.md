@@ -2,6 +2,10 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.57] - 2026-10-13
+
+- `worxsales-qa-all-in-one`·`worxsales-qa-rerun-not-ok`: 빌드마다 새 worktree(수 GB)가 쌓여 디스크를 채우던 문제를 막습니다. 새 `prune_builds.sh`가 슬롯을 모두 새 빌드로 바꾼 뒤 같은 폴더의 이전 QA 빌드 worktree만 지웁니다. 레인의 작업자가 끝나면 그 레인의 `_tmp/`도 지웁니다.
+
 ## [0.1.56] - 2026-10-12
 
 - 새 skill `worxsales-qa-rerun-not-ok`: 메뉴와 관계없이 최신 판정이 OK가 아닌 모든 행(미실행·부분 OK 포함)과, OK 결과 뒤 기대결과가 바뀐 행을 다시 실행합니다(`select_not_ok.py`). 명시적으로 호출할 때만 실행됩니다.

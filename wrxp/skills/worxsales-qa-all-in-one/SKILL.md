@@ -26,13 +26,13 @@ QA 한 바퀴를 순서대로 돕니다.
 
 1. **최신화.** `worxsales-qa-refresh`의 절차 1~6을 그대로 따릅니다. 원천 루트가 열리지 않거나 보관되었으면 여기서 멈추고 묻습니다. 이 스킬 안에서는 refresh의 7단계(기준점 갱신)를 실행 단계 뒤로 미룹니다.
 2. **재실행 행 고르기.** refresh의 [재실행 행 고르기] 기준으로 대상 행을 고릅니다: 런타임 파일이 바뀐 메뉴의 OK가 아닌 행, 기대결과가 바뀌었거나 새로 생긴 행, 아직 실행하지 않은 행. 대상이 없으면 3~5단계를 건너뛰고 6단계로 갑니다.
-3. **레인과 앱 준비.** 새 커밋이 있으면 executor의 `build_dev_app.sh`로 빌드하고, 쉬는 슬롯마다 `<skill>/scripts/qa_rollout.sh <port> <작업 폴더> <build.json>`으로 새 빌드를 띄웁니다. `build.json`은 빌드의 `app_path`·`desktop_worktree`·`build`를 담아 조율자가 레인 폴더에 씁니다. `runs/run-<날짜>-b<커밋 4~5자리>/`를 만들고, [작업자 지시 틀](references/worker-template.md)을 복사해 자리표시자(`{RUN_ID}` 등)를 채우고 「Write scope」 절을 `write_scope.json`대로 씁니다. 직전 레인의 WORKER.md에 그 뒤 더해진 규칙이 있으면 함께 옮깁니다. `lanes.json` 맨 앞에 넣습니다.
+3. **레인과 앱 준비.** 새 커밋이 있으면 executor의 `build_dev_app.sh`로 빌드하고, 쉬는 슬롯마다 `<skill>/scripts/qa_rollout.sh <port> <작업 폴더> <build.json>`으로 새 빌드를 띄웁니다. `build.json`은 빌드의 `app_path`·`desktop_worktree`·`build`를 담아 조율자가 레인 폴더에 씁니다. `runs/run-<날짜>-b<커밋 4~5자리>/`를 만들고, [작업자 지시 틀](references/worker-template.md)을 복사해 자리표시자(`{RUN_ID}` 등)를 채우고 「Write scope」 절을 `write_scope.json`대로 씁니다. 직전 레인의 WORKER.md에 그 뒤 더해진 규칙이 있으면 함께 옮깁니다. `lanes.json` 맨 앞에 넣습니다. 슬롯을 모두 새 빌드로 바꾼 뒤에 `<skill>/scripts/prune_builds.sh <desktop repo> <새 빌드 worktree>`로 이전 빌드 worktree를 지웁니다(빌드 하나가 수 GB라 남기면 디스크가 찹니다).
 4. **실행 조율.** [조율 규칙](references/orchestration.md)을 따릅니다. 요지는 다음과 같습니다.
    - 작업자는 Sonnet 에이전트입니다. 조율자는 행을 직접 실행하지 않습니다.
    - 영업자 행은 11~20행 묶음으로 앱 슬롯마다 한 작업자에게 맡깁니다. 역할 행은 영업자 묶음이 모두 끝난 뒤 작업자 한 명이 순차로 실행합니다.
    - 묶음이 끝날 때마다 감사하고, 일시 장애·배포 직후 실패는 조율자가 직접 다시 확인한 뒤 재배정합니다.
    - 「문제」와 「문제」에서 바뀐 판정은 Opus 재검증 후 합칩니다.
-5. **게시.** 레인 결과를 오래된 레인부터 게시하고, `check_notion.py`로 최신 결과와 DB가 맞는지 확인합니다.
+5. **게시.** 레인의 작업자가 모두 끝나면 레인의 `_tmp/`(작업자 임시 캡처·스크립트)를 지웁니다. 증거 그림은 레인 폴더 바로 아래에 있으므로 남습니다. 이어서 레인 결과를 오래된 레인부터 게시하고, `check_notion.py`로 최신 결과와 DB가 맞는지 확인합니다.
 6. **상황판과 기준점.** `worxsales-qa-dashboard-update` 절차 1~4를 실행합니다. 마지막 회차가 `check_notion.py`와 같으면 refresh의 7단계(`state.py commit`)를 실행합니다. 이번에 테스트한 커밋을 `--code`로 넘깁니다.
 7. **보고와 질문 하나.** 다음을 나눠 적습니다.
    - 최신화: 원천·목업·코드·시나리오 변경 수, 확인 필요 항목

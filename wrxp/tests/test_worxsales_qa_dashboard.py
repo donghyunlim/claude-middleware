@@ -46,6 +46,28 @@ class ExplicitInvocationTests(unittest.TestCase):
             self.assertIn(name, chain_not_ok)
 
 
+class PruneBuildsTests(unittest.TestCase):
+    def test_removes_only_sibling_qa_build_worktrees_except_the_kept_one(self):
+        import subprocess, tempfile
+        d = Path(tempfile.mkdtemp()); repo = d / "repo"; builds = d / "scratch"
+        builds.mkdir(); repo.mkdir()
+        run = lambda *a: subprocess.run(a, cwd=repo, check=True, capture_output=True)
+        run("git", "init", "-q"); run("git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "x")
+        for name in ("desktop-dev-old", "desktop-dev-new", "desktop-stg", "other-work"):
+            run("git", "worktree", "add", "-q", "--detach", str(builds / name))
+        run("git", "worktree", "add", "-q", "--detach", str(d / "desktop-dev-elsewhere"))
+        subprocess.run(["sh", str(CHAIN / "scripts/prune_builds.sh"), str(repo), str(builds / "desktop-dev-new")], check=True, capture_output=True)
+        left = sorted(p.name for p in builds.iterdir())
+        self.assertEqual(left, ["desktop-dev-new", "other-work"])
+        self.assertTrue((d / "desktop-dev-elsewhere").exists())
+
+    def test_chains_prune_builds_after_rollout_and_clear_lane_tmp(self):
+        for skill in (CHAIN, RERUN):
+            text = (skill / "SKILL.md").read_text()
+            self.assertIn("prune_builds.sh", text, skill.name)
+            self.assertIn("_tmp/", text, skill.name)
+
+
 class SelectNotOkTests(unittest.TestCase):
     def test_picks_not_ok_unrun_and_ok_rows_changed_after_the_ok(self):
         import json, subprocess, tempfile

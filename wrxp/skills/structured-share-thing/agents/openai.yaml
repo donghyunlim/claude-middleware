@@ -1,0 +1,6 @@
+interface:
+  display_name: "Structured Share Thing"
+  short_description: "복잡한 맥락을 문제→이유→진행 방향→현재 상황→예외 순서의 한국어 공유 메시지 초안으로 정리합니다"
+  default_prompt: "$wrxp:structured-share-thing로 이 상황을 처음 보는 사람에게 공유할 Slack 초안을 써 줘."
+policy:
+  allow_implicit_invocation: true

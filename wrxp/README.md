@@ -24,7 +24,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`가 있다. 총 20개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`이 있다. 총 21개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -117,6 +117,10 @@ claude plugin update wrxp@donghyunlim
 
 `/wrxp:intent-anchor`(Codex에서는 `$wrxp:intent-anchor`)는 작업이 사용자의 원래 의도에서 벗어났는지 사용자 발화 원문 전부를 기준으로 다른 맥락의 최고 수준 모델과 대조한다. 사용자가 작업 방향 자체를 바로잡거나 같은 목표의 재시도가 계속 쌓일 때는 드물게 자동으로 실행된다. 방향 변화의 근거가 사용자 발화에 있으면 허용하고, 벗어났으면 작업을 멈춘 뒤 질문 하나를 한다. 리뷰어는 읽기 전용으로 실행되며 기록은 프로젝트 폴더의 `handoffs/realign/`에 남는다. 자세한 절차는 [intent-anchor 스킬](./skills/intent-anchor/SKILL.md)에 있다.
 
+
+### 구조화한 공유 메시지
+
+`/wrxp:structured-share-thing`(Codex에서는 `$wrxp:structured-share-thing`)은 복잡한 맥락을 처음 보는 사람(CTO, 리드, 다른 팀)에게 보낼 한국어 Slack·DM 공유 초안으로 정리합니다. 순서는 문제 → 왜 해결해야 하는가 → 막혀 있던 이유 → 진행 방향 → 현재 상황 → 안 되는 경우이고, "이렇게 진행하겠습니다, 문제가 있으면 말씀 부탁드립니다"로 마무리합니다. 결론이나 작업 결과부터 꺼내지 않고, 승인 요청 형식을 쓰지 않으며, 초안만 만들고 전송하지 않습니다. "이 상황 정리해서 공유 초안 써 줘" 같은 요청에는 자동으로 실행됩니다. 자세한 규칙은 [스킬 본문](./skills/structured-share-thing/SKILL.md)에 있습니다.
 
 ### 클라우드 인프라 요청 검토
 

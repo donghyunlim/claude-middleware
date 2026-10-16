@@ -34,6 +34,8 @@ for f in sorted(glob.glob(os.path.join(rev_dir, "TC-*.json"))):
     for fig in r.get("figures") or []:
         fig = fig if isinstance(fig, dict) else {"file": fig, "caption": "재검증 장면"}
         for k in ("file", "zoom"):
+            if fig.get(k):
+                fig[k] = os.path.basename(fig[k])  # reviewers sometimes record absolute paths
             src = os.path.join(rev_dir, fig.get(k) or "")
             if fig.get(k) and os.path.exists(src):
                 dst = os.path.join(full_dir, "rv-" + fig[k])

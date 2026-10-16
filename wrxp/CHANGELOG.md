@@ -2,6 +2,10 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.62] - 2026-10-16
+
+- `worxsales-qa-all-in-one`: `merge_reverify.py`가 재검증 결과의 그림 경로가 절대 경로여도 파일 이름만 써서 합칩니다. 전에는 절대 경로를 받으면 병합이 도중에 멈췄습니다.
+
 ## [0.1.61] - 2026-10-16
 
 - `worxsales-qa-all-in-one`: 사용자가 예약한 실행(예: `/wrxp:worxsales-qa-all-in-one`으로 시작하는 CronCreate 예약)이 돌 수 있도록 `disable-model-invocation`을 껐습니다. 사용자가 직접 부르거나 예약한 경우에만 쓰는 조건은 그대로입니다.

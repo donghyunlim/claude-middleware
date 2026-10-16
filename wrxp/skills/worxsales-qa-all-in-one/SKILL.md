@@ -1,7 +1,6 @@
 ---
 name: worxsales-qa-all-in-one
-description: Use only when the user explicitly invokes /wrxp:worxsales-qa-all-in-one in Claude Code or $wrxp:worxsales-qa-all-in-one in Codex to run the whole WorxSales QA cycle in one go — worxsales-qa-refresh (sources, mockups, develop code, scenario DB), then re-running the changed and not-yet-OK rows with worxsales-qa-executor workers in the real app, then worxsales-qa-dashboard-update for the 상황판 history. Do not activate for a single step, ordinary WorxSales development, or scenario writing.
-disable-model-invocation: true
+description: Use only when the user explicitly invokes /wrxp:worxsales-qa-all-in-one in Claude Code or $wrxp:worxsales-qa-all-in-one in Codex, or when a run the user scheduled (for example a CronCreate prompt that starts with /wrxp:worxsales-qa-all-in-one) fires, to run the whole WorxSales QA cycle in one go — worxsales-qa-refresh (sources, mockups, develop code, scenario DB), then re-running the changed and not-yet-OK rows with worxsales-qa-executor workers in the real app, then worxsales-qa-dashboard-update for the 상황판 history. Do not activate for a single step, ordinary WorxSales development, or scenario writing.
 ---
 
 # WorxSales QA All-in-One

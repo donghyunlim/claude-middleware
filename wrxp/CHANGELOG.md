@@ -2,6 +2,10 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.63] - 2026-10-19
+
+- 새 skill `worxsales-bug-report`: 관리자에게 받은 개인 접근 키로 WorxSales 버그 제보 MCP를 Claude Code·Codex에 연결합니다(`scripts/connect.py`, 고정 지문으로 엣지 인증서 확인, `mcp-remote` stdio 등록, 키 확인 호출). 제보를 읽고 코멘트·MR 연결·상태 변경을 하는 규칙을 담았습니다.
+
 ## [0.1.62] - 2026-10-16
 
 - `worxsales-qa-all-in-one`: `merge_reverify.py`가 재검증 결과의 그림 경로가 절대 경로여도 파일 이름만 써서 합칩니다. 전에는 절대 경로를 받으면 병합이 도중에 멈췄습니다.

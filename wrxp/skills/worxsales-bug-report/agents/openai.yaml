@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorxSales Bug Report"
+  short_description: "개인 접근 키로 WorxSales 버그 제보 MCP를 연결하고 제보·에러를 읽고 처리합니다"
+  default_prompt: "$wrxp:worxsales-bug-report로 내 접근 키를 등록하고 최근 버그 제보를 보여 줘."
+policy:
+  allow_implicit_invocation: true

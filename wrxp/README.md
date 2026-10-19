@@ -24,7 +24,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`이 있다. 총 21개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`, WorxSales 버그 제보 MCP를 개인 접근 키로 연결하고 제보를 처리하는 `worxsales-bug-report`가 있다. 총 22개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -38,6 +38,8 @@ Knife family의 수정 루프는 실제 결함이 남아 있는 동안 횟수만
 - **질문 효율 (Question efficiency)**: 증거로 확인할 사실은 먼저 조사하고, 반드시 확인해야 하는 결정과 산출물의 쓰임을 바꾸는 사용자 선택만 질문한다. 모든 질문 수는 상한이며, 어떤 tier에서도 0문항으로 종료할 수 있다.
 - **Task type 커버리지 (Task type coverage)**: NBER WP #34255 (2025년, 1.1M ChatGPT 대화 분석) 분류 체계와 Anthropic Clio 데이터를 매핑하여 9가지 task type 확정. analysis(신규)를 포함한 9 types은 사용자 workload 전 스펙트럼을 cover한다.
 - **병렬 실행**: Knife family는 독립 task unit을 런타임 한도 안에서 실행한다.
+
+
 
 ## 어떻게 쓰는가 (How to use it?)
 
@@ -185,6 +187,16 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 ```
 
 [재실행 스킬](./skills/worxsales-qa-rerun-not-ok/SKILL.md), [한 바퀴 스킬](./skills/worxsales-qa-all-in-one-not-ok/SKILL.md)을 참고하세요.
+
+### WorxSales 버그 제보 MCP
+
+`/wrxp:worxsales-bug-report`(Codex에서는 `$wrxp:worxsales-bug-report`)는 관리자에게 받은 개인 접근 키(`wxbrm_…`)로 WorxSales 데스크톱 앱의 버그 제보 MCP(`https://172.16.111.17:18443/bugs/mcp`, 회사망 전용)를 Claude Code·Codex에 연결합니다. 엣지 인증서를 고정 지문으로 확인해 이 MCP 서버에만 신뢰시키므로 셸 설정이나 시스템 신뢰 저장소를 바꾸지 않습니다. 연결 뒤에는 제보·이벤트 타임라인·Bugsink 에러를 읽고, 쓰기 권한 키로 코멘트·MR 연결·상태 변경을 합니다. 같은 키로 대시보드(`/bugs/app`)에도 로그인합니다. 새 제보는 Slack `#worxsales-bug-report`에 올라옵니다.
+
+```text
+/wrxp:worxsales-bug-report 내 접근 키 등록해 줘
+```
+
+[스킬 본문](./skills/worxsales-bug-report/SKILL.md)을 참고하세요.
 
 ### 🗡️ Knife family (runtime-bounded task graph)
 

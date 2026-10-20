@@ -202,7 +202,10 @@ def candidates(main_runtime: str, available: dict[str, bool],
         "codex": codex_models(cache) if available.get("codex") else [],
         "claude": list(FAMILY_RANK["claude"]) if available.get("claude") else [],
     }
-    other = "claude" if main_runtime == "codex" else "codex"
+    if main_runtime == "claude":
+        # Claude main never offloads to Codex; a fresh-context Claude reviews.
+        return [("claude", model) for model in family["claude"]]
+    other = "claude"
     return ([(other, model) for model in family[other]]
             + [(main_runtime, model) for model in family[main_runtime][:1]])
 

@@ -312,18 +312,19 @@ class ReviewerRunTests(unittest.TestCase):
         self.assertEqual(["gpt-6-astra", "gpt-6.1-sol"],
                          rr.codex_models(self.codex_home / "models_cache.json"))
 
-    def test_candidates_put_opposite_family_first(self):
+    def test_candidates_keep_claude_main_on_claude(self):
         rr = reviewer()
         cache = self.codex_home / "models_cache.json"
         both = {"claude": True, "codex": True}
         self.assertEqual(
-            [("codex", "gpt-6-astra"), ("codex", "gpt-6.1-sol"), ("claude", "opus")],
+            [("claude", "opus"), ("claude", "sonnet")],
             rr.candidates("claude", both, cache))
         self.assertEqual(
             [("claude", "opus"), ("claude", "sonnet"), ("codex", "gpt-6-astra")],
             rr.candidates("codex", both, cache))
-        self.assertEqual([("claude", "opus")],
+        self.assertEqual([("claude", "opus"), ("claude", "sonnet")],
                          rr.candidates("claude", {"claude": True, "codex": False}, cache))
+        self.assertEqual([], rr.candidates("claude", {"claude": False, "codex": True}, cache))
 
     def test_detect_main_runtime_from_environment(self):
         rr = reviewer()
@@ -343,28 +344,28 @@ class ReviewerRunTests(unittest.TestCase):
         self.assertIn('model_reasoning_effort="high"', codex)
         self.assertEqual(codex[-1], "-")
 
-    def test_claude_main_uses_codex_astra_and_records_actual_model(self):
+    def test_codex_main_falls_back_to_codex_astra_and_records_actual_model(self):
         self.install("claude", "codex")
-        _, code = self.run_main(env={"CLAUDE_CODE_SESSION_ID": "x"})
+        _, code = self.run_main(env={"CODEX_THREAD_ID": "x", "FAKE_CLAUDE": "limit"})
         self.assertEqual(0, code)
         record = self.invocation()
         self.assertEqual({"runtime": "codex", "actual_model": "gpt-6-astra"}, record["selected"])
-        self.assertEqual("read-only", record["attempts"][0]["actual_sandbox"])
-        self.assertEqual("high", record["attempts"][0]["actual_effort"])
+        self.assertEqual("read-only", record["attempts"][-1]["actual_sandbox"])
+        self.assertEqual("high", record["attempts"][-1]["actual_effort"])
         request = (self.out / "round-1/request.md").read_text()
         self.assertIn("그게 아니라 원래 의도는 이해", request)
         self.assertIn("# [AI 주장] 메인의 현재 상태", request)
         self.assertTrue((self.out / "round-1/response.md").read_text().startswith("판정:"))
 
-    def test_fallback_is_recorded_when_opposite_family_hits_limit(self):
+    def test_claude_main_never_calls_codex(self):
         self.install("claude", "codex")
-        _, code = self.run_main("--main-runtime", "claude", env={"FAKE_CODEX": "limit"})
+        _, code = self.run_main(env={"CLAUDE_CODE_SESSION_ID": "x", "FAKE_CODEX": "limit"})
         self.assertEqual(0, code)
         record = self.invocation()
-        self.assertEqual(["usage_limit", "usage_limit"],
-                         [a.get("failure") for a in record["attempts"][:2]])
+        self.assertEqual(["claude"], [a["runtime"] for a in record["attempts"]])
         self.assertEqual({"runtime": "claude", "actual_model": "claude-opus-5-5"},
                          record["selected"])
+        self.assertFalse(Path(str(self.tmp / "argv") + ".codex").exists())
 
     def test_non_json_claude_output_falls_back(self):
         self.install("claude", "codex")

@@ -2,6 +2,10 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.65] - 2026-10-20
+
+- Claude 메인에서는 더 이상 Codex로 오프로딩하지 않고 대응하는 Claude 모델을 씁니다. `code-delegation` 작업자는 Opus 5.5가 기본이고 가벼운 구현에만 Sonnet 5.5를 고릅니다(Codex 메인은 기존대로 Sol medium/high). `search-delegation`의 탐색 작업자는 Haiku, `intent-anchor` 리뷰어는 Claude Opus → Sonnet 순서입니다. 전역 지침 블록도 런타임별 작업자 모델로 바뀌었으니 `/wrxp:setup`으로 갱신하십시오.
+
 ## [0.1.64] - 2026-10-19
 
 - `worxsales-bug-report` skill을 제거했습니다. WorxSales 앱 버그 제보는 이제 Notion 「WorxSales 오류 DB」에 바로 등록되므로 개인 접근 키와 MCP 연결이 필요 없습니다. 이미 연결했다면 `claude mcp remove -s user worxsales-bug-report`·`codex mcp remove worxsales-bug-report`로 지우면 됩니다.

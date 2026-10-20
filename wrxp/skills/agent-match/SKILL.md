@@ -9,7 +9,7 @@ level: 4
 
 ## Overview
 
-합의된 독립 코드 구현 노드는 `wrxp:code-delegation`을 우선 적용한다. 아래의 일반 모델 매칭·다수결 규칙으로 Sol medium/high를 대체하거나 자동 별도 검증자를 추가하지 않는다.
+합의된 독립 코드 구현 노드는 `wrxp:code-delegation`을 우선 적용한다. 아래의 일반 모델 매칭·다수결 규칙으로 코드 작업자 모델(Codex는 Sol medium/high, Claude는 Opus·Sonnet)을 대체하거나 자동 별도 검증자를 추가하지 않는다.
 
 분해된 태스크 목록(또는 트리)을 받아, 각 태스크에 최적의 에이전트를 동적으로 매칭하고, 의존성 DAG를 구성하여 실행 계획을 출력하는 스킬.
 

@@ -34,7 +34,7 @@ description: "Use when the user explicitly invokes /wrxp:intent-anchor ($wrxp:in
    - 현재 세션은 자동으로 찾는다. 다른 세션은 `--session-id` 또는 `--log`로 지정한다.
    - 사용자 발화에 경로가 없는 이전 핸드오프를 알고 있으면 `--handoff <경로>`로 추가한다.
    - 메인 런타임을 알 수 없다는 오류가 나오면 `--main-runtime claude|codex`를 지정한다.
-   - 리뷰어는 반대 계열의 최고 모델을 우선하고(Claude 메인이면 Codex Astra, Codex 메인이면 Claude Opus), 실패하면 다음 순위로 내려간다. effort는 high, 권한은 읽기 전용이다.
+   - 리뷰어는 새 맥락의 최고 모델을 사용한다. Claude 메인이면 Codex로 오프로딩하지 않고 Claude Opus → Sonnet 순으로, Codex 메인이면 반대 계열인 Claude Opus → Sonnet을 우선한 뒤 Codex Astra로 내려간다. effort는 high, 권한은 읽기 전용이다.
 
    종료 코드에 따라 다음과 같이 처리한다.
    - `0`: `round-N/response.md`를 읽는다.

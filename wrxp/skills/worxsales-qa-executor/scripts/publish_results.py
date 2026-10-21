@@ -183,7 +183,11 @@ def main():
             "최근 실행일": {"date": {"start": day} if day else None},
             "최근 실행 빌드": {"rich_text": rt(r.get("build", ""))},
             "최근 요약": {"rich_text": rt(r.get("headline", ""))}}})
-        for b in managed_blocks(pid): call("DELETE", f"/blocks/{b['id']}")
+        for b in managed_blocks(pid):
+            if b.get("archived") or b.get("in_trash"): continue
+            try: call("DELETE", f"/blocks/{b['id']}")
+            except RuntimeError as e:
+                if "archived" not in str(e): raise  # a parent deleted just before archives its children (2026-10-22)
         for j in range(0, len(blocks), 80):
             call("PATCH", f"/blocks/{pid}/children", {"children": blocks[j:j + 80]})
         done += 1

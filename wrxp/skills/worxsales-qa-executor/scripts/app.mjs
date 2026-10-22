@@ -98,7 +98,8 @@ async function drawMarks(marks) {
       Object.assign(tag.style, { position: "fixed", left: left + "px", top: top + "px", minWidth: "24px", height: "24px",
         padding: "0 6px", background: "#e5121b", color: "#fff", font: "700 16px/24px -apple-system,sans-serif", textAlign: "center",
         borderRadius: "12px", zIndex: 2147483647, pointerEvents: "none", boxShadow: "0 1px 3px rgba(0,0,0,.35)" });
-      document.body.append(box, tag);
+      // Open dialogs and popovers live in the top layer, above any z-index on body; draw inside them or the marks stay hidden.
+      (document.querySelector("dialog[open]") || document.querySelector(":popover-open") || document.body).append(box, tag);
     }
   }, found);
   return found;

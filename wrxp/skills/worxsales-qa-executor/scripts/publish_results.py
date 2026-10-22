@@ -134,7 +134,9 @@ def body(r, base, older, dry):
     kids = [labeled("판정 근거", d.get("verdict_reason", "")),
             labeled("실행 환경", f"{r.get('run_id', '')} · {r.get('started_at', '')} ~ {r.get('ended_at', '')} · 빌드 {r.get('build', '')} · 역할 {r.get('role_context', '')} · 대상 {r.get('target_data', '')}"),
             p("수행한 액션과 관찰값", True)]
-    kids += [li(f"{a.get('step', '')}. {a.get('action', '')} · {a.get('target', '')} → {a.get('observed', '')}") for a in d.get("actions", [])][:60]
+    # same for actions: a worker may write them as plain strings
+    kids += [li(f"{a.get('step', '')}. {a.get('action', '')} · {a.get('target', '')} → {a.get('observed', '')}" if isinstance(a, dict) else f"{j}. {a}")
+             for j, a in enumerate(d.get("actions", []), 1)][:60]
     if d.get("name_mismatches"):
         kids.append(p("문서 이름 ↔ 앱 이름", True))
         kids += [li(f"{m.get('doc', '')} ↔ {m.get('app', '')}") for m in d["name_mismatches"]]

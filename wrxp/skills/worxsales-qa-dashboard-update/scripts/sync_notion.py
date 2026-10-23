@@ -23,7 +23,7 @@ def num(fmt="number"): return {"number": {"format": fmt}}
 
 def round_schema(blocked):
     p = {"회차": {"title": {}}, "회차 번호": num(), "레인": {"rich_text": {}}, "빌드": {"rich_text": {}}, "마친 시각": {"date": {}},
-         "대상": num(), "실행": num(), "실행률": num("percent"), "판정 가능": num(), "구현도": num("percent"), "무결함률": num("percent"), "동작 확인율": num("percent"), "OK율": num("percent"), "미구현율": num("percent"),
+         "대상": num(), "실행": num(), "실행률": num("percent"), "판정 가능": num(), "구현도": num("percent"), "무결함률": num("percent"), "실동작 확인율": num("percent"), "OK율": num("percent"), "미구현율": num("percent"),
          "문제 신규": num(), "문제 해소": num(), "권한 미적용": num(), "쓰기 범위 밖": num(), "쓰기 범위 밖 신규": num()}
     for v in VERDICTS: p[v] = num()
     for b in blocked: p[f"실행 불가·{b}"] = num()
@@ -31,16 +31,24 @@ def round_schema(blocked):
 
 
 MENU_SCHEMA = {"회차·메뉴": {"title": {}}, "회차 번호": num(), "메뉴": {"select": {}}, "빌드": {"rich_text": {}}, "대상": num(), "실행": num(),
-               "OK+부분 OK": num(), "미구현": num(), "문제": num(), "판정 가능": num(), "구현도": num("percent"), "동작 확인율": num("percent")}
+               "OK+부분 OK": num(), "미구현": num(), "문제": num(), "판정 가능": num(), "구현도": num("percent"), "실동작 확인율": num("percent")}
 
 
 def frac(v): return None if v is None else round(v / 100, 4)
+
+
+# Columns renamed after the DBs were created: old name -> new name. Renaming keeps the column and its history.
+RENAMED = {"동작 확인율": "실동작 확인율"}
 
 
 def ensure_db(w, key, title, schema, page, dry):
     d = w["dashboard"]
     if d.get(key):
         db = call("GET", f"/databases/{d[key]}")
+        ren = {o: {"name": n} for o, n in RENAMED.items() if o in db["properties"] and n not in db["properties"]}
+        if ren and not dry:
+            call("PATCH", f"/databases/{d[key]}", {"properties": ren})
+            db = call("GET", f"/databases/{d[key]}")
         missing = {k: v for k, v in schema.items() if k not in db["properties"]}
         if missing and not dry: call("PATCH", f"/databases/{d[key]}", {"properties": missing})
         return d[key]
@@ -73,7 +81,7 @@ def summary_blocks(h, page_url):
     items = [
         f'대상 {c["target"]:,}행 · 실행 {c["executed"]:,}행 ({c["coverage"]}%)',
         f'구현도(기능 있음 ÷ 판정 가능 {c.get("judged", 0):,}행) {c["impl_rate"]}% · 직전 회차 대비 {("+" if d and d > 0 else "") + str(d) + "p" if d else "변화 없음"}',
-        f'무결함률(문제가 아닌 행 ÷ 실행) {c.get("clean_rate")}% · 동작 확인율(OK+부분 OK ÷ 실행) {c.get("verified_rate")}%',
+        f'무결함률(문제가 아닌 행 ÷ 실행) {c.get("clean_rate")}% · 실동작 확인율(OK+부분 OK ÷ 실행) {c.get("verified_rate")}%',
         f'미구현 {c["verdicts"]["미구현"]:,}행 (판정 가능 행의 {c["unimpl_rate"]}%) · OK {c["verdicts"]["OK"]:,} · 부분 OK {c["verdicts"]["부분 OK"]:,}',
         f'문제(확정) {c["problem"]}행 · 이번 회차 신규 {c["problem_new"]} · 해소 {c["problem_resolved"]}',
         f'실행 불가 {c["verdicts"]["실행 불가"]:,}행: ' + ", ".join(f"{k} {v}" for k, v in c["blocked"].items() if v),
@@ -122,7 +130,7 @@ def main():
         props = {"회차 번호": {"number": r["round"]}, "레인": {"rich_text": rt(r["lane"])}, "빌드": {"rich_text": rt(r["build"] or "-")},
                  "마친 시각": {"date": {"start": r["end"] + ":00+09:00"}}, "대상": {"number": r["target"]}, "실행": {"number": r["executed"]},
                  "실행률": {"number": frac(r["coverage"])}, "판정 가능": {"number": r.get("judged")}, "구현도": {"number": frac(r["impl_rate"])}, "무결함률": {"number": frac(r.get("clean_rate"))},
-                 "동작 확인율": {"number": frac(r.get("verified_rate"))}, "OK율": {"number": frac(r["ok_rate"])},
+                 "실동작 확인율": {"number": frac(r.get("verified_rate"))}, "OK율": {"number": frac(r["ok_rate"])},
                  "미구현율": {"number": frac(r["unimpl_rate"])}, "문제 신규": {"number": r["problem_new"]}, "문제 해소": {"number": r["problem_resolved"]},
                  "권한 미적용": {"number": r["role_gap"]}, "쓰기 범위 밖": {"number": r["write_blocked"]},
                  "쓰기 범위 밖 신규": {"number": len(r["write_blocked_new"])}}
@@ -134,7 +142,7 @@ def main():
                 "회차 번호": {"number": r["round"]}, "메뉴": {"select": {"name": e["name"]}}, "빌드": {"rich_text": rt(r["build"] or "-")},
                 "대상": {"number": e["target"]}, "실행": {"number": e["executed"]}, "OK+부분 OK": {"number": e["impl"]},
                 "미구현": {"number": e["unimpl"]}, "문제": {"number": e["problem"]}, "판정 가능": {"number": e.get("judged")}, "구현도": {"number": frac(e["impl_rate"])},
-                "동작 확인율": {"number": frac(e.get("verified_rate"))}}))
+                "실동작 확인율": {"number": frac(e.get("verified_rate"))}}))
     n1 = upsert(rdb, "회차", rrows, dry) if rdb or dry else 0
     n2 = upsert(mdb, "회차·메뉴", mrows, dry) if mdb or dry else 0
     old, new = replace_summary(page, summary_blocks(h, w["dashboard"].get("publish", {}).get("url")), dry)

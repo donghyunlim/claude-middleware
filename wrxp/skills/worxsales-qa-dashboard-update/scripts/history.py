@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _notion import query
 
 OOS = "범위 제외"
-IMPL = ("OK", "부분 OK")  # 동작 확인: the row was seen working
+IMPL = ("OK", "부분 OK")  # 실동작 확인: the row was seen working
 EXISTS = ("OK", "부분 OK", "문제", "알려진 차이")  # the feature exists (a 문제 is an existing feature that misbehaves)
 NOT_JUDGED = ("실행 불가", "보류-기록")  # environment or scenario kept the row from saying whether the feature exists
 VERDICTS = ["OK", "부분 OK", "미구현", "문제", "실행 불가", "보류-기록", "알려진 차이"]
@@ -113,7 +113,7 @@ def main():
             "start": rd["start"], "end": rd["end"], "lane_rows": len(rd["rows"]),
             "target": len(scope), "executed": executed, "coverage": round(100 * executed / len(scope), 1) if scope else None,
             "verdicts": {v: cnt.get(v, 0) for v in VERDICTS},
-            # 구현도 = rows whose feature exists among rows that could be judged; 동작 확인율 = rows seen working among executed rows
+            # 구현도 = rows whose feature exists among rows that could be judged; 실동작 확인율 = rows seen working among executed rows
             "judged": judged, "impl_rate": jpct(sum(cnt[v] for v in EXISTS)), "verified_rate": pct(cnt["OK"] + cnt["부분 OK"]), "ok_rate": pct(cnt["OK"]),
             # 무결함률: executed rows that are not a confirmed 「문제」 (missing features, blocked and held rows count as no defect)
             "clean_rate": pct(executed - cnt["문제"]), "unimpl_rate": jpct(cnt["미구현"]),
@@ -126,7 +126,7 @@ def main():
     out = {"generated_at": __import__("datetime").datetime.now().astimezone().isoformat(timespec="seconds"), "rounds": rounds}
     json.dump(out, open(a.out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for r in rounds:
-        print(f"{r['round']:2d} {r['lane']:<34} {r['build'] or '-':7} {r['end']}  대상 {r['target']:4d} 실행 {r['executed']:4d}  구현도 {r['impl_rate']}%  동작확인 {r['verified_rate']}%  무결함률 {r['clean_rate']}%  미구현 {r['unimpl_rate']}%  문제 {r['problem']} (+{r['problem_new']}/-{r['problem_resolved']})  쓰기범위밖 {r['write_blocked']}")
+        print(f"{r['round']:2d} {r['lane']:<34} {r['build'] or '-':7} {r['end']}  대상 {r['target']:4d} 실행 {r['executed']:4d}  구현도 {r['impl_rate']}%  실동작확인 {r['verified_rate']}%  무결함률 {r['clean_rate']}%  미구현 {r['unimpl_rate']}%  문제 {r['problem']} (+{r['problem_new']}/-{r['problem_resolved']})  쓰기범위밖 {r['write_blocked']}")
 
 
 if __name__ == "__main__":

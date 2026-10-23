@@ -45,6 +45,7 @@ svg .lbl{font-family:var(--f-body);font-size:12px;fill:var(--ink)}
 svg .grid{stroke:var(--grid);stroke-width:1}
 svg .axis{stroke:var(--rule);stroke-width:1}
 svg .s-impl{fill:var(--ok);stroke:var(--ok)}
+svg .s-clean{fill:var(--known);stroke:var(--known)}
 svg .s-ok{fill:var(--panel);stroke:var(--ok);stroke-width:2}
 svg .s-unimpl{fill:var(--panel);stroke:var(--unimpl);stroke-width:2}
 svg .s-cov{fill:var(--accent);stroke:var(--accent)}
@@ -85,7 +86,7 @@ def round_plot(rounds):
     for g in range(0, 101, 20):
         out.append(f'<line class="grid" x1="{L}" x2="{W-R}" y1="{y(g):.1f}" y2="{y(g):.1f}"/><text x="{L-8}" y="{y(g)+4:.1f}" text-anchor="end">{g}%</text>')
     out.append(f'<line class="axis" x1="{L}" x2="{W-R}" y1="{y(0):.1f}" y2="{y(0):.1f}"/>')
-    series = [("unimpl_rate", "s-unimpl", 4.5, "미구현"), ("ok_rate", "s-ok", 4.5, "OK"), ("impl_rate", "s-impl", 6, "구현도")]
+    series = [("unimpl_rate", "s-unimpl", 4.5, "미구현"), ("ok_rate", "s-ok", 4.5, "OK"), ("impl_rate", "s-impl", 6, "구현도"), ("clean_rate", "s-clean", 6, "무결함률")]
     for key, cls, rad, name in series:
         pts = [(x(i), y(r[key])) for i, r in enumerate(rounds) if r[key] is not None]
         if len(pts) > 1:
@@ -95,6 +96,8 @@ def round_plot(rounds):
             out.append(f'<circle class="{cls}" cx="{x(i):.1f}" cy="{y(r[key]):.1f}" r="{rad}"><title>{E(r["lane"])} · {name} {r[key]:.1f}%</title></circle>')
     last = rounds[-1]
     out.append(f'<text x="{x(len(rounds)-1):.1f}" y="{y(last["impl_rate"])-12:.1f}" text-anchor="end" style="fill:var(--ok);font-weight:600">{last["impl_rate"]:.1f}%</text>')
+    if last.get("clean_rate") is not None:
+        out.append(f'<text x="{x(len(rounds)-1):.1f}" y="{y(last["clean_rate"])-12:.1f}" text-anchor="end" style="fill:var(--known);font-weight:600">{last["clean_rate"]:.1f}%</text>')
     for i, r in enumerate(rounds):
         out.append(f'<text x="{x(i):.1f}" y="{H-B+18}" text-anchor="middle">{E(r["build"] or "pilot")}</text>'
                    f'<text x="{x(i):.1f}" y="{H-B+33}" text-anchor="middle">{E(r["end"][5:10])}</text>'
@@ -145,6 +148,7 @@ def main():
     cells = [
         ("대상 행", f'{cur["target"]:,}', f'실행 {cur["executed"]:,} · {pct(cur["coverage"])}', ""),
         ("구현도 (OK+부분 OK)", pct(cur["impl_rate"]), f'직전 대비 {delta(cur["impl_rate"], prev["impl_rate"], "p") or "변화 없음"}', ""),
+        ("무결함률 (문제 아닌 행)", pct(cur.get("clean_rate")), f'직전 대비 {delta(cur.get("clean_rate"), prev.get("clean_rate"), "p") or "변화 없음"}', ""),
         ("미구현", pct(cur["unimpl_rate"]), f'{v["미구현"]:,}행', ""),
         ("문제 (확정)", f'{cur["problem"]}', f'신규 {cur["problem_new"]} · 해소 {cur["problem_resolved"]}', "warn" if cur["problem"] else ""),
         ("권한 미적용", f'{cur["role_gap"]}', "역할 처리가 빠진 행", ""),
@@ -158,10 +162,10 @@ def main():
         cls = ' class="cur"' if r is cur else ""
         vd = "".join(f'<td>{r["verdicts"][x]:,}</td>' for x in v)
         rows.append(f'<tr{cls}><td class="num">{r["round"]}</td><td class="t">{E(r["lane"])}</td><td>{E(r["build"] or "—")}</td><td>{E(r["end"].replace("T", " "))}</td>'
-                    f'<td>{r["target"]:,}</td><td>{r["executed"]:,}</td><td>{pct(r["coverage"])}</td><td>{pct(r["impl_rate"])}</td><td>{pct(r["ok_rate"])}</td><td>{pct(r["unimpl_rate"])}</td>'
+                    f'<td>{r["target"]:,}</td><td>{r["executed"]:,}</td><td>{pct(r["coverage"])}</td><td>{pct(r["impl_rate"])}</td><td>{pct(r.get("clean_rate"))}</td><td>{pct(r["ok_rate"])}</td><td>{pct(r["unimpl_rate"])}</td>'
                     f'{vd}<td>{r["problem_new"]}</td><td>{r["problem_resolved"]}</td><td>{r["role_gap"]}</td><td>{r["write_blocked"]}</td></tr>')
     round_tbl = (f'<div class="tbl"><table><thead><tr><th>#</th><th class="t">레인</th><th>빌드</th><th>마친 시각</th><th>대상</th><th>실행</th><th>실행률</th>'
-                 f'<th>구현도</th><th>OK율</th><th>미구현율</th>{vh}<th>문제 신규</th><th>문제 해소</th><th>권한 미적용</th><th>쓰기 범위 밖</th></tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
+                 f'<th>구현도</th><th>무결함률</th><th>OK율</th><th>미구현율</th>{vh}<th>문제 신규</th><th>문제 해소</th><th>권한 미적용</th><th>쓰기 범위 밖</th></tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
 
     bk = list(cur["blocked"])
     CUR = ' class="cur"'
@@ -195,8 +199,8 @@ def main():
 <p class="sub">최신 회차 {cur["round"]} · desktop <span class="num">{E(cur["build"])}</span> · {E(cur["end"].replace("T", " "))} 기준 · 생성 {E(h["generated_at"][:16].replace("T", " "))}{notion}</p></header>
 <section aria-label="현재 요약"><div class="strip">{strip}</div></section>
 <section><h2>회차별 구현도</h2>
-<p class="note">구현도는 실행한 행 가운데 OK와 부분 OK의 비율입니다. 아래 축은 빌드, 마친 날짜, 실행/대상 행 수입니다.</p>
-<ul class="legend"><li><span class="sw" style="color:var(--ok);background:var(--ok)"></span>구현도</li><li><span class="sw" style="color:var(--ok)"></span>OK만</li><li><span class="sw" style="color:var(--unimpl)"></span>미구현</li></ul>
+<p class="note">구현도는 실행한 행 가운데 OK와 부분 OK의 비율이고, 무결함률은 실행한 행 가운데 「문제」(확정 결함)가 아닌 행의 비율입니다. 아래 축은 빌드, 마친 날짜, 실행/대상 행 수입니다.</p>
+<ul class="legend"><li><span class="sw" style="color:var(--ok);background:var(--ok)"></span>구현도</li><li><span class="sw" style="color:var(--known);background:var(--known)"></span>무결함률</li><li><span class="sw" style="color:var(--ok)"></span>OK만</li><li><span class="sw" style="color:var(--unimpl)"></span>미구현</li></ul>
 <div class="panel">{round_plot(rs)}</div></section>
 <section><h2>메뉴별 구현도 이동</h2>
 <p class="note">빈 점은 그 메뉴를 처음 측정한 회차, 작은 점은 중간 회차, 채운 점은 현재입니다. 현재 구현도가 높은 메뉴부터 놓았습니다.</p>

@@ -107,7 +107,9 @@ def main():
             "start": rd["start"], "end": rd["end"], "lane_rows": len(rd["rows"]),
             "target": len(scope), "executed": executed, "coverage": round(100 * executed / len(scope), 1) if scope else None,
             "verdicts": {v: cnt.get(v, 0) for v in VERDICTS},
-            "impl_rate": pct(cnt["OK"] + cnt["부분 OK"]), "ok_rate": pct(cnt["OK"]), "unimpl_rate": pct(cnt["미구현"]),
+            "impl_rate": pct(cnt["OK"] + cnt["부분 OK"]), "ok_rate": pct(cnt["OK"]),
+            # 무결함률: executed rows that are not a confirmed 「문제」 (missing features, blocked and held rows count as no defect)
+            "clean_rate": pct(executed - cnt["문제"]), "unimpl_rate": pct(cnt["미구현"]),
             "problem": len(problem), "problem_new": len(problem - prev_problem), "problem_resolved": len(prev_problem - problem),
             "blocked": {name: blocked.get(name, 0) for name, _ in BLOCK_REASONS + [("기타", ())]},
             "write_blocked": len(write_blocked), "write_blocked_new": sorted(write_blocked - prev_blocked),
@@ -117,7 +119,7 @@ def main():
     out = {"generated_at": __import__("datetime").datetime.now().astimezone().isoformat(timespec="seconds"), "rounds": rounds}
     json.dump(out, open(a.out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for r in rounds:
-        print(f"{r['round']:2d} {r['lane']:<34} {r['build'] or '-':7} {r['end']}  대상 {r['target']:4d} 실행 {r['executed']:4d}  구현도 {r['impl_rate']}%  미구현 {r['unimpl_rate']}%  문제 {r['problem']} (+{r['problem_new']}/-{r['problem_resolved']})  쓰기범위밖 {r['write_blocked']}")
+        print(f"{r['round']:2d} {r['lane']:<34} {r['build'] or '-':7} {r['end']}  대상 {r['target']:4d} 실행 {r['executed']:4d}  구현도 {r['impl_rate']}%  무결함률 {r['clean_rate']}%  미구현 {r['unimpl_rate']}%  문제 {r['problem']} (+{r['problem_new']}/-{r['problem_resolved']})  쓰기범위밖 {r['write_blocked']}")
 
 
 if __name__ == "__main__":

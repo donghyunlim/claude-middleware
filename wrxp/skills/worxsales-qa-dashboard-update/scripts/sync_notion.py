@@ -23,7 +23,7 @@ def num(fmt="number"): return {"number": {"format": fmt}}
 
 def round_schema(blocked):
     p = {"회차": {"title": {}}, "회차 번호": num(), "레인": {"rich_text": {}}, "빌드": {"rich_text": {}}, "마친 시각": {"date": {}},
-         "대상": num(), "실행": num(), "실행률": num("percent"), "구현도": num("percent"), "OK율": num("percent"), "미구현율": num("percent"),
+         "대상": num(), "실행": num(), "실행률": num("percent"), "구현도": num("percent"), "무결함률": num("percent"), "OK율": num("percent"), "미구현율": num("percent"),
          "문제 신규": num(), "문제 해소": num(), "권한 미적용": num(), "쓰기 범위 밖": num(), "쓰기 범위 밖 신규": num()}
     for v in VERDICTS: p[v] = num()
     for b in blocked: p[f"실행 불가·{b}"] = num()
@@ -73,6 +73,7 @@ def summary_blocks(h, page_url):
     items = [
         f'대상 {c["target"]:,}행 · 실행 {c["executed"]:,}행 ({c["coverage"]}%)',
         f'구현도(OK+부분 OK) {c["impl_rate"]}% · 직전 회차 대비 {("+" if d and d > 0 else "") + str(d) + "p" if d else "변화 없음"}',
+        f'무결함률(문제가 아닌 행) {c.get("clean_rate")}% · 구현도와 함께 진척판 점도표에 표시',
         f'미구현 {c["verdicts"]["미구현"]:,}행 ({c["unimpl_rate"]}%) · OK {c["verdicts"]["OK"]:,} · 부분 OK {c["verdicts"]["부분 OK"]:,}',
         f'문제(확정) {c["problem"]}행 · 이번 회차 신규 {c["problem_new"]} · 해소 {c["problem_resolved"]}',
         f'실행 불가 {c["verdicts"]["실행 불가"]:,}행: ' + ", ".join(f"{k} {v}" for k, v in c["blocked"].items() if v),
@@ -120,7 +121,7 @@ def main():
     for r in h["rounds"]:
         props = {"회차 번호": {"number": r["round"]}, "레인": {"rich_text": rt(r["lane"])}, "빌드": {"rich_text": rt(r["build"] or "-")},
                  "마친 시각": {"date": {"start": r["end"] + ":00+09:00"}}, "대상": {"number": r["target"]}, "실행": {"number": r["executed"]},
-                 "실행률": {"number": frac(r["coverage"])}, "구현도": {"number": frac(r["impl_rate"])}, "OK율": {"number": frac(r["ok_rate"])},
+                 "실행률": {"number": frac(r["coverage"])}, "구현도": {"number": frac(r["impl_rate"])}, "무결함률": {"number": frac(r.get("clean_rate"))}, "OK율": {"number": frac(r["ok_rate"])},
                  "미구현율": {"number": frac(r["unimpl_rate"])}, "문제 신규": {"number": r["problem_new"]}, "문제 해소": {"number": r["problem_resolved"]},
                  "권한 미적용": {"number": r["role_gap"]}, "쓰기 범위 밖": {"number": r["write_blocked"]},
                  "쓰기 범위 밖 신규": {"number": len(r["write_blocked_new"])}}

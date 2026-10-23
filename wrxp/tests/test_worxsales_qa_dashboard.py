@@ -8,6 +8,7 @@ DASH = WRXP_ROOT / "skills/worxsales-qa-dashboard-update"
 CHAIN = WRXP_ROOT / "skills/worxsales-qa-all-in-one"
 RERUN = WRXP_ROOT / "skills/worxsales-qa-rerun-not-ok"
 CHAIN_NOT_OK = WRXP_ROOT / "skills/worxsales-qa-all-in-one-not-ok"
+BOOT = WRXP_ROOT / "skills/worxsales-qa-bootstrap"
 # which skill entry points may name which QA skills
 MAY_NAME = {
     "worxsales-qa-dashboard-update": {"worxsales-qa-all-in-one", "worxsales-qa-all-in-one-not-ok"},
@@ -27,9 +28,16 @@ def load(name):
 
 class ExplicitInvocationTests(unittest.TestCase):
     def test_new_skills_require_explicit_invocation_on_both_runtimes(self):
-        for skill in (DASH, CHAIN, RERUN, CHAIN_NOT_OK):
+        for skill in (DASH, CHAIN, RERUN, CHAIN_NOT_OK, BOOT):
             frontmatter = (skill / "SKILL.md").read_text().split("---", 2)[1]
-            self.assertRegex(frontmatter, r"(?m)^disable-model-invocation: true$", skill.name)
+            if skill == CHAIN:
+                # v0.1.61 dropped disable-model-invocation so a run the user scheduled (CronCreate) can start the chain;
+                # the description still limits it to explicit or scheduled invocation.
+                self.assertNotIn("disable-model-invocation", frontmatter)
+                self.assertIn("Use only when the user explicitly invokes", frontmatter)
+                self.assertIn("scheduled", frontmatter)
+            else:
+                self.assertRegex(frontmatter, r"(?m)^disable-model-invocation: true$", skill.name)
             self.assertRegex((skill / "agents/openai.yaml").read_text(), r"(?m)^policy:\n  allow_implicit_invocation: false$", skill.name)
 
     def test_only_the_chains_name_the_qa_skills(self):
@@ -139,7 +147,7 @@ class SummaryBlockTests(unittest.TestCase):
 
 class PortabilityTests(unittest.TestCase):
     def test_skill_files_carry_no_personal_paths_or_ids(self):
-        for skill in (DASH, CHAIN, RERUN, CHAIN_NOT_OK):
+        for skill in (DASH, CHAIN, RERUN, CHAIN_NOT_OK, BOOT):
             for path in skill.rglob("*"):
                 if path.is_file() and path.suffix in (".md", ".py", ".sh", ".pl", ".yaml") and ".omc" not in path.parts:
                     text = path.read_text()

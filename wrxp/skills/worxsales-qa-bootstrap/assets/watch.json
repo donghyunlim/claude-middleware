@@ -1,0 +1,20 @@
+{
+ "roots": [
+  {"name": "기능정의서", "kind": "tree", "id": "<기능정의서 최상위 페이지 ID>"},
+  {"name": "목업 DB", "kind": "tree", "is_database": true, "id": "<목업 파일이 행으로 쌓이는 DB ID>"},
+  {"name": "작업 공간", "kind": "discover", "id": "<TF 작업 공간 최상위 페이지 ID>", "depth": 2,
+   "keywords": ["목업", "mockup", "기능정의서", "정의서", "역할", "권한", "인벤토리", "정책", "설계서"]}
+ ],
+ "sources_dir": "sources",
+ "ignore": {},
+ "mockup": {"pattern": "(?P<family>[a-z_]+?)_v(?P<ver>\\d+(?:\\.\\d+)*)\\.html", "family": "worxsales_mockup", "used_version": ""},
+ "code": {"repo": "<worxsales-desktop 저장소 경로>", "branch": "origin/develop", "map": "refresh/code_map.json"},
+ "scenario_db": "config.json:scenario_db_id",
+ "lanes": "refresh/lanes.json",
+ "dashboard": {
+  "page_id": "",
+  "exclude_out_of_scope_views": ["⏳ 미실행", "판정 분포", "메뉴별 진행도", "우선순위별 판정", "판정 보드"],
+  "plain_views": ["❌ 문제 큐", "⚠️ 실행 불가(메뉴별)", "🕒 최근 실행 순"]
+ },
+ "history": {"extra_lanes": []}
+}

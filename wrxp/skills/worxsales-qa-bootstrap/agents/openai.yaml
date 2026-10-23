@@ -1,0 +1,6 @@
+interface:
+  display_name: "WorxSales QA Bootstrap"
+  short_description: "빈 상태에서 QA 작업 폴더, 원천 사본, 시나리오, Notion 시나리오 DB·상황판, 쓰기 범위, 앱 슬롯까지 준비해 QA 한 바퀴를 돌릴 수 있게 합니다"
+  default_prompt: "$wrxp:worxsales-qa-bootstrap으로 새 QA 작업 폴더를 만들고 시나리오 DB와 상황판, 앱 슬롯까지 준비해 줘."
+policy:
+  allow_implicit_invocation: false

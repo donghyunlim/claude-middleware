@@ -2,6 +2,12 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.72] - 2026-10-23
+
+- 새 skill `worxsales-qa-bootstrap`: 아무 산출물이 없는 상태에서 WorxSales QA 작업 폴더를 만듭니다. 폴더·래퍼·설정 템플릿(`init_workspace.sh`), 환경 점검(`check_env.sh`), 원천 받기(`fetch_spec.py`), 시나리오 작성 규칙과 검증(`validate.py`), 시나리오 DB 생성·동기화(`create_db.py`, `sync_scenarios.py`), 문서·상황판 페이지(`publish_doc.py`, `create_dashboard_page.py`), 외부 조건과 리드 시드 요청서 틀을 담았습니다.
+- QA 조율: 슬롯 점검·재로그인(`slots.sh`), 묶음 감사(`audit_batch.py`), raw CDP 도구(`cdp_tab.mjs`)를 더했습니다. `qa_rollout.sh`는 모든 슬롯에 자기 사용자 데이터 폴더를 쓰고 지워진 슬롯 설정 폴더를 다시 만듭니다. `merge_reverify.py`는 재검증 「시나리오 문제」를 「보류-기록」으로 합칩니다. `launch_app.sh`는 자기 포트의 앱만 다시 띄웁니다.
+- 쓰기 범위, 본인 대상 발송·쓰기의 이중 확인, 직접 만드는 사전조건, 역할 부여 순차 단계와 복원 확인, 멈춘 작업자 깨우기, 감사 뒤 게시, 결과 분류 보고 규칙을 문서에 반영했습니다.
+
 ## [0.1.65] - 2026-10-20
 
 - Claude 메인에서는 더 이상 Codex로 오프로딩하지 않고 대응하는 Claude 모델을 씁니다. `code-delegation` 작업자는 Opus 5.5가 기본이고 가벼운 구현에만 Sonnet 5.5를 고릅니다(Codex 메인은 기존대로 Sol medium/high). `search-delegation`의 탐색 작업자는 Haiku, `intent-anchor` 리뷰어는 Claude Opus → Sonnet 순서입니다. 전역 지침 블록도 런타임별 작업자 모델로 바뀌었으니 `/wrxp:setup`으로 갱신하십시오.

@@ -1,6 +1,6 @@
 # 작업 폴더 파일
 
-모두 QA 작업 폴더의 `refresh/` 아래에 둡니다.
+모두 QA 작업 폴더의 `refresh/` 아래에 둡니다. 처음에는 `worxsales-qa-bootstrap`의 `init_workspace.sh`가 템플릿으로 만듭니다. 작업 폴더 전체 구성은 bootstrap 스킬의 [작업 폴더 구성](../../worxsales-qa-bootstrap/references/workspace.md)에 있습니다.
 
 ## run.sh
 
@@ -9,8 +9,10 @@
 ```sh
 #!/bin/sh
 # refresh/run.sh <script.py> args...
-cd "$(dirname "$0")/.." && S=$1 && shift && exec python3 -I <skill>/scripts/$S "$@"
+cd "$(dirname "$0")/.." && S=$1 && shift && exec python3 -I "<skill>/scripts/$S" "$@"
 ```
+
+`init_workspace.sh`가 이 파일과 `refresh/run_dash.sh`, `scripts/run.sh`를 플러그인 경로로 씁니다. 플러그인을 업데이트하면 `--wrappers-only`로 다시 씁니다.
 
 ## watch.json
 
@@ -47,6 +49,10 @@ cd "$(dirname "$0")/.." && S=$1 && shift && exec python3 -I <skill>/scripts/$S "
 ```json
 [{"dir": "runs/run-2026-10-09-b566f"}, {"dir": "runs/run-2026-10-09-stg", "only_ids_file": "runs/run-2026-10-09-stg/_judged_ids.txt"}, {"dir": "runs/run-2026-10-09-full"}]
 ```
+
+## write_scope.json
+
+실행 단계의 쓰기 범위입니다. 형식과 규칙의 정본은 QA 한 바퀴 스킬의 `references/write-scope.md`입니다. 이 스킬은 읽지 않고, 실행 스킬이 읽습니다.
 
 ## state.json
 

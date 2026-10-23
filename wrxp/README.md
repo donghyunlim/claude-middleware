@@ -24,7 +24,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`이 있다. 총 21개 skill.
+추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, 빈 상태에서 WorxSales QA 작업 폴더·시나리오 DB·상황판·앱 슬롯을 준비하는 `worxsales-qa-bootstrap`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`이 있다. 총 22개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -145,6 +145,16 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 ```
 
 행마다 locator나 스크립트를 미리 만들지 않고 에이전트가 화면을 보고 같은 개념의 요소를 찾습니다. [스킬 본문](./skills/worxsales-qa-executor/SKILL.md), [실행 환경](./skills/worxsales-qa-executor/references/environment.md), [결과 형식](./skills/worxsales-qa-executor/references/result-schema.md), [보고 형식](./skills/worxsales-qa-executor/references/report-format.md)을 참고하세요.
+
+### WorxSales QA 작업 폴더 처음 만들기
+
+`/wrxp:worxsales-qa-bootstrap`(Codex에서는 `$wrxp:worxsales-qa-bootstrap`)은 아무 산출물이 없는 상태에서 QA 작업 폴더를 만듭니다. 래퍼와 설정 템플릿을 쓰고, 기능정의서·공통 문서를 받아 메뉴별로 시나리오를 작성·검토·검증한 뒤 Notion 시나리오 DB와 상황판을 만들고, 쓰기 범위를 사용자와 정하고, 앱을 빌드해 슬롯을 DEV로 로그인합니다. Google 연결, MatrixCloud 로그인, MAGMA 시드 데이터처럼 사용자가 마련해야 하는 조건은 풀리는 행 수와 함께 알립니다. 행 실행은 하지 않으며, 준비가 끝나면 QA 한 바퀴 스킬로 넘깁니다.
+
+```text
+/wrxp:worxsales-qa-bootstrap 새 QA 작업 폴더 만들고 시나리오 DB랑 상황판, 앱 슬롯까지 준비해 줘
+```
+
+[스킬 본문](./skills/worxsales-qa-bootstrap/SKILL.md), [작업 폴더 구성](./skills/worxsales-qa-bootstrap/references/workspace.md), [시나리오 작성 규칙](./skills/worxsales-qa-bootstrap/references/scenario-guide.md), [외부 조건](./skills/worxsales-qa-bootstrap/references/external-deps.md)을 참고하세요.
 
 ### WorxSales QA 최신화
 

@@ -2,7 +2,9 @@
 
   python3 <skill>/scripts/merge_reverify.py <reverify_dir> <full_dir>   # prints merged TC IDs (comma-separated)
 
-재현 불가 keeps the first verdict. Rows already relabeled by the role audit (_role_revised_ids.txt) are skipped.
+재현 불가 keeps the first verdict. 시나리오 문제 (the row expects more than its source says) always becomes 보류-기록,
+whatever final_verdict the reviewer wrote, until the scenario is fixed in the next refresh.
+Rows already relabeled by the role audit (_role_revised_ids.txt) are skipped.
 A row is merged once (details.reverify present); its reverify figures are copied next to the full result.
 """
 import glob, json, os, shutil, sys
@@ -19,6 +21,8 @@ for f in sorted(glob.glob(os.path.join(rev_dir, "TC-*.json"))):
         continue
     o = json.load(open(p, encoding="utf-8"))
     d = o.setdefault("details", {})
+    if r.get("reverify") == "시나리오 문제":
+        r["final_verdict"] = "보류-기록"
     if "reverify" in d:
         continue
     d["reverify"] = {k: r.get(k) for k in ("reverify", "final_verdict", "headline", "reason", "role_shown",

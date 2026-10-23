@@ -12,9 +12,9 @@ disable-model-invocation: true
 2. `worxsales-qa-rerun-not-ok` 절차 1~5: 최신 빌드, OK가 아닌 행 고르기, 레인, 실행 조율, 게시와 점검.
 3. `worxsales-qa-dashboard-update` 절차 1~4: 회차 이력, 진척판, Notion 상황판.
 4. 마지막 회차가 `check_notion.py`와 같으면 refresh 7단계(`state.py commit`)를 실행합니다. 이번에 테스트한 커밋을 `--code`로 넘깁니다.
-5. 보고와 질문 하나: `worxsales-qa-all-in-one`의 7단계와 같습니다(최신화, 실행, 상황판, 쓰기 범위 밖 현재·신규). 신규 쓰기 범위 밖 행이 있으면 그 조작을 허용할지 한 번만 묻고, 답을 `refresh/write_scope.json`에 적습니다.
+5. 보고와 질문: `worxsales-qa-all-in-one`의 7단계와 같습니다(최신화, 실행 진행, 결과 분류, 상황판, 쓰기 범위 밖 현재·신규, 사용자가 풀 수 있는 것). 새로 막힌 조작이 있으면 조작마다 허용할지 한 번만 묻고, 답을 원문 그대로 `refresh/write_scope.json`에 적습니다.
 
-각 단계의 세부 규칙은 해당 스킬의 SKILL.md가 정본입니다. 단계를 시작할 때 그 스킬의 SKILL.md를 다시 읽습니다.
+각 단계의 세부 규칙은 해당 스킬의 SKILL.md가 정본입니다. 단계를 시작할 때 그 스킬의 SKILL.md를 다시 읽습니다. QA 작업 폴더가 없으면 시작하지 않고 `/wrxp:worxsales-qa-bootstrap`으로 먼저 준비하자고 알립니다.
 
 ## 하지 않는 일
 

@@ -1,0 +1,13 @@
+{
+ "parent_page_id": "",
+ "scenario_db_id": "",
+ "desktop_repo": "",
+ "desktop_worktree": "",
+ "app_path": "",
+ "api_origin": "https://worxsales-backend.dev.jobko.io",
+ "build": "",
+ "cdp": "http://127.0.0.1:9333",
+ "operator_name": "",
+ "operator_employee_code": "",
+ "own_members": {}
+}

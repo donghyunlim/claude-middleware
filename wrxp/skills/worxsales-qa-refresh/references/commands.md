@@ -14,9 +14,11 @@ python3 <skill>/scripts/diff_sources.py refresh/watch.json "$S" ${P:+--prev "$P"
 bws-run "$PWD/$R" apply_sources.py refresh/watch.json "$S" "$S/report.json"
 bws-run "$PWD/$R" apply_sources.py refresh/watch.json "$S" "$S/report.json" --apply
 
-# 4. 시나리오 (작업 폴더 스크립트)
-python3 scripts/validate.py scenarios
-bws-run "$PWD/scripts/run.sh" scripts/sync_scenarios.py scenarios <배치 이름>
+# 4. 시나리오 (<bootstrap> = worxsales-qa-bootstrap 스킬 폴더)
+python3 <bootstrap>/scripts/validate.py scenarios
+bws-run "$PWD/scripts/run.sh" <bootstrap>/scripts/sync_scenarios.py scenarios <배치 이름> --dry-run
+bws-run "$PWD/scripts/run.sh" <bootstrap>/scripts/sync_scenarios.py scenarios <배치 이름>
+bws-run "$PWD/scripts/run.sh" <bootstrap>/scripts/publish_doc.py docs/DB_만들기.md db_doc_page_id
 
 # 5. 코드
 python3 <skill>/scripts/code_changes.py refresh/watch.json <마지막 테스트 커밋> --out "$S/code.json"

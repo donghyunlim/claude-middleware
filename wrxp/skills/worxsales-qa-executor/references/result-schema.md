@@ -10,7 +10,7 @@
   "ended_at": "2026-10-06T22:16:00+09:00",
   "build": "desktop 79e0f27 (+local allowlist https://worxsales-backend.dev.jobko.io)",
   "role_context": "영업자 · 수정 가능 · JK",
-  "target_data": "JK 그룹 43637, 회원 r-gi01",
+  "target_data": "JK 그룹 <그룹번호>, 회원 <회원 ID>",
   "verdict": "문제",
   "headline": "저장 안 한 메모가 탭을 닫으면 확인 없이 사라집니다",
   "checked": "비활성 레코드 탭을 닫을 때 미저장 입력을 지켜 주는지",
@@ -46,5 +46,9 @@
 | details.role_sanity | 비영업자 역할 배치의 첫 행에만. `[{"signal", "observed"}]` ([역할과 권한](roles.md)) |
 | details.shared_figure_with | 같은 차단 화면 그림을 앞 행과 함께 쓸 때 그 행의 TC ID |
 | details.verdict_revision | 판정을 나중에 고쳤을 때 `{"from", "to", "reason", "at"}` |
+| details.self_recipient | 실제 발송·통화 직전에 화면에서 읽은 받는 사람 전부([본인 한정 조작](self-only.md)) |
+| details.self_only_check | 본인 계정에만 닿는 쓰기의 확인 `{"before", "after"}` |
+| details.created | 이 행이 DEV에 만들거나 바꾼 레코드 번호 목록(레인의 `_dev_data_created.txt`에도 기록) |
+| details.reverify | 재검증 결과(`merge_reverify.py`가 씀) |
 
 권한 미적용으로 `미구현`을 판정하면 outcome을 「권한 미적용: 」으로 시작한다. `started_at`·`ended_at`은 행을 시작하고 끝낼 때 실제로 `date`를 실행한 값이다.

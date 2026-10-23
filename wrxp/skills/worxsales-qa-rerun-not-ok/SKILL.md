@@ -20,13 +20,14 @@ disable-model-invocation: true
 
 `<skill>`은 이 SKILL.md가 있는 폴더, `<skills>`는 그 상위 폴더입니다. 작업 폴더(QA_HOME)에서 실행합니다.
 
-1. **빌드 확인.** develop HEAD가 앱 슬롯의 빌드와 다르면 executor의 `build_dev_app.sh`로 빌드하고, 빌드가 끝났는지(앱 파일이 있는지) 확인한 뒤에만 `<skills>/worxsales-qa-all-in-one/scripts/qa_rollout.sh`로 슬롯을 하나씩 바꿉니다. 모든 슬롯을 바꾼 뒤 같은 폴더의 `prune_builds.sh <desktop repo> <새 빌드 worktree>`로 이전 빌드 worktree를 지웁니다.
+1. **빌드 확인.** develop HEAD가 앱 슬롯의 빌드와 다르면 executor의 `build_dev_app.sh`로 빌드하고, 빌드가 끝났는지(앱 파일이 있는지) 확인한 뒤에만 `<skills>/worxsales-qa-all-in-one/scripts/qa_rollout.sh <port> .slots/app-<port> <build.json>`으로 슬롯을 하나씩 바꿉니다. 모든 슬롯을 바꾼 뒤 같은 폴더의 `prune_builds.sh <desktop repo> <새 빌드 worktree>`로 이전 빌드 worktree를 지웁니다. 빌드가 같으면 같은 폴더의 `slots.sh status`로 슬롯이 로그인돼 있는지만 봅니다.
 2. **행 고르기.** `python3 <skill>/scripts/select_not_ok.py refresh/watch.json --out <lane>/_selected_ids.txt`. 사용자가 메뉴를 지정했으면 `--menus 7,11`을 붙입니다. 출력의 사유별 수를 사용자에게 한 줄로 알립니다.
    - 같은 원인으로 다시 돌려도 결과가 바뀌지 않는 막힘(예: DEV 서버 설정 누락으로 매번 같은 503)은 실행 전에 한 번 직접 확인하고, 그대로면 그 사유의 행을 빼고 뺀 수와 이유를 보고에 적습니다.
+   - 사용자가 마련해야 하는 외부 조건(Google 연결, MatrixCloud 로그인, MAGMA 데이터, 두 번째 사용자)이 아직 없으면 그 조건으로 막힌 행도 같은 방식으로 빼고, 조건별 행 수를 보고에 적습니다. 사용자 본인 계정만 건드리는 사전조건은 all-in-one의 `references/preconditions.md`대로 먼저 만듭니다.
 3. **레인.** `runs/run-<날짜>-b<커밋 4~5자리>/`를 만들고 큐를 짓습니다: `python3 <skills>/worxsales-qa-all-in-one/scripts/qa_queue.py build <lane> --only-ids <lane>/_selected_ids.txt`. WORKER.md는 all-in-one의 작업자 지시 틀과 직전 레인의 추가 규칙으로 만들고, `lanes.json` 맨 앞에 레인을 넣습니다.
-4. **실행 조율.** all-in-one의 조율 규칙대로 합니다. 영업자 행은 슬롯마다 11~20행 묶음, 역할 행은 영업자 묶음과 재검증이 끝난 뒤(이미 있는 부여는 슬롯마다 병렬, 부여 변경이 필요한 묶음은 한 명이 순차로). 묶음마다 감사하고, 「문제」와 「문제」에서 바뀐 판정은 Opus로 재검증해 합칩니다.
-5. **게시와 점검.** 작업자가 모두 끝나면 레인의 `_tmp/`를 지웁니다(증거 그림은 레인 폴더 바로 아래라 남습니다). `publish_pending.py`로 모아 게시하고 refresh의 `check_notion.py`로 DB와 대조합니다.
-6. **보고.** 고른 행 수(사유별), 실행 행 수, 판정 분포, OK로 바뀐 행 수와 OK에서 내려간 행 수, 재검증 결과, 뺀 행과 이유, 새로 쓰기 범위 밖이 된 행.
+4. **실행 조율.** all-in-one의 조율 규칙대로 합니다. 맡기기 직전마다 `slots.sh status`로 슬롯을 봅니다. 영업자 행은 슬롯마다 11~20행 묶음으로 맡깁니다. 역할 행은 영업자 묶음과 재검증이 끝난 뒤 실행하며, 이미 있는 부여로 도는 묶음은 슬롯마다 병렬로, 부여 변경이 필요한 묶음은 한 명이 순차로 실행하고 마지막에 부여 복원을 확인합니다. 묶음마다 `audit_batch.py`로 감사하고, 「문제」와 「문제」에서 바뀐 판정은 Opus로 재검증해 합칩니다(「시나리오 문제」는 「보류-기록」).
+5. **게시와 점검.** 감사를 통과한 결과만 `publish_pending.py`로 모아 게시하고, 게시 명령이 성공한 뒤에만 `mark`합니다. refresh의 `check_notion.py`로 DB와 대조합니다. 작업자가 모두 끝나면 레인의 `_tmp/`와 조율자의 임시 파일을 지웁니다(증거 그림은 레인 폴더 바로 아래라 남습니다).
+6. **보고.** 고른 행 수(사유별), 진행(완료/전체), 판정 분포, OK로 바뀐 행 수와 OK에서 내려간 행 수, 재검증 결과, 뺀 행과 이유, 새로 쓰기 범위 밖이 된 행을 적습니다. 결과 분류와 「사용자가 풀 수 있는 것」 목록은 all-in-one의 `references/user-updates.md` 형식을 따릅니다.
 
 ## 하지 않는 일
 

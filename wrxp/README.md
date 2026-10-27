@@ -24,7 +24,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 `breakdown`, `decompose`, `agent-match` orchestration 축, 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, 빈 상태에서 WorxSales QA 작업 폴더·시나리오 DB·상황판·앱 슬롯을 준비하는 `worxsales-qa-bootstrap`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`이 있다. 총 22개 skill.
+추가로 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, 빈 상태에서 WorxSales QA 작업 폴더·시나리오 DB·상황판·앱 슬롯을 준비하는 `worxsales-qa-bootstrap`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`이 있다. 총 19개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -232,32 +232,6 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 
 `deep`, 질문 0~12개, 최대 3라운드. 한 라운드에는 최대 4개만 묻는다. 기본 상한을 넘길 때는 사용자 동의를 받아 절대 상한 20개·5라운드까지 확장한다. 비가역·고위험 단일 문제에 적합하다.
 
-### 보조 skill
-
-#### /wrxp:breakdown — 전체 orchestration 파이프라인
-
-```
-/wrxp:breakdown "소셜 로그인 + 결제 연동 + 알림 시스템 묶어서 추가"
-```
-
-Phase 1-7 전체 자율 실행. 의도 정제 → 재귀 분해 → Implementation Plan → Agent Matching → Strategy Selection → DAG 병렬 실행 → Result Integration. 여러 독립 feature를 함께 구현해야 할 때.
-
-#### /wrxp:decompose — 의도 정제 + 재귀 분해
-
-```
-/wrxp:decompose "제품 검색이 느려서 사용자 이탈이 커지는 문제 해결"
-```
-
-Phase 1+2만 실행 — 분해 트리까지만 보고 실행은 나중으로 미루고 싶을 때. 출력: `.wrxp/state/intent-{slug}.md`, `tree-{slug}.json`.
-
-#### /wrxp:agent-match — DAG 구성 + 에이전트 매칭
-
-```
-/wrxp:agent-match "태스크 목록 JSON 경로"
-```
-
-Phase 4만 실행 — 이미 분해된 task list가 있을 때, dynamic agent matching과 DAG construction만 수행. 출력: `.wrxp/state/dag-{slug}.json`.
-
 ## Tier 비교표
 
 ### 🗡️ Knife family (runtime-bounded task graph)
@@ -307,38 +281,12 @@ wrxp의 모든 설계 결정은 publicly verifiable 연구에 근거한다. 구�
 | `/wrxp:haqq "요청"` | 공통 상태 흐름 + 최대 2라운드 | 표준 발견 |
 | `/wrxp:haqqq "요청"` | 공통 상태 흐름 + 최대 3라운드(동의 시 5) | 고위험 단일 문제 심층 확인 |
 
-### Orchestration family
-
-| 호출 | 실행 범위 | 사용 시점 |
-|------|---------|---------|
-| `/wrxp:breakdown "요청"` | Phase 1-7 orchestration | 재귀 분해 + DAG 병렬 실행 |
-| `/wrxp:decompose "문제"` | breakdown Phase 1+2만 | 분해 트리까지만 |
-| `/wrxp:agent-match "태스크"` | breakdown Phase 4만 | Agent matching + DAG만 |
-
 ### 선택 가이드
 
 | 상황 | 권장 |
 |---|---|
 | 문제가 한 갈래로 수렴, 산출물 단일 | `/wrxp:ha` 계열 (knife) |
-| 여러 feature 묶어 자율 실행 | `/wrxp:breakdown` |
-| 분해 트리만 보고 싶을 때 | `/wrxp:decompose` |
-
-knife 계열과 breakdown 계열은 직교한다. knife는 quality tier (추론 깊이)를, breakdown은 execution scope (분해 깊이)를 제어한다. 필요하면 breakdown의 각 task를 /wrxp:haqqq로 escalate할 수도 있다.
-
-## State 파일 구조
-
-```
-.wrxp/state/
-├── intent-{slug}.md           # Phase 1: 정제된 의도 (breakdown)
-├── tree-{slug}.json           # Phase 2: 분해 트리 (breakdown)
-├── plan-{slug}.md             # Phase 3: Implementation Plan (breakdown)
-├── dag-{slug}.json            # Phase 4: Agent-matched DAG (breakdown)
-├── strategy-{slug}.json       # Phase 5: 선택된 실행 전략 (breakdown)
-├── execution-{slug}.json      # Phase 6: 실행 진행 상태 (breakdown)
-└── breakdown-{slug}.json      # 전체 파이프라인 상태
-```
-
-`{slug}` = 요청 기반 짧은 식별자 (예: `add-social-login`, `redesign-auth`).
+| 중대형 개발, 단계별 합의가 필요할 때 | `/wrxp:staged-development` |
 
 ## License
 

@@ -2,6 +2,10 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.73] - 2026-10-27
+
+- `decompose`, `breakdown`, `agent-match` skill과 이들만 쓰던 `shared/middleware-ref.md`를 제거했습니다. 작업을 나눠 의존성 순서대로 실행하는 일은 `ha`가, 단계별 합의가 필요한 큰 작업은 `staged-development`가 맡습니다. 전역 지침 블록에서도 세 skill 안내를 뺐으니 `/wrxp:setup`으로 갱신하십시오.
+
 ## [0.1.72] - 2026-10-23
 
 - 새 skill `worxsales-qa-bootstrap`: 아무 산출물이 없는 상태에서 WorxSales QA 작업 폴더를 만듭니다. 폴더·래퍼·설정 템플릿(`init_workspace.sh`), 환경 점검(`check_env.sh`), 원천 받기(`fetch_spec.py`), 시나리오 작성 규칙과 검증(`validate.py`), 시나리오 DB 생성·동기화(`create_db.py`, `sync_scenarios.py`), 문서·상황판 페이지(`publish_doc.py`, `create_dashboard_page.py`), 외부 조건과 리드 시드 요청서 틀을 담았습니다.

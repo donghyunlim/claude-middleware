@@ -16,11 +16,11 @@
     },
     {
       "name": "wrxp",
-      "description": "Breakdown orchestrator: intent refinement, recursive decomposition, dynamic agent matching, DAG-based parallel execution",
-      "version": "0.1.72",
+      "description": "Convergent reasoning-and-execution (ha family), staged development, and delegation skills",
+      "version": "0.1.73",
       "source": "./wrxp",
       "category": "productivity",
-      "tags": ["orchestration", "decomposition", "agents", "breakdown", "dag"]
+      "tags": ["orchestration", "agents", "staged-development", "delegation"]
     }
   ]
 }

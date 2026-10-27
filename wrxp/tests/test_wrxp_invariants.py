@@ -136,6 +136,18 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertTrue((WRXP_ROOT / "CHANGELOG.md").exists())
         self.assertNotIn("CLAUDE.md", package["files"])
 
+    def test_removed_decomposition_skills_stay_removed(self):
+        removed = ("decompose", "breakdown", "agent-match")
+        for name in removed:
+            self.assertFalse((WRXP_ROOT / "skills" / name).exists(), name)
+        self.assertFalse((WRXP_ROOT / "shared/middleware-ref.md").exists())
+        surfaces = list((WRXP_ROOT / "skills").rglob("*.md"))
+        surfaces += list((WRXP_ROOT / "shared").rglob("*.md"))
+        surfaces.append(WRXP_ROOT / "README.md")
+        pattern = re.compile(r"wrxp:(decompose|breakdown|agent-match)\b|/(decompose|breakdown|agent-match)\b|middleware-ref")
+        for path in surfaces:
+            self.assertIsNone(pattern.search(path.read_text()), str(path))
+
     def test_readme_does_not_claim_nonexistent_ha_artifacts(self):
         readme = (WRXP_ROOT / "README.md").read_text()
         for artifact in ("ha-ambiguity", "ha-design", "ha-fleet"):

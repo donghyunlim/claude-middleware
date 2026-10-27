@@ -4,7 +4,7 @@ project:
   description: >
     Claude Code 플러그인 마켓플레이스. 두 개의 독립 플러그인을 monorepo로 관리한다.
     middleware 플러그인은 .middleware/ 프로젝트 지식을 읽어 AI 작업 품질을 높이고,
-    wrxp 플러그인은 의도 정제 → 재귀 분해 → 에이전트 매칭 → DAG 기반 병렬 실행을 오케스트레이션한다.
+    wrxp 플러그인은 ha 계열 수렴형 추론·실행, 단계별 개발(staged-development), 위임 skill을 제공한다.
 architecture:
   style: Monorepo marketplace with independent plugins
   overview: |

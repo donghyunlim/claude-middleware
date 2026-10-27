@@ -13,13 +13,13 @@
 
 ## Executive Summary
 
-wrxp(Universal Reasoning & Execution Pipeline)는 Claude Code 위에서 동작하는 7-skill 오케스트레이션 플러그인이다. 이 문서는 wrxp가 **왜 존재하는가**, **어떻게 작동하는가**, 그리고 **실제로 얼마나 개선되는가**라는 세 가지 질문에 대한 답을 제공한다.
+wrxp(Universal Reasoning & Execution Pipeline)는 Claude Code 위에서 동작하는 오케스트레이션 플러그인이다. 이 문서는 wrxp가 **왜 존재하는가**, **어떻게 작동하는가**, 그리고 **실제로 얼마나 개선되는가**라는 세 가지 질문에 대한 답을 제공한다.
 
 기존 버전(0.1.5)의 RESEARCH_REPORT는 reference 위주의 citation-heavy 문서였다. 사용자 피드백은 세 가지였다. 첫째, **각 skill을 "시작 → 과정 → 결과" 의 journey로 설명**하고 그 안에서 사용된 기술/기법이 자연스럽게 소개되어야 한다. 둘째, "아무것도 쓰지 않은 baseline 대비 얼마나 좋은가?"에 대한 **자연스러운 증명**이 필요하다. 셋째, 논문 수치의 나열이 아니라 **실제 많이 쓰이는 벤치마크(HumanEval, GSM8K, HLE, TruthfulQA 등)에서의 실측 결과**가 있어야 한다. 0.1.6에서 이 세 가지를 정면으로 다루었고, 0.1.7에서는 실측 결과를 독립 병렬 agent fleet으로 교정했다.
 
 문서는 크게 세 부분으로 구성된다.
 
-**Part 1 — Skill Journeys**는 wrxp의 7개 skill을 각각 하나의 story로 설명한다. `/ha`가 처음 호출되었을 때부터 결과가 반환되기까지 Phase 0-6을 어떤 논리로 통과하는지 내러티브로 따라가며, 그 과정에서 Self-Ask, Least-to-Most, Reflexion, CoVe, UoT, EVPI ordering 같은 기법들이 **왜 그 phase에 있는지** 자연스럽게 드러난다. 과거 버전에서는 `/haq`, `/haqq`, `/haqqq`를 질문 수와 함대 규모로 tune했지만, 현재는 같은 공통 엔진에 질문 preset만 제공하는 thin shim이다. 문제 분해와 에이전트 매칭을 맡던 `/breakdown`, `/decompose`, `/agent-match`는 0.1.73에서 제거되었다.
+**Part 1 — Skill Journeys**는 wrxp의 ha 계열 4개 skill을 각각 하나의 story로 설명한다. `/ha`가 처음 호출되었을 때부터 결과가 반환되기까지 Phase 0-6을 어떤 논리로 통과하는지 내러티브로 따라가며, 그 과정에서 Self-Ask, Least-to-Most, Reflexion, CoVe, UoT, EVPI ordering 같은 기법들이 **왜 그 phase에 있는지** 자연스럽게 드러난다. 과거 버전에서는 `/haq`, `/haqq`, `/haqqq`를 질문 수와 함대 규모로 tune했지만, 현재는 같은 공통 엔진에 질문 preset만 제공하는 thin shim이다.
 
 **Part 2 — Why Is This Good?**는 baseline(raw Claude Opus, 시스템 프롬프트 없음, task text만)이 **구조적으로** 어떤 실패 패턴을 가지는지 열거하고, wrxp의 각 메커니즘이 그 실패 패턴을 **어떻게** 공격하는지 매핑한다. MAST(arXiv:2503.13657)의 14개 failure mode, HaluEval의 19.5% hallucination, Dahl 2024의 39-88% legal citation fabrication, Stop Overthinking(arXiv:2503.16419)의 19-42초 낭비 같은 baseline의 구조적 취약점이, wrxp의 Phase 1 Pre-Q reasoning / Phase 2 EVPI ordering / Phase 6 task-type verification에 의해 각각 어떻게 닫히는지가 이 파트의 핵심 주장이다.
 
@@ -39,7 +39,7 @@ wrxp(Universal Reasoning & Execution Pipeline)는 Claude Code 위에서 동작�
 
 ## Part 1: Skill Journeys — 각 Skill의 시작, 과정, 결과
 
-wrxp는 서로 독립적으로 쓸 수 있지만 내부적으로는 하나의 파이프라인으로 얽혀 있는 7개 skill로 구성된다. 축으로 나누면 다음과 같다.
+wrxp는 서로 독립적으로 쓸 수 있지만 내부적으로는 하나의 공통 엔진을 공유하는 ha 계열 4개 skill을 다룬다. 축으로 나누면 다음과 같다.
 
 - **Universal Reasoning & Execution 축**: `/ha` (canonical engine) + `/haq` / `/haqq` / `/haqqq` (question-policy thin shims)
 

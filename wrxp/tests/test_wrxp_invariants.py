@@ -105,8 +105,9 @@ class WrxpInvariantTests(unittest.TestCase):
         skill_dir = WRXP_ROOT / "skills/intent-anchor"
         frontmatter = (skill_dir / "SKILL.md").read_text().split("---", 2)[1]
         self.assertNotIn("disable-model-invocation", frontmatter)
-        for phrase in ("strongly corrects", "retried", "Not for ordinary bug reports"):
+        for phrase in ("strongly corrects", "Not for ordinary bug reports"):
             self.assertIn(phrase, frontmatter)
+        self.assertNotIn("retried", frontmatter)
         metadata = (skill_dir / "agents/openai.yaml").read_text()
         self.assertRegex(metadata, r"(?m)^policy:\n  allow_implicit_invocation: true$")
 
@@ -417,6 +418,64 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertIn("넘기는 비용보다 메인 맥락을 아끼는 이득이 클 때", routing)
         self.assertNotIn("nontrivial standard/utility", routing)
 
+    def test_staged_development_scope_is_large_or_irreversible_work(self):
+        staged = (WRXP_ROOT / "skills/staged-development/SKILL.md").read_text()
+        frontmatter = staged.split("---", 2)[1]
+        self.assertIn(
+            "large or hard-to-reverse development, or work whose product "
+            "direction is unresolved",
+            frontmatter,
+        )
+        self.assertNotIn("medium", frontmatter)
+        rules = (WRXP_ROOT / "skills/setup/assets/global-rules.md").read_text()
+        self.assertIn(
+            "- Development: use `wrxp:staged-development` for large or "
+            "hard-to-reverse development, or work whose product direction is unresolved.",
+            rules,
+        )
+        self.assertNotIn("medium/large", rules)
+        delegation = (WRXP_ROOT / "skills/code-delegation/SKILL.md").read_text()
+        self.assertIn("크거나 되돌리기 어려운 개발, 또는 제품 방향이 정해지지 않은 작업", delegation)
+        self.assertNotIn("중·대규모", delegation)
+
+    def test_intent_drift_rule_drops_the_retry_trigger(self):
+        rules = (WRXP_ROOT / "skills/setup/assets/global-rules.md").read_text()
+        line = next(l for l in rules.splitlines() if l.startswith("- Intent drift:"))
+        self.assertIn("strongly corrects the direction of the work;", line)
+        self.assertNotIn("retried", line)
+        body = (WRXP_ROOT / "skills/intent-anchor/SKILL.md").read_text()
+        self.assertNotIn("같은 목표에 수정·재시도가 계속 쌓여", body)
+
+    def test_worker_core_lines_live_only_in_the_code_delegation_template(self):
+        core = (
+            "1. 취향·제품 판단이 새로 나오면 그 부분에서 멈추고 질문을 돌려보낸다.\n"
+            "2. 커밋하지 않는다.\n"
+            "3. 새 증거 없이 같은 시도를 반복하지 않고, 같은 전제로 거듭 실패하면 전제부터 확인한다.\n"
+            "4. 대체물로 확인한 것과 결론이 안 난 것은 통과로 보고하지 않는다.\n"
+            "5. 대신 정한 판단은 반환 보고에 `defaults_taken`으로 적는다.\n"
+        )
+        delegation = (WRXP_ROOT / "skills/code-delegation/SKILL.md").read_text()
+        self.assertIn("```text\n" + core + "```", delegation)
+        surfaces = list((WRXP_ROOT / "skills").rglob("*.md"))
+        surfaces += list((WRXP_ROOT / "shared").rglob("*.md"))
+        surfaces += [WRXP_ROOT / "README.md"]
+        for path in surfaces:
+            if path.parent.name == "code-delegation":
+                continue
+            text = path.read_text()
+            for line in core.splitlines():
+                self.assertNotIn(line[3:], text, str(path))
+        for rule in (
+            "`general-purpose` 에이전트",
+            "쓰기 작업자는 병렬로 돌리지 않는다",
+            "worktree 격리는 쓰지 않는다",
+            "`SendMessage`",
+            "`codex exec resume`",
+            "`git diff --stat`",
+            "작업자 보고 기준",
+        ):
+            self.assertIn(rule, delegation)
+
     def test_rejected_absorption_mechanisms_stay_out(self):
         surfaces = list((WRXP_ROOT / "skills").rglob("*.md"))
         surfaces += list((WRXP_ROOT / "shared").rglob("*.md"))
@@ -425,6 +484,14 @@ class WrxpInvariantTests(unittest.TestCase):
             text = path.read_text()
             for removed in ("가설 3라운드", "ladder_counters", "CLASSIFY"):
                 self.assertNotIn(removed, text, str(path))
+
+    def test_global_coding_rule_keeps_the_shared_contract_exception(self):
+        rules = (WRXP_ROOT / "skills/setup/assets/global-rules.md").read_text()
+        line = next(l for l in rules.splitlines() if l.startswith("- Coding:"))
+        self.assertIn(
+            "except that a shared-contract change gets one fresh-context `sonnet` review",
+            line,
+        )
 
     def test_shared_contract_review_is_the_reverification_exception(self):
         exception = "새 맥락 sonnet 검토를 1회 붙인다"

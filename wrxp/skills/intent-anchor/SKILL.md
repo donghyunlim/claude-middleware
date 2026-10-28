@@ -1,6 +1,6 @@
 ---
 name: intent-anchor
-description: "Use when the user explicitly invokes /wrxp:intent-anchor ($wrxp:intent-anchor in Codex). Also use, rarely, when the user strongly corrects the direction of the work itself (for example \"that's not what I meant\", \"you missed my point\", \"이해 못했네\", \"원래 의도는\", \"산으로 간다\") or when the same goal keeps being retried through repeated rewrites or versions. Compares the current work against every raw user message with a fresh-context top model, then stops and asks before changing course. Not for ordinary bug reports, typo fixes, direction changes the user made themselves, or one or two retries."
+description: "Use when the user explicitly invokes /wrxp:intent-anchor ($wrxp:intent-anchor in Codex). Also use, rarely, when the user strongly corrects the direction of the work itself (for example \"that's not what I meant\", \"you missed my point\", \"이해 못했네\", \"원래 의도는\", \"산으로 간다\"). Compares the current work against every raw user message with a fresh-context top model, then stops and asks before changing course. Not for ordinary bug reports, typo fixes, direction changes the user made themselves, or retries alone."
 ---
 
 # Intent anchor
@@ -11,8 +11,7 @@ description: "Use when the user explicitly invokes /wrxp:intent-anchor ($wrxp:in
 
 - 사용자가 명시적으로 호출하면 실행한다.
 - 자동 실행은 드물게 한다. 다음 중 하나가 분명할 때만 실행한다.
-  - 사용자가 작업 방향 자체를 바로잡는다. 단순 버그·오타·표현 지적은 해당하지 않는다.
-  - 같은 목표에 수정·재시도가 계속 쌓여, 수단이 목적을 대체했을 가능성이 있다. 예를 들어 같은 산출물의 버전이 거듭 늘어나는 경우다. 한두 번의 재시도는 해당하지 않는다.
+  - 사용자가 작업 방향 자체를 바로잡는다. 단순 버그·오타·표현 지적과 재시도만 쌓인 경우는 해당하지 않는다.
 - 자동으로 실행할 때는 첫 줄에 어떤 신호였는지 밝히고, 진행 중인 작업을 멈춘 상태로 둔다.
 - 이 스킬을 다른 스킬의 선행 조건이나 훅에 연결하지 않는다.
 

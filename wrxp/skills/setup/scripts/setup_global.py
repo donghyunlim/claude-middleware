@@ -230,6 +230,12 @@ def choose_codex_path(home):
     return home / "AGENTS.md", []
 
 
+def personal_skill_copies(home, inventory):
+    """List personal skills that share a bundled skill's name; never remove them."""
+    root = home / "skills"
+    return [str(root / name) for name in inventory if (root / name).exists()]
+
+
 def snapshot_matches(path, raw, info):
     current, current_info = read_target(path)
     if current != raw:
@@ -299,13 +305,19 @@ def main(argv=None):
         for runtime in selected:
             if runtime == "codex":
                 path, warnings = choose_codex_path(codex_home)
+                copies = personal_skill_copies(codex_home, inventory)
             else:
                 path, warnings = claude_home / "CLAUDE.md", []
+                copies = personal_skill_copies(claude_home, inventory)
+            if copies:
+                warnings.append("Personal skills share a bundled wrxp skill name (not removed): "
+                                + ", ".join(copies))
             raw, info = read_target(path)
             output, status, unmanaged, notes, preview = transformed(raw, path, body, args.remove)
             item = {"runtime": runtime, "path": str(path), "status": status,
                     "backup": None, "warnings": warnings + notes,
-                    "unmanaged_rules": unmanaged}
+                    "unmanaged_rules": unmanaged,
+                    "personal_skill_copies": copies}
             if preview is not None and not args.remove:
                 item["planned_block"] = preview
             report["targets"].append(item)

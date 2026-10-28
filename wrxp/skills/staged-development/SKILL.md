@@ -1,6 +1,6 @@
 ---
 name: staged-development
-description: Use when starting or resuming medium-to-large development, or smaller work with unresolved product direction or costly design choices. Also use when the user wants outline agreement, a canonical plan, or staged development. Skip routine low-impact edits and report-only requests.
+description: Use when starting or resuming large or hard-to-reverse development, or work whose product direction is unresolved. Also use when the user wants outline agreement, a canonical plan, or staged development. Skip routine low-impact edits and report-only requests.
 ---
 
 # Staged Development

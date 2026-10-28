@@ -58,6 +58,22 @@ class SetupGlobalTests(unittest.TestCase):
         self.assertIn(START, report["managed_block"])
         self.assertEqual(report["managed_block"], (self.codex / "AGENTS.md").read_text())
 
+    def test_personal_skill_copies_are_reported_but_never_removed(self):
+        personal = self.claude / "skills/ha"
+        personal.mkdir(parents=True)
+        (personal / "SKILL.md").write_text("personal\n")
+        (self.codex / "skills/unrelated").mkdir(parents=True)
+        result, report = self.run_cli("--target", "both", "--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        codex, claude = report["targets"]
+        self.assertEqual(codex["personal_skill_copies"], [])
+        self.assertEqual(claude["personal_skill_copies"], [str(personal)])
+        self.assertTrue(any(str(personal) in w for w in claude["warnings"]))
+        self.assertEqual((personal / "SKILL.md").read_text(), "personal\n")
+        result, report = self.run_cli("--target", "both", "--check")
+        self.assertEqual(result.returncode, 0)
+        self.assertTrue((personal / "SKILL.md").exists())
+
     def test_default_plan_does_not_create_directories(self):
         result, report = self.run_cli("--target", "both")
         self.assertEqual(result.returncode, 0)

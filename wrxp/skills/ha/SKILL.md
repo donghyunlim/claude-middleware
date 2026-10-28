@@ -27,7 +27,7 @@ max_questions_per_round: 0
 max_rounds: 0
 ```
 
-- 질문 수는 항상 상한이다. 적격 질문이 없으면 0개가 정상이다.
+- 질문 수는 상한이며 할당량이 아니다. 평가를 마친 0문항은 모든 프리셋에서 정상이다.
 - 직접 `/ha`의 `none` 프리셋은 시작 전 discovery 질문을 0개로 둔다. 승인·보안·비밀·외부 변경·파괴적·불가역 경계는 discovery 예산 밖의 실행 통제 게이트이므로 즉시 확인한다.
 - 질문 프리셋은 모델 라우팅에 영향을 주지 않는다.
 - 하나의 확정 의도는 dependency DAG로 나누며, 독립된 읽기 전용 실행 단위는 런타임 한도 안에서 병렬 위임할 수 있다.
@@ -36,20 +36,7 @@ max_rounds: 0
 
 ## 호출 설정
 
-직접 `/ha` 호출에는 위 기본값을 적용한다. tier shim이 아래 키를 전달하면 질문 관련 값만 덮어쓴다.
-
-```yaml
-question_preset: none | quick | standard | deep
-min_questions: 0
-max_questions: integer
-max_questions_per_round: 4
-max_rounds: integer
-extended_max_questions: integer | null
-extended_max_rounds: integer | null
-extension_requires_user_consent: boolean
-```
-
-알 수 없는 설정 키는 무시하고 기록한다. shim이 모델명, 실행자 역할, 검증법 또는 병렬성을 덮어쓰려 하면 무시한다.
+직접 `/ha` 호출에는 위 기본값을 적용한다. tier shim은 질문 관련 키(`question_preset: none | quick | standard | deep`, 질문·라운드 상한, 확장 상한과 동의 여부)만 덮어쓴다. 알 수 없는 키는 무시하고 기록하며, 모델명·실행자 역할·검증법·병렬성을 덮어쓰려 하면 무시한다.
 
 ## 필요한 참조
 
@@ -68,29 +55,7 @@ QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 �
 
 ## 상태 흐름
 
-```text
-CAPABILITY_RESOLVE
-  → OBSERVE
-  → IDENTIFY_DECISIONS
-  → QUESTION_GATE
-      ├─ must_ask 있음 → EXECUTION_CONTROL_ASK → IDENTIFY_DECISIONS
-      ├─ 예산 내 decision_quality 있음 → DISCOVERY_ASK → IDENTIFY_DECISIONS
-      └─ 전송할 질문 없음
-  → COMMIT_INTENT
-  → ROUTE_AND_EXECUTE
-  → VERIFY
-      ├─ 완료 → 최종 출력
-      ├─ 국소 수정 필요 → REPAIR_CHECKPOINT
-      ├─ 사용자 결정 필요 → QUESTION_GATE
-      └─ 완료 또는 blocker
-REPAIR_CHECKPOINT
-      ├─ 계속 → ROUTE_AND_EXECUTE
-      ├─ 재계획 → COMMIT_INTENT
-      ├─ 사용자 판단 → 사용자 체크포인트 후 REPAIR_CHECKPOINT
-      └─ blocker
-```
-
-각 상태의 종료 조건을 만족한 뒤 다음 상태로 이동한다.
+CAPABILITY_RESOLVE → OBSERVE → IDENTIFY_DECISIONS → QUESTION_GATE → COMMIT_INTENT → ROUTE_AND_EXECUTE → VERIFY 순서로, 각 상태의 종료 조건을 만족한 뒤 넘어간다. QUESTION_GATE에서 must_ask 있음 → EXECUTION_CONTROL_ASK, 예산 내 decision_quality 있음 → DISCOVERY_ASK로 묻고 IDENTIFY_DECISIONS로 돌아간다. VERIFY 뒤의 갈래는 6절에 있다.
 
 ## 0. CAPABILITY_RESOLVE
 
@@ -106,19 +71,6 @@ REPAIR_CHECKPOINT
 2. 저장소의 `AGENTS.md`, `CLAUDE.md`, 관련 문서와 기존 구현을 확인한다.
 3. 필요한 사실을 로컬 검색, 읽기 도구 또는 공식 문서로 확인한다.
 4. 사용자만 결정할 수 있는 선호·정책·승인과 증거로 확인할 사실을 분리한다.
-
-관찰 결과를 내부적으로 다음 형태로 정리한다.
-
-```yaml
-Observation:
-  goal: string
-  deliverable: string
-  explicit_constraints: [string]
-  repository_constraints: [string]
-  evidence: [string]
-  acceptance_criteria: [string]
-  unresolved_decisions: [string]
-```
 
 ## 2. IDENTIFY_DECISIONS
 
@@ -164,7 +116,7 @@ QuestionGateVerdict:
 - `pass_zero`: 적격 후보가 없다. 적용한 기본값을 `assumptions`에 기록하고 실행한다.
 - `blocked`: 안전한 기본값이 없는 후보가 남았는데 물을 수 없다. 실행하지 않고 남은 결정을 보고한다.
 
-`pass_zero`는 후보를 실제로 평가한 결과가 0개일 때만 유효하다. 평가를 건너뛴 상태는 `pass_zero`가 아니다. 질문 수는 상한이며 할당량이 아니므로, 평가를 마친 0문항은 모든 프리셋에서 정상이다.
+`pass_zero`는 후보를 실제로 평가한 결과가 0개일 때만 유효하다. 평가를 건너뛴 상태는 `pass_zero`가 아니다.
 
 `mid_run_decision`: 요청에 정해지지 않았는데 결과물을 바꾸는 취향·제품 판단은, 그 판단이 드러난 시점에 남은 구현이 15분 이상 걸릴 것 같으면 질문 예산과 관계없이 `/ha`에서도 그 판단에 기대는 작업 전에 묻는다. 15분 미만이면 묻지 않고 진행해 `defaults_taken`에 적는다. 위임 전 사전 질문, staged-development 개요 확인, 프로토타입 전환 질문, 같은 패턴을 함께 고칠지 여부는 시간과 관계없이 묻는다. 비슷한 판단은 한 번에 묶고, 묻는 방식은 `questioning.md`를 따른다. QUESTION_GATE에서 이미 기본값으로 정한 항목은 새 증거 없이 다시 묻지 않는다.
 
@@ -172,20 +124,7 @@ QuestionGateVerdict:
 
 ## 4. COMMIT_INTENT
 
-질문 답변과 관찰 근거를 통합해 실행 계약을 확정한다.
-
-```yaml
-CommittedIntent:
-  goal: string
-  deliverable: string
-  hard_constraints: [string]
-  acceptance_criteria: [string]
-  user_decisions: [string]
-  assumptions: [string]
-  blockers: [string]
-  execution_units: [string]
-  verification_criteria: [string]
-```
+질문 답변과 관찰 근거를 통합해 실행 계약(목표, 산출물, 제약, 수용 기준, 사용자 결정, 가정, blocker, 실행 단위, 검증 기준)을 확정한다.
 
 - 사용자 답과 명시 요구가 추론된 기본값보다 우선한다.
 - 정책·안전 규칙과 저장소 지침은 그대로 지킨다.
@@ -203,17 +142,7 @@ CommittedIntent:
 - **standard executor**: 일반 코드 작업, 중간 규모 리팩터링, 버그 수정, 테스트
 - **utility executor**: 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경과 기계 검사
 
-```yaml
-RuntimeParallelism:
-  max_parallel_delegations: positive_integer | unknown
-  runtime_parallel_limit:
-    when_can_delegate_false: 1
-    when_max_unknown: 1
-    when_max_positive: max_parallel_delegations
-  dependency_edges: [same_file_write, shared_state, external_side_effect, producer_consumer, writer_verifier]
-```
-
-controller는 확정 의도를 실행 단위와 의존선으로 나눈다. `runtime_parallel_limit` 안에서 의존성 없는 읽기 전용 단위만 같은 wave로 위임하고, `dependency_edges`에 해당하거나 쓰기 단위면 직렬로 둔다. 한 wave를 통합하고 실패·blocker를 처리한 뒤에만 후속 wave를 시작한다.
+controller는 확정 의도를 실행 단위와 의존선으로 나눈다. `runtime_parallel_limit`(런타임이 공개한 동시 위임 한도, 위임할 수 없거나 확인할 수 없으면 1) 안에서 의존성 없는 읽기 전용 단위만 같은 wave로 위임하고, 같은 파일 쓰기·공유 상태·외부 부작용·생산자→소비자·작성자→검증자 의존이 있거나 쓰기 단위면 직렬로 둔다. 한 wave를 통합하고 실패·blocker를 처리한 뒤에만 후속 wave를 시작한다.
 
 위임 지시문에는 역할극 대신 목적과 범위, 관련 증거와 사용자 결정, 제약과 순서, 기대 산출물과 검증 기준, blocker 보고 형식을 넣는다.
 

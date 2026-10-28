@@ -126,6 +126,16 @@ utility가 범위·설계·보안 판단을 새로 내려야 하면 standard 또
 
 ## task-graph 실행
 
+```yaml
+RuntimeParallelism:
+  max_parallel_delegations: positive_integer | unknown
+  runtime_parallel_limit:
+    when_can_delegate_false: 1
+    when_max_unknown: 1
+    when_max_positive: max_parallel_delegations
+  dependency_edges: [same_file_write, shared_state, external_side_effect, producer_consumer, writer_verifier]
+```
+
 `runtime_parallel_limit`은 런타임이 공개한 양의 `max_parallel_delegations`이며, 값을 확인할 수 없거나 위임할 수 없으면 `1`이다. 동시 활성 subagent 수는 이 한도를 넘지 않는다.
 
 controller는 하나의 확정 의도를 실행 단위와 의존선으로 나눈다. 독립 실행 단위만 같은 wave로 실행하고, 쓰기 단위는 파일이 달라도 직렬로 둔다. 같은 파일을 쓰는 단위, 공유 상태나 외부 부작용을 갖는 단위, 생산자→소비자, writer→verifier는 의존선으로 연결하고 앞 wave가 끝난 뒤 시작한다. 각 wave 결과는 controller가 통합하며, 실패나 blocker가 있으면 의존 후속 wave를 시작하지 않는다.

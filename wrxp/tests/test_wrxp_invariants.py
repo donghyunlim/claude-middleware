@@ -607,7 +607,13 @@ class WrxpInvariantTests(unittest.TestCase):
             self.assertIn("질문 예산과 무관하게 즉시 묻는다", entry)
 
     def test_runtime_caps_and_dependency_waves_have_a_structured_contract(self):
-        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        engine = (
+            WRXP_ROOT / "skills/ha/references/model-routing.md"
+        ).read_text()
+        self.assertIn(
+            "`runtime_parallel_limit`",
+            (WRXP_ROOT / "skills/ha/SKILL.md").read_text(),
+        )
 
         for contract in (
             "max_parallel_delegations: positive_integer | unknown",

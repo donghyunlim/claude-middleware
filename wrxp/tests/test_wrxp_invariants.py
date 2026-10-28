@@ -533,7 +533,7 @@ class WrxpInvariantTests(unittest.TestCase):
         rules = (WRXP_ROOT / "skills/setup/assets/global-rules.md").read_text()
         line = next(l for l in rules.splitlines() if l.startswith("- Coding:"))
         self.assertIn(
-            "except that a shared-contract change gets one fresh-context `sonnet` review",
+            "except that a shared-contract change gets one fresh-context review (`sonnet` in Claude, `gpt-6.1-sol` `high` in Codex)",
             line,
         )
 

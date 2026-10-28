@@ -22,7 +22,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 합의된 독립 코드 구현은 아래 일반 라우팅보다 [`code-delegation`](skills/code-delegation/SKILL.md)이 우선한다. Codex에서는 `gpt-6.1-sol`의 `medium`을 기본으로, 복잡한 구현에는 AI가 `high`를 선택한다. Claude에서는 Codex로 오프로딩하지 않고 Opus 5.5를 기본으로, 가벼운 구현에는 Sonnet 5.5를 쓴다. `low`·`haiku`·사고 수준이나 모델 생략·무단 모델 폴백은 허용하지 않는다. 작업자가 구현과 자체 검증을 수행하며, 충분한 최신 근거가 있으면 메인의 전체 재검증을 자동으로 추가하지 않는다. 예외로, 공유 계약을 바꾸면 새 맥락 sonnet 검토를 1회 붙인다. 기존 Terra 실험은 Sol의 성능 측정 결과가 아니다.
 
-`/ha`가 유일한 registry다. Codex에서는 종합 판단=`gpt-6-astra`, 일반 구현·중간 리팩터링=`gpt-6.1-sol`(medium, 가벼운 작업 low), 단순 탐색·국소 변경=`gpt-6-luna`를 선호한다. Claude에서는 종합 판단을 Opus 5.5에 맡기고, 일반 구현과 단순 작업은 Haiku 5.5, 어려운 대리 작업은 Sonnet 5.5에 맡긴다. 정확한 모델과 사고 수준은 런타임 가용성을 먼저 확인하고, 지원되지 않으면 같은 역할의 가용 모델 또는 런타임 기본 모델로 폴백한다.
+`/ha`가 유일한 registry다. Codex에서는 종합 판단=`gpt-6-astra`, 일반 구현·중간 리팩터링=`gpt-6.1-sol`(medium, 가벼운 작업 low), 단순 탐색·국소 변경=`gpt-6-luna`를 선호한다. Claude에서는 종합 판단을 Opus 5.5에 맡기고, 코드 구현 위임은 `wrxp:code-delegation`대로 Opus 5.5(가볍고 좁은 일은 Sonnet 5.5), 코드가 아닌 단순 작업은 Haiku 5.5, 어려운 대리 작업은 Sonnet 5.5에 맡긴다. 정확한 모델과 사고 수준은 런타임 가용성을 먼저 확인하고, 지원되지 않으면 같은 역할의 가용 모델 또는 런타임 기본 모델로 폴백한다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
@@ -36,7 +36,7 @@ Knife family의 수정 루프는 실제 결함이 남아 있는 동안 횟수만
 
 ## 왜 쓰는가 (Why use it?)
 
-- **환각 감소 (Hallucination reduction)**: Chain-of-Verification 4-step 프로세스(arXiv:2309.11495) 주입으로 longform generation hallucination 50-70% 감소. Reflexion(arXiv:2303.11366) self-reflection 루프로 HumanEval pass@1 80%→91% (+11%). Research/Decision task에서는 CoVe 적용이 mandatory다.
+- **환각 감소 (Hallucination reduction)**: Chain-of-Verification 4-step 프로세스(arXiv:2309.11495) 주입으로 longform generation hallucination 50-70% 감소. Reflexion(arXiv:2303.11366) self-reflection 루프로 HumanEval pass@1 80%→91% (+11%).
 - **질문 효율 (Question efficiency)**: 증거로 확인할 사실은 먼저 조사하고, 반드시 확인해야 하는 결정과 산출물의 쓰임을 바꾸는 사용자 선택만 질문한다. 모든 질문 수는 상한이며, 어떤 tier에서도 0문항으로 종료할 수 있다.
 - **Task type 커버리지 (Task type coverage)**: NBER WP #34255 (2025년, 1.1M ChatGPT 대화 분석) 분류 체계와 Anthropic Clio 데이터를 매핑하여 9가지 task type 확정. analysis(신규)를 포함한 9 types은 사용자 workload 전 스펙트럼을 cover한다. 0.1.74부터 실행 기준은 8개 트랙(`tracks.md`)이며, 이 분류는 설계 배경으로만 남는다.
 - **병렬 실행**: Knife family는 읽기 전용 독립 task unit만 런타임 한도 안에서 병렬로 실행한다.
@@ -240,7 +240,7 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 
 | Tier | 질문 수 | Rounds | Fleet | 용도 |
 |---|---|---|---|---|
-| /wrxp:ha (default) | 0 | 0 | runtime-bounded task graph | 승인·보안 게이트만 확인 |
+| /wrxp:ha (default) | 0 | 0 | runtime-bounded task graph | 시작 전 질문 없음. 승인·보안 게이트와 실행 중 판단(`mid_run_decision`)만 확인 |
 | /wrxp:haq | 0-4 | 1 | runtime-bounded task graph | 빠른 확인 |
 | /wrxp:haqq | 0-8 | 2 | runtime-bounded task graph | 표준 발견 |
 | /wrxp:haqqq | 0-12 (동의 시 max 20) | 3 (동의 시 5) | runtime-bounded task graph | 고위험 단일 문제 심층 확인 |

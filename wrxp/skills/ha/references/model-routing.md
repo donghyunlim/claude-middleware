@@ -38,6 +38,8 @@ RuntimeCapabilities:
 
 ## 역할 매핑
 
+코드 구현 위임에는 이 표보다 `wrxp:code-delegation`의 모델 고정이 우선한다(Codex `gpt-6.1-sol` `medium`/`high`, Claude Opus 5.5, 가볍고 좁은 일은 Sonnet 5.5). 표의 Haiku 5.5와 `low`는 코드 구현이 아닌 실행 단위에만 쓴다.
+
 | 논리 역할 | Codex 선호 후보 | Claude 선호 후보 | 주된 책임 |
 |---|---|---|---|
 | controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) | 종합 판단, 의도 통합, 아키텍처·보안·비가역 결정, blocker 분류 |

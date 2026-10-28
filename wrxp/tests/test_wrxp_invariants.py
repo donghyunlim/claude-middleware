@@ -476,6 +476,46 @@ class WrxpInvariantTests(unittest.TestCase):
         ):
             self.assertIn(rule, delegation)
 
+    def test_writing_rules_are_shared_and_free_of_personal_taste(self):
+        rules = (WRXP_ROOT / "shared/writing-rules.md").read_text()
+        for rule in (
+            "## 언어와 무관한 규칙",
+            "제목은 요지를 담는다",
+            "한 대상에는 한 이름만 쓴다",
+            "구체적으로 쓴다",
+            "출처 없는 권위에 기대지 않는다",
+            "개수는 실제 개수대로 쓴다",
+            "## 한국어 공통 규칙",
+            "주체와 대상을 생략하지 않는다",
+            "완결된 문장",
+            "정확한 어휘",
+        ):
+            self.assertIn(rule, rules)
+        self.assertNotIn("엠대시", rules)
+        self.assertNotIn("—", rules)
+        tracks = (WRXP_ROOT / "skills/ha/references/tracks.md").read_text()
+        self.assertIn("`shared/writing-rules.md`", tracks)
+        self.assertIn("`wrxp:korean-polish`", tracks)
+
+    def test_korean_polish_ships_with_the_plugin_on_both_runtimes(self):
+        skill_dir = WRXP_ROOT / "skills/korean-polish"
+        frontmatter = (skill_dir / "SKILL.md").read_text().split("---", 2)[1]
+        self.assertRegex(frontmatter, r"(?m)^name: korean-polish$")
+        metadata = (skill_dir / "agents/openai.yaml").read_text()
+        self.assertIn("$wrxp:korean-polish", metadata)
+        self.assertRegex(metadata, r"(?m)^policy:\n  allow_implicit_invocation: true$")
+
+    def test_handoff_receiver_rechecks_decisions_and_completion_claims(self):
+        handoff = (WRXP_ROOT / "skills/handoff/SKILL.md").read_text()
+        self.assertIn(
+            "이전 요약은 사람 결정의 원문이 아니다. 결정 주장은 원 기록에서 확인한다.",
+            handoff,
+        )
+        self.assertIn(
+            "완료 주장은 실제 결과로 다시 확인하되 끝난 조사는 반복하지 않는다.",
+            handoff,
+        )
+
     def test_rejected_absorption_mechanisms_stay_out(self):
         surfaces = list((WRXP_ROOT / "skills").rglob("*.md"))
         surfaces += list((WRXP_ROOT / "shared").rglob("*.md"))

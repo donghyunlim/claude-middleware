@@ -68,7 +68,7 @@ QuestionCandidate:
 2. `answer_owner == user`: 사용자만 답할 수 있다.
 3. `materially_branching == true`: 답에 따라 실행 경로가 실질적으로 달라진다.
 
-`answer_owner: experiment`인 후보는 묻지 않고 PROBE로 확인한다. PROBE는 읽기 전용이거나 버릴 수 있는 곳(임시 폴더, 복사본, 로컬 실행)에서만 한다. 확인에 외부 변경이 필요하면 그 변경은 `must_ask`로 묻는다. PROBE로 결론이 나지 않으면 관찰한 결과를 질문에 붙여 사용자에게 묻는다.
+`answer_owner: experiment`인 후보는 묻지 않고 PROBE로 확인한다. PROBE는 읽기 전용이거나 버릴 수 있는 곳(임시 폴더, 복사본, 저장소와 데이터를 바꾸지 않는 로컬 실행)에서만 한다. 확인에 외부 변경이 필요하면 그 변경은 `must_ask`로 묻는다. PROBE로 결론이 나지 않으면 관찰한 결과를 질문에 붙여 사용자에게 묻는다.
 
 세 조건을 통과한 후보는 다음처럼 분류한다.
 
@@ -115,7 +115,7 @@ QuestionCandidate:
 
 `must_ask` 실행 통제 질문은 별도 전송 경로로 즉시 보낸다. 이 경로에는 QuestionBudgetState 사전검사 또는 discovery 배치 공식을 적용하지 않으며, discovery 카운터를 갱신하지 않는다. `remaining_total_budget`과 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`은 `decision_quality` 배치에만 적용한다.
 
-- `none`은 `decision_quality` 후보를 선제 질문하지 않는다. 관찰 근거가 없으면 안전한 기본값을 `assumptions`에 기록하고 진행하며, 안전한 기본값이 없으면 실행하지 말고 blocker로 보고한다.
+- `none`은 `decision_quality` 후보를 선제 질문하지 않는다. 관찰 근거가 없으면 안전한 기본값을 `assumptions`에 기록하고 진행하며, 안전한 기본값이 없으면 실행하지 말고 blocker로 보고한다. 기록한 기본값에는 기본값 하한을 적용한다.
 - `quick`: 가장 영향이 큰 `decision_quality` 후보 1개만 첫 라운드에 묻는다.
 - `standard` 프리셋은 1~3개의 가장 중요한 `decision_quality` 후보를 첫 라운드에 묻는다.
 - `deep`: 최대 4개의 `decision_quality` 후보를 첫 라운드에 묻는다.

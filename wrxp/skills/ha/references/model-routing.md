@@ -41,7 +41,7 @@ RuntimeCapabilities:
 | 논리 역할 | Codex 선호 후보 | Claude 선호 후보 | 주된 책임 |
 |---|---|---|---|
 | controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) | 종합 판단, 의도 통합, 아키텍처·보안·비가역 결정, blocker 분류 |
-| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Haiku 5.5 (`claude-haiku-5-5`), 어려운 작업은 Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 일반 코드 구현, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서 작업 |
+| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Haiku 5.5 (`claude-haiku-5-5`), 어려운 작업은 Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 일반 코드 구현, 중간 규모 리팩터링, 버그 수정, 테스트 |
 | utility executor | `gpt-6-luna` + `low` | Claude Haiku 5.5 (`claude-haiku-5-5`) | 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경, 기계 검사 |
 | verifier | 보통 Sol, 고위험 Astra | 보통 Sonnet 5.5, 고위험 Opus 5.5 | 작성 결과와 분리된 검증 패스 |
 
@@ -67,7 +67,7 @@ Codex 위임 API가 모델과 사고 수준을 별도 인자로 받으면 검증
 
 ### standard executor
 
-경계와 수용 기준이 정해진 일반 구현·중간 규모 리팩터링·디버깅·테스트·공식 문서 조사는 standard executor에 맡긴다. 여러 파일을 수정한다는 이유만으로 controller나 병렬 체계로 올리지 않는다.
+경계와 수용 기준이 정해진 일반 구현·중간 규모 리팩터링·버그 수정·테스트는 standard executor에 맡긴다. 버그 재현과 가설 좁히기, 조사, 데이터, 글쓰기는 controller가 직접 한다. 여러 파일을 수정한다는 이유만으로 controller나 병렬 체계로 올리지 않는다.
 
 Claude에서는 애매하면 Haiku 5.5로 시작하고, 다음 작업만 Sonnet 5.5로 올린다.
 
@@ -128,7 +128,7 @@ utility가 범위·설계·보안 판단을 새로 내려야 하면 standard 또
 
 `runtime_parallel_limit`은 런타임이 공개한 양의 `max_parallel_delegations`이며, 값을 확인할 수 없거나 위임할 수 없으면 `1`이다. 동시 활성 subagent 수는 이 한도를 넘지 않는다.
 
-controller는 하나의 확정 의도를 실행 단위와 의존선으로 나눈다. 독립 실행 단위만 같은 wave로 실행한다. 같은 파일을 쓰는 단위, 공유 상태나 외부 부작용을 갖는 단위, 생산자→소비자, writer→verifier는 의존선으로 연결하고 앞 wave가 끝난 뒤 시작한다. 각 wave 결과는 controller가 통합하며, 실패나 blocker가 있으면 의존 후속 wave를 시작하지 않는다.
+controller는 하나의 확정 의도를 실행 단위와 의존선으로 나눈다. 독립 실행 단위만 같은 wave로 실행하고, 쓰기 단위는 파일이 달라도 직렬로 둔다. 같은 파일을 쓰는 단위, 공유 상태나 외부 부작용을 갖는 단위, 생산자→소비자, writer→verifier는 의존선으로 연결하고 앞 wave가 끝난 뒤 시작한다. 각 wave 결과는 controller가 통합하며, 실패나 blocker가 있으면 의존 후속 wave를 시작하지 않는다.
 
 런타임이 위임을 지원하면, 넘기는 비용보다 메인 맥락을 아끼는 이득이 클 때 실행 단위와 독립 verifier를 실제 subagent 호출로 위임한다. 사소한 수정과 위임 불가 폴백은 controller가 직접 수행한다. 가용 슬롯을 채우는 것이 목적은 아니며, 수용 기준을 충족하는 최소 충분 위임만 사용한다.
 

@@ -765,7 +765,7 @@ class WrxpInvariantTests(unittest.TestCase):
             skill,
         )
         self.assertIn(
-            "`QuestionGateVerdict`가 `ask`일 때 "
+            "`QuestionGateVerdict`가 `ask`이거나 `mid_run_decision`을 물을 때 "
             "[references/questioning.md](references/questioning.md)",
             skill,
         )
@@ -781,7 +781,7 @@ class WrxpInvariantTests(unittest.TestCase):
         blocks = {}
         for name in ("ha", "haq", "haqq", "haqqq"):
             text = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
-            start = text.index("읽기 전용 탐색은 판정 전에도 허용한다")
+            start = text.index("읽기 전용 탐색과 버릴 수 있는 곳의 PROBE는 판정 전에도 허용한다")
             tail = "사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다."
             end = text.index(tail) + len(tail)
             blocks[name] = text[start:end]

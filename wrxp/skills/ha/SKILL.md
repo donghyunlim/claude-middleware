@@ -13,7 +13,7 @@ level: 4
 
 ## Requirements
 
-합의된 독립 코드 구현의 ROUTE·VERIFY에는 `wrxp:code-delegation`을 우선 적용한다. 작업자 모델(Codex는 Sol medium/high, Claude는 Opus·Sonnet)을 명시하고, 작업자의 현재 코드 검증 근거가 충분하면 별도 verifier를 자동 추가하지 않는다. 단, 공유 계약을 바꾸면 새 맥락 sonnet 검토를 1회 붙인다(6. VERIFY).
+합의된 독립 코드 구현의 ROUTE·VERIFY에는 `wrxp:code-delegation`을 우선 적용한다. 작업자 모델을 명시하고, 작업자의 현재 코드 검증 근거가 충분하면 별도 verifier를 자동 추가하지 않는다. 단, 공유 계약을 바꾸면 새 맥락 sonnet 검토를 1회 붙인다.
 
 $ARGUMENTS
 
@@ -55,16 +55,16 @@ extension_requires_user_consent: boolean
 
 QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 못해도 질문 판정 자체는 건너뛸 수 없다. 상세 참조는 실제로 필요한 시점에 읽는다.
 
-- `QuestionGateVerdict`가 `ask`일 때 [references/questioning.md](references/questioning.md)를 끝까지 읽는다. 질문 예산, 배치 공식, 질문 작성 규칙이 여기에만 있다.
+- `QuestionGateVerdict`가 `ask`이거나 `mid_run_decision`을 물을 때 [references/questioning.md](references/questioning.md)를 끝까지 읽는다. 질문 예산, 배치 공식, 질문 작성 규칙이 여기에만 있다.
 - 첫 모델·에이전트 위임 전에 [references/model-routing.md](references/model-routing.md)를 끝까지 읽는다.
-- 실행 전에 검증 기준을 정할 때 [references/verification.md](references/verification.md)를 끝까지 읽는다.
+- 사소한 단일 수정이 아니면 검증 기준을 정할 때 [references/verification.md](references/verification.md)를 끝까지 읽는다.
 - 복잡한 의존성·위험 판단에는 [공통 reasoning framework](../../shared/reasoning-framework.md)를 적용한다. 원시 추론 전문은 출력하지 않는다.
 
 ## 트랙과 무거운 경로
 
 트랙은 버그, 기능, 조사, 글쓰기·기획서, 데이터·수치, 리팩터링, 프로토타입, 맞춤 절차다. 트랙을 정하면 [references/tracks.md](references/tracks.md)의 해당 트랙을 읽는다.
 
-평소 절차는 모델이 판단한다. 되돌리기 어려운 변경·외부 공개, 공유 계약 변경(정의는 6. VERIFY), 재발 버그, 사용자 지정일 때만 해당 트랙의 "무거운 경로" 단계를 작업 목록에 옮겨 따르고, 들어갈 때 이유를 한 줄로 보고한다.
+평소 절차는 모델이 판단한다. 되돌리기 어려운 변경·외부 공개, 공유 계약 변경, 재발 버그, 사용자 지정일 때만 해당 트랙의 "무거운 경로" 단계를 작업 목록에 옮겨 따르고, 들어갈 때 이유를 한 줄로 보고한다.
 
 ## 상태 흐름
 
@@ -94,7 +94,7 @@ REPAIR_CHECKPOINT
 
 ## 0. CAPABILITY_RESOLVE
 
-이번 런타임에서 실제로 쓸 수 있는 기능만 `references/model-routing.md`의 `RuntimeCapabilities`대로 확인한다. 추측해 호출하지 않고, 확인할 수 없는 항목은 `unknown`으로 둔다.
+이번 런타임에서 실제로 쓸 수 있는 기능만 확인한다. 이 단계에서는 `references/model-routing.md`의 `## 런타임 능력 확인` 절만 읽는다. 추측해 호출하지 않고, 확인할 수 없는 항목은 `unknown`으로 둔다.
 
 ## 1. OBSERVE
 
@@ -137,7 +137,7 @@ Observation:
 
 ## 3. QUESTION_GATE
 
-읽기 전용 탐색은 판정 전에도 허용한다. 그러나 실행 의도를 확정하거나 파일·외부 시스템에 쓰기 전에는 반드시 아래 판정을 마친다. 이 판정을 생략한 채 실행하지 않는다.
+읽기 전용 탐색과 버릴 수 있는 곳의 PROBE는 판정 전에도 허용한다. 그러나 실행 의도를 확정하거나 파일·외부 시스템에 쓰기 전에는 반드시 아래 판정을 마친다. 이 판정을 생략한 채 실행하지 않는다.
 
 다음 세 조건을 모두 만족하는 결정만 질문 후보다.
 
@@ -193,7 +193,7 @@ CommittedIntent:
 - 정책·안전 규칙과 저장소 지침은 그대로 지킨다.
 - 낮은 위험의 기본값은 `assumptions`에 남긴다.
 - 고위험 blocker가 하나라도 있으면 실행하지 않고 필요한 결정만 보고한다.
-- 실행 전 `references/verification.md`에 따라 검증 기준을 예약한다.
+- 실행 전 검증 기준을 예약한다(6. VERIFY).
 
 쓰기 전에 뼈대를 정한다(코드는 데이터 형태와 경계, 문서는 독자·핵심 메시지·목차). 같은 우회가 반복되면 뼈대를 다시 설계한다.
 
@@ -202,7 +202,7 @@ CommittedIntent:
 `references/model-routing.md`의 역할 기준으로 각 실행 단위를 고른다.
 
 - **controller**: 종합 판단, 아키텍처, 보안, 비가역 결정, 교차 계약과 blocker 분류
-- **standard executor**: 일반 코드 작업, 중간 규모 리팩터링, 디버깅, 테스트, 표준 조사·문서
+- **standard executor**: 일반 코드 작업, 중간 규모 리팩터링, 버그 수정, 테스트
 - **utility executor**: 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경과 기계 검사
 
 ```yaml
@@ -215,15 +215,9 @@ RuntimeParallelism:
   dependency_edges: [same_file_write, shared_state, external_side_effect, producer_consumer, writer_verifier]
 ```
 
-controller는 확정 의도를 실행 단위와 의존선으로 나눈다. 런타임이 공개한 동시 위임 한도 안에서 의존성이 없는 단위만 같은 wave로 위임하며, 한도를 확인할 수 없거나 위임할 수 없으면 `runtime_parallel_limit = 1`로 둔다. 같은 파일 쓰기, 공유 상태, 외부 부작용, 생산자→소비자, writer→verifier는 의존선으로 두어 직렬 wave로 실행한다. 한 wave의 결과를 통합하고 실패·blocker를 처리한 뒤에만 의존 후속 wave를 시작한다.
+controller는 확정 의도를 실행 단위와 의존선으로 나눈다. `runtime_parallel_limit` 안에서 의존성 없는 읽기 전용 단위만 같은 wave로 위임하고, `dependency_edges`에 해당하거나 쓰기 단위면 직렬로 둔다. 한 wave를 통합하고 실패·blocker를 처리한 뒤에만 후속 wave를 시작한다.
 
-위임에는 역할극 대신 다음을 포함한다.
-
-- 목적과 정확한 범위
-- 관련 파일·증거·사용자 결정
-- 지켜야 할 제약과 실행 순서
-- 기대 산출물과 검증 기준
-- blocker 발생 시 필요한 보고 형식
+위임 지시문에는 역할극 대신 목적과 범위, 관련 증거와 사용자 결정, 제약과 순서, 기대 산출물과 검증 기준, blocker 보고 형식을 넣는다.
 
 실행자는 새 제품 결정을 임의로 만들지 않는다. 새 사용자 전용 결정이 발견되면 controller에 blocker로 돌려보낸다.
 
@@ -235,7 +229,8 @@ controller는 확정 의도를 실행 단위와 의존선으로 나눈다. 런�
 
 - 실제 경로로 1회 확인한다.
 - 대체물(다른 환경, 목업, 자기 보고, 요약본)로 확인한 것은 통과가 아니다. 확인하지 못한 것을 적고 `inconclusive`로 보고한다.
-공유 계약은 API, DB 스키마, 공유 타입, 전송 형식, 공용 모듈, 설정, 문서·규칙 파일의 삭제·이동이다. 공유 계약을 바꾸면 새 맥락 sonnet 검토를 1회 붙인다.
+
+공유 계약은 API, DB 스키마, 공유 타입, 전송 형식, 공용 모듈, 설정, 문서·규칙 파일의 삭제·이동이다. 공유 계약을 바꾸면 새 맥락 sonnet 검토를 1회 붙인다. 사소하지 않은 변경은 다음도 따른다.
 
 - 가능한 경우 작성과 검증의 문맥을 분리한다.
 - 테스트, 정적 검사, 실제 파일, 공식 출처와 재현 가능한 계산을 증거로 사용한다.
@@ -251,7 +246,7 @@ controller는 확정 의도를 실행 단위와 의존선으로 나눈다. 런�
 
 ## 최종 출력
 
-사용자에게 필요한 내용만 간결하게 전달한다. 출력 틀은 `references/verification.md`의 `result`를 따르며, 묻지 않고 대신 정한 판단은 `defaults_taken`에 적는다. 내부 후보 목록과 상세 추론은 출력하지 않는다.
+필요한 내용만 간결하게 전달한다. 출력은 `result`(outcome, artifacts, defaults_taken, user_decisions, verification_evidence, remaining_risks)이고 세부는 `references/verification.md`에 있다. 묻지 않고 대신 정한 판단은 `defaults_taken`에 적고, 그중 취향 판단(독자·구조·문체)이 있으면 결과 전에 보여 주고 확인받는다. 내부 후보 목록과 상세 추론은 출력하지 않는다.
 
 ## 중첩 호출이 없는 런타임
 

@@ -8,11 +8,11 @@
 
 ## 무엇인가 (What is it?)
 
-**wrxp**(Universal Reasoning & Execution Pipeline)는 Claude Code용 범용 reasoning-and-execution 플러그인이다. code뿐만 아니라 writing, planning, research, analysis, decision, creative, learning 등 9가지 task type에 동일한 품질 보증 파이프라인을 적용하여, 사용자의 요청을 높은 수준의 산출물로 변환한다.
+**wrxp**(Universal Reasoning & Execution Pipeline)는 Claude Code용 범용 reasoning-and-execution 플러그인이다. 코드뿐 아니라 조사, 글쓰기·기획서, 데이터·수치 등 8개 트랙에 동일한 품질 보증 파이프라인을 적용하여, 사용자의 요청을 높은 수준의 산출물로 변환한다.
 
 wrxp의 reasoning 축은 **Knife family**다:
 
-- **🗡️ Knife family (`ha` / `haq` / `haqq` / `haqqq`)** — **단일 수렴 목표의 task graph 실행**. 독립 단위만 런타임 한도 안에서 병렬 위임한다. `/ha`가 질문·라우팅·실행·검증의 canonical engine이며 나머지 셋은 질문 상한만 다른 thin shim이다.
+- **🗡️ Knife family (`ha` / `haq` / `haqq` / `haqqq`)** — **단일 수렴 목표의 task graph 실행**. 읽기 전용 독립 단위만 런타임 한도 안에서 병렬 위임하고, 쓰기 단위는 순서대로 실행한다. `/ha`가 질문·라우팅·실행·검증의 canonical engine이며 나머지 셋은 질문 상한만 다른 thin shim이다.
 
 Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
@@ -38,8 +38,8 @@ Knife family의 수정 루프는 실제 결함이 남아 있는 동안 횟수만
 
 - **환각 감소 (Hallucination reduction)**: Chain-of-Verification 4-step 프로세스(arXiv:2309.11495) 주입으로 longform generation hallucination 50-70% 감소. Reflexion(arXiv:2303.11366) self-reflection 루프로 HumanEval pass@1 80%→91% (+11%). Research/Decision task에서는 CoVe 적용이 mandatory다.
 - **질문 효율 (Question efficiency)**: 증거로 확인할 사실은 먼저 조사하고, 반드시 확인해야 하는 결정과 산출물의 쓰임을 바꾸는 사용자 선택만 질문한다. 모든 질문 수는 상한이며, 어떤 tier에서도 0문항으로 종료할 수 있다.
-- **Task type 커버리지 (Task type coverage)**: NBER WP #34255 (2025년, 1.1M ChatGPT 대화 분석) 분류 체계와 Anthropic Clio 데이터를 매핑하여 9가지 task type 확정. analysis(신규)를 포함한 9 types은 사용자 workload 전 스펙트럼을 cover한다.
-- **병렬 실행**: Knife family는 독립 task unit을 런타임 한도 안에서 실행한다.
+- **Task type 커버리지 (Task type coverage)**: NBER WP #34255 (2025년, 1.1M ChatGPT 대화 분석) 분류 체계와 Anthropic Clio 데이터를 매핑하여 9가지 task type 확정. analysis(신규)를 포함한 9 types은 사용자 workload 전 스펙트럼을 cover한다. 0.1.74부터 실행 기준은 8개 트랙(`tracks.md`)이며, 이 분류는 설계 배경으로만 남는다.
+- **병렬 실행**: Knife family는 읽기 전용 독립 task unit만 런타임 한도 안에서 병렬로 실행한다.
 
 
 
@@ -245,26 +245,27 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 | /wrxp:haqq | 0-8 | 2 | runtime-bounded task graph | 표준 발견 |
 | /wrxp:haqqq | 0-12 (동의 시 max 20) | 3 (동의 시 5) | runtime-bounded task graph | 고위험 단일 문제 심층 확인 |
 
-## 9 Task Types
+## 8 Tracks
 
-| Task Type | 용도 | 산출물 template |
-|---|---|---|
-| **code** | 구현, 디버깅, 리팩토링, API 설계 | 모듈 signature + I/O schema + error categories + testing approach |
-| **writing** | blog, article, proposal, docs, 문학 | audience + tone + structure + quality bar |
-| **planning** | 프로젝트 기획, 전략, 타임라인 | goal + milestones + resources + risk register |
-| **research** | literature review, synthesis, 탐색 | question + scope + source priorities + bias control |
-| **analysis** | 데이터 분석, BI, metrics, 통계 | analysis question + data quality + methodology + sensitivity |
-| **decision** | 비교, trade-off, go/no-go | alternatives + criteria + weighting + reversibility |
-| **creative** | story, art, music, game 설계 | core idea + audience + style + revision plan |
-| **learning** | how-to, skill 개발, 커리큘럼 | current→target level + modality + assessment |
-| **other** | 그 외 (자가 분류 재시도 후 fallback) | Phase 0 재-dispatch 또는 유저 확인 |
+`/ha`는 요청을 트랙 하나로 보고, 트랙마다 꼭 지킬 3~5줄(`skills/ha/references/tracks.md`)을 따른다. 평소 절차는 모델이 판단하고, 되돌리기 어려운 변경·외부 공개, 공유 계약 변경, 재발 버그, 사용자 지정일 때만 트랙의 "무거운 경로"를 따른다.
+
+| 트랙 | 핵심 |
+|---|---|
+| 버그 | 직접 재현하고 처음 잘못된 지점을 최소 수정 |
+| 기능 | 데이터 형태와 경계를 먼저 정하고 실제 실행 경로로 확인 |
+| 조사 | 읽기 전용, 근거 위치를 붙이고 사실과 추론을 구분 |
+| 글쓰기·기획서 | 독자·핵심 메시지·목차 먼저, 마지막에 `korean-polish` |
+| 데이터·수치 | 정의·실제 계산·교차 확인을 실행으로 확인 |
+| 리팩터링 | 동작 고정 장치를 먼저 두고 빼고 나서 더함 |
+| 프로토타입 | 산출물은 결정, 저장소 밖에서 변형 2~3개 |
+| 맞춤 절차 | 반증 가능한 완료 조건과 단계별 확인 방법 먼저 |
 
 ## 주요 feature
 
 - **Pre-Q / Post-Q Deep Reasoning**: 15개 연구 논문 기반 (Self-Ask, ToT, Least-to-Most, Plan-and-Solve, Uncertainty of Thoughts, Reflexion, Self-Refine, Chain-of-Verification 등)
 - **Uncertainty-Driven Questioning**: Bayesian OED 이론 + arXiv:2503.16419 "Stop Overthinking" skip gate + Cowan 4-chunk working memory 한계 준수
 - **Decision-Gated Questions**: 직접 `/ha`는 실행을 막는 승인·보안 경계만 묻고, 질문 tier는 `decision_quality` 선택을 우선순위대로 질문
-- **Task-Type-Aware Verification**: 9 types마다 전용 verification recipe. Research는 DOI/citation mandatory 검증, Decision은 alternatives audit + bias audit + sensitivity flagging
+- **Track-Aware Verification**: 트랙마다 꼭 지킬 확인을 `skills/ha/references/tracks.md`에 둔다. 대체물로 확인한 결과와 결론이 안 난 결과는 통과로 보고하지 않는다(`inconclusive`).
 
 ## 상세 리서치 리포트
 

@@ -63,10 +63,14 @@ class SetupGlobalTests(unittest.TestCase):
         personal.mkdir(parents=True)
         (personal / "SKILL.md").write_text("personal\n")
         (self.codex / "skills/unrelated").mkdir(parents=True)
+        (self.codex / "skills/ha").mkdir(parents=True)
+        codex_copy = self.codex / "skills/cast"
+        codex_copy.mkdir(parents=True)
+        (codex_copy / "SKILL.md").write_text("personal\n")
         result, report = self.run_cli("--target", "both", "--apply")
         self.assertEqual(result.returncode, 0, result.stderr)
         codex, claude = report["targets"]
-        self.assertEqual(codex["personal_skill_copies"], [])
+        self.assertEqual(codex["personal_skill_copies"], [str(codex_copy)])
         self.assertEqual(claude["personal_skill_copies"], [str(personal)])
         self.assertTrue(any(str(personal) in w for w in claude["warnings"]))
         self.assertEqual((personal / "SKILL.md").read_text(), "personal\n")

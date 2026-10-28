@@ -1,6 +1,6 @@
 ---
 name: korean-polish
-description: Use when a completed Korean report, notice, memo, specification, or other user-facing deliverable needs final proofreading, copyediting, or a Korean-language quality pass before delivery.
+description: Use when a completed Korean report, notice, memo, specification, or other user-facing deliverable needs final proofreading, copyediting, or a Korean-language quality pass before delivery. Not for chat replies, drafting, translation, code or commit text, or Slack/DM share drafts (use structured-share-thing).
 ---
 
 # Korean Polish
@@ -23,7 +23,7 @@ description: Use when a completed Korean report, notice, memo, specification, or
 1. **보호 영역을 확정합니다.** 코드, 식별자, 명령어, 경로, API 필드, 로그, 오류, 커밋 메시지, 인용문과 영문 고유명사는 그대로 둡니다.
 2. **의미 관계를 명확하게 합니다.** 문맥을 이해하는 데 필요한 주체, 대상, 조건과 영향 범위를 밝힙니다. 문맥으로 확정할 수 없는 정보는 추정하지 않습니다. 편집 메모를 허용한 경우에만 해결되지 않은 모호성을 `확인 필요`로 분리합니다.
 3. **문장을 완결합니다.** 일반 문장은 서술어와 종결어미로 끝냅니다. 제목, 표, 레이블과 의도적인 짧은 목록 항목은 예외지만, 설명문으로 이루어진 목록 항목은 완결된 문장으로 교정합니다.
-4. **어휘와 통사 구조를 다듬습니다.** 조사와 어미를 보완하고 명사 나열을 자연스러운 문장으로 바꿉니다. 불필요한 비유·과장·희귀어와 엠대시를 줄입니다.
+4. **어휘와 통사 구조를 다듬습니다.** 조사와 어미를 보완하고 명사 나열을 자연스러운 문장으로 바꿉니다. 불필요한 비유·과장·희귀어를 줄입니다.
 5. **원문과 대조합니다.** 문장별로 사실, 수치, 부정 여부, 확실성, 시제, 기술 문자열, 순서와 형식이 달라지지 않았는지 확인합니다. 원문이 시제를 명시하지 않은 `[사건 명사구] + 가능성` 형태라면 사건 명사구를 그대로 유지하고 `가능성이 있습니다`라는 술어만 보완합니다. 예를 들어, `일부 요청 지연 가능성`은 `일부 요청의 지연 가능성이 있습니다`로 교정합니다. 이를 `일부 요청이 지연되었을 가능성`이나 `일부 요청이 지연될 가능성`으로 바꾸면 원문에 없던 시제가 추가되므로 허용하지 않습니다. 교정 과정에서 추가한 해석이 있다면 제거합니다.
 6. **최종 결과를 반환합니다.** 사용자가 다른 출력 형식을 요구하지 않았다면 설명 없이 교정된 본문만 반환합니다.
 

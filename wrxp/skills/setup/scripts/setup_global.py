@@ -233,7 +233,7 @@ def choose_codex_path(home):
 def personal_skill_copies(home, inventory):
     """List personal skills that share a bundled skill's name; never remove them."""
     root = home / "skills"
-    return [str(root / name) for name in inventory if (root / name).exists()]
+    return [str(root / name) for name in inventory if (root / name / "SKILL.md").is_file()]
 
 
 def snapshot_matches(path, raw, info):

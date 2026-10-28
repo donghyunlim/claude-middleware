@@ -27,7 +27,7 @@
 
 - 독자가 읽고 무엇을 하는지, 핵심 메시지 한 문장, 목차를 먼저 정한다.
 - 수치·고유명사·날짜·링크는 원 출처와 대조한다.
-- `shared/writing-rules.md`를 쓰면서 지키고, 한국어 산출물은 마지막에 `wrxp:korean-polish`로 교정한다. Slack·DM 공유 글은 structured-share-thing이 맡는다.
+- [shared/writing-rules.md](../../../shared/writing-rules.md)를 쓰면서 지키고, 한국어 산출물은 마지막에 `wrxp:korean-polish`로 교정한다. Slack·DM 공유 글은 structured-share-thing이 맡는다.
 - 무거운 경로(외부 공유·의사결정 문서): 구조안 2개를 비교해 합의하고, 핵심 섹션 하나를 먼저 맞춘 뒤, 작성 맥락을 모르는 sonnet이 독자 입장에서 읽는다.
 
 ## 데이터·수치

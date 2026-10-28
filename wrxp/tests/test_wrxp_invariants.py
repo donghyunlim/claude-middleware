@@ -494,7 +494,7 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertNotIn("엠대시", rules)
         self.assertNotIn("—", rules)
         tracks = (WRXP_ROOT / "skills/ha/references/tracks.md").read_text()
-        self.assertIn("`shared/writing-rules.md`", tracks)
+        self.assertIn("[shared/writing-rules.md](../../../shared/writing-rules.md)", tracks)
         self.assertIn("`wrxp:korean-polish`", tracks)
 
     def test_korean_polish_ships_with_the_plugin_on_both_runtimes(self):
@@ -504,6 +504,9 @@ class WrxpInvariantTests(unittest.TestCase):
         metadata = (skill_dir / "agents/openai.yaml").read_text()
         self.assertIn("$wrxp:korean-polish", metadata)
         self.assertRegex(metadata, r"(?m)^policy:\n  allow_implicit_invocation: true$")
+        body = (skill_dir / "SKILL.md").read_text()
+        self.assertNotIn("엠대시", body)
+        self.assertIn("Not for chat replies", frontmatter)
 
     def test_handoff_receiver_rechecks_decisions_and_completion_claims(self):
         handoff = (WRXP_ROOT / "skills/handoff/SKILL.md").read_text()

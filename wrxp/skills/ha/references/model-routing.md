@@ -69,7 +69,7 @@ Codex 위임 API가 모델과 사고 수준을 별도 인자로 받으면 검증
 
 ### standard executor
 
-경계와 수용 기준이 정해진 일반 구현·중간 규모 리팩터링·버그 수정·테스트는 standard executor에 맡긴다. 버그 재현과 가설 좁히기, 조사, 데이터, 글쓰기는 controller가 직접 한다. 여러 파일을 수정한다는 이유만으로 controller나 병렬 체계로 올리지 않는다.
+경계와 수용 기준이 정해진 일반 구현·중간 규모 리팩터링·버그 수정·테스트는 standard executor에 맡긴다. 버그 재현과 가설 좁히기, 데이터, 글쓰기는 controller가 직접 한다. 조사는 넓게 흩어진 탐색만 `wrxp:search-delegation` 기준으로 읽기 전용 위임한다. 여러 파일을 수정한다는 이유만으로 controller나 병렬 체계로 올리지 않는다.
 
 Claude에서는 애매하면 Haiku 5.5로 시작하고, 다음 작업만 Sonnet 5.5로 올린다.
 

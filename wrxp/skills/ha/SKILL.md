@@ -43,7 +43,7 @@ max_rounds: 0
 QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 못해도 질문 판정 자체는 건너뛸 수 없다. 실행 규칙은 이 파일에 있고, 참조는 아래 시점에만 펼쳐 보는 상세다.
 
 - `QuestionGateVerdict`가 `ask`이거나 `mid_run_decision`을 물을 때 [references/questioning.md](references/questioning.md)를 읽는다. 질문 예산, 배치 공식, 질문 작성 규칙이 여기에만 있다.
-- 하위 에이전트에 모델을 지정할 때 [references/model-routing.md](references/model-routing.md)를 읽는다. 공유 계약 sonnet 검토만은 읽지 않고 붙인다.
+- 하위 에이전트에 모델을 지정할 때 [references/model-routing.md](references/model-routing.md)를 읽는다. 공유 계약 검토(Claude sonnet, Codex `gpt-6.1-sol` `high`)만은 읽지 않고 붙인다.
 - 무거운 경로에 들어가면 [references/tracks.md](references/tracks.md)의 해당 트랙과 [references/verification.md](references/verification.md)를 읽는다.
 - 복잡한 의존성·위험 판단에는 [공통 reasoning framework](../../shared/reasoning-framework.md)를 적용한다. 원시 추론 전문은 출력하지 않는다.
 

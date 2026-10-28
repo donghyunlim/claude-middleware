@@ -535,6 +535,20 @@ class WrxpInvariantTests(unittest.TestCase):
 
     def test_shared_contract_review_is_the_reverification_exception(self):
         exception = "새 맥락 sonnet 검토를 1회 붙인다"
+        readme = (WRXP_ROOT / "README.md").read_text()
+        self.assertIn(
+            "메인의 전체 재검증을 자동으로 추가하지 않는다. 예외로, 공유 계약을 바꾸면 "
+            "새 맥락 sonnet 검토를 1회 붙인다.",
+            readme,
+        )
+        self.assertIn("애매하면 `/ha`만 부르면 된다", readme)
+        self.assertIn("(skills/ha/references/tracks.md)", readme)
+        self.assertNotIn("총 19개 skill", readme)
+        self.assertIn("총 20개 skill", readme)
+        self.assertNotIn("같은 목표의 재시도가 계속 쌓일 때", readme)
+        changelog = (WRXP_ROOT / "CHANGELOG.md").read_text()
+        self.assertIn("## [0.1.74]", changelog)
+        self.assertIn("`staged-development` 적용 범위가 좁아졌습니다", changelog)
         for path in (
             "skills/ha/SKILL.md",
             "skills/ha/references/verification.md",

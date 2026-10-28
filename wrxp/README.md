@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.73-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.74-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -16,19 +16,21 @@ wrxp의 reasoning 축은 **Knife family**다:
 
 Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
+어떤 스킬을 부를지 애매하면 `/ha`만 부르면 된다. `/ha`는 요청을 버그, 기능, 조사, 글쓰기·기획서, 데이터·수치, 리팩터링, 프로토타입, 맞춤 절차 중 한 트랙으로 보고 [트랙별 핵심 확인](skills/ha/references/tracks.md)을 따른다. 평소 절차는 모델이 판단하고, 되돌리기 어려운 변경·외부 공개, 공유 계약 변경, 재발 버그, 사용자가 "제대로 해"처럼 지정한 경우에만 그 트랙의 무거운 경로를 따른다.
+
 ### Knife 모델 라우팅
 
-합의된 독립 코드 구현은 아래 일반 라우팅보다 [`code-delegation`](skills/code-delegation/SKILL.md)이 우선한다. Codex에서는 `gpt-6.1-sol`의 `medium`을 기본으로, 복잡한 구현에는 AI가 `high`를 선택한다. Claude에서는 Codex로 오프로딩하지 않고 Opus 5.5를 기본으로, 가벼운 구현에는 Sonnet 5.5를 쓴다. `low`·`haiku`·사고 수준이나 모델 생략·무단 모델 폴백은 허용하지 않는다. 작업자가 구현과 자체 검증을 수행하며, 충분한 최신 근거가 있으면 메인의 전체 재검증을 자동으로 추가하지 않는다. 기존 Terra 실험은 Sol의 성능 측정 결과가 아니다.
+합의된 독립 코드 구현은 아래 일반 라우팅보다 [`code-delegation`](skills/code-delegation/SKILL.md)이 우선한다. Codex에서는 `gpt-6.1-sol`의 `medium`을 기본으로, 복잡한 구현에는 AI가 `high`를 선택한다. Claude에서는 Codex로 오프로딩하지 않고 Opus 5.5를 기본으로, 가벼운 구현에는 Sonnet 5.5를 쓴다. `low`·`haiku`·사고 수준이나 모델 생략·무단 모델 폴백은 허용하지 않는다. 작업자가 구현과 자체 검증을 수행하며, 충분한 최신 근거가 있으면 메인의 전체 재검증을 자동으로 추가하지 않는다. 예외로, 공유 계약을 바꾸면 새 맥락 sonnet 검토를 1회 붙인다. 기존 Terra 실험은 Sol의 성능 측정 결과가 아니다.
 
 `/ha`가 유일한 registry다. Codex에서는 종합 판단=`gpt-6-astra`, 일반 구현·중간 리팩터링=`gpt-6.1-sol`(medium, 가벼운 작업 low), 단순 탐색·국소 변경=`gpt-6-luna`를 선호한다. Claude에서는 종합 판단을 Opus 5.5에 맡기고, 일반 구현과 단순 작업은 Haiku 5.5, 어려운 대리 작업은 Sonnet 5.5에 맡긴다. 정확한 모델과 사고 수준은 런타임 가용성을 먼저 확인하고, 지원되지 않으면 같은 역할의 가용 모델 또는 런타임 기본 모델로 폴백한다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, 빈 상태에서 WorxSales QA 작업 폴더·시나리오 DB·상황판·앱 슬롯을 준비하는 `worxsales-qa-bootstrap`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`이 있다. 총 19개 skill.
+추가로 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, 빈 상태에서 WorxSales QA 작업 폴더·시나리오 DB·상황판·앱 슬롯을 준비하는 `worxsales-qa-bootstrap`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`, 완성된 한국어 산출물을 최종 교정하는 `korean-polish`가 있다. 총 20개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
-wrxp의 **Uncertainty-Driven Questioning**은 질문 전에 대화·파일·문서·도구를 먼저 확인한다. 직접 `/ha`는 `none` preset(0문항·0라운드)으로 실행하며, 승인·보안·비밀·외부 변경·파괴적·불가역 경계만 discovery 예산 밖에서 즉시 확인한다. `/haq`·`/haqq`·`/haqqq`는 질문 tier에 따라 `decision_quality` 선택을 물을 수 있다.
+wrxp의 **Uncertainty-Driven Questioning**은 질문 전에 대화·파일·문서·도구를 먼저 확인한다. 직접 `/ha`는 `none` preset(시작 전 0문항·0라운드)으로 실행하며, 승인·보안·비밀·외부 변경·파괴적·불가역 경계만 discovery 예산 밖에서 즉시 확인한다. `/haq`·`/haqq`·`/haqqq`는 질문 tier에 따라 `decision_quality` 선택을 물을 수 있다. 실행 중에 드러난 취향·제품 판단(`mid_run_decision`)은 모든 tier에서 묻는다.
 
 Knife family의 수정 루프는 실제 결함이 남아 있는 동안 횟수만으로 중단하지 않는다. 검증 뒤에도 수정이 더 필요하면 5·15·25회에는 에이전트가 원래 목적·계획·수정의 필수성을 점검하고, 10·20·30회에는 진행 상황과 다음 선택을 요약해 사용자 판단을 받는다. 모든 수용 기준이 충족되면 배수에 도달했더라도 바로 완료하며, 새 권한·외부 변경·보안 경계 확대는 체크포인트를 기다리지 않고 즉시 확인한다.
 
@@ -101,7 +103,7 @@ claude plugin update wrxp@donghyunlim
 /wrxp:staged-development "고객 선택 화면을 함께 기획하고 구현해 줘"
 ```
 
-중·대규모 개발이나 제품 방향·주요 설계가 불명확한 작업에 사용한다. 작업별 기획서 하나를 정본으로 두고 **아웃라인 합의 → 핵심 흐름 구현·검토 → 상세 개발·검증** 순서로 진행한다. 기존 기획서와 사용자 합의를 재사용하므로 이어서 작업할 때 같은 승인을 반복하지 않는다.
+크거나 되돌리기 어려운 개발, 또는 제품 방향이 정해지지 않은 작업에 사용한다. 작업별 기획서 하나를 정본으로 두고 **아웃라인 합의 → 핵심 흐름 구현·검토 → 상세 개발·검증** 순서로 진행한다. 기존 기획서와 사용자 합의를 재사용하므로 이어서 작업할 때 같은 승인을 반복하지 않는다.
 
 기획서에는 목적·범위·성공 조건, 합의된 결정과 미해결 질문, 현재 단계·진행 범위·다음 검토물, 검증 근거를 기록한다. 목적·범위·성공 조건의 중요한 변경은 사용자와 합의한 뒤 반영한다. 합의된 검토를 자동으로 위임할 수 있으며, 단순하고 영향이 작은 수정은 기획서와 단계 승인을 생략한다.
 
@@ -117,7 +119,7 @@ claude plugin update wrxp@donghyunlim
 
 문서는 사용자 의도 세트(최초 의도·작업 중 결정·최종 의도)를 AI 기획과 분리해 기록하고, 현재 상태·문제점·미결 사항을 평가 없이 사실과 근거로 남긴다. 압축된 세션에서도 최초 의도를 원문으로 인용할 수 있도록 포함된 스크립트가 Claude Code·Codex 세션 로그에서 사용자 메시지를 추출한다. 저장 위치는 프로젝트 폴더의 `handoffs/`이며, 저장 후 새 서브에이전트가 문서만 읽고 재개에 필요한 질문에 답하는지 확인한다. 자세한 구조는 [handoff 스킬](./skills/handoff/SKILL.md)에 있다.
 
-`/wrxp:intent-anchor`(Codex에서는 `$wrxp:intent-anchor`)는 작업이 사용자의 원래 의도에서 벗어났는지 사용자 발화 원문 전부를 기준으로 다른 맥락의 최고 수준 모델과 대조한다. 사용자가 작업 방향 자체를 바로잡거나 같은 목표의 재시도가 계속 쌓일 때는 드물게 자동으로 실행된다. 방향 변화의 근거가 사용자 발화에 있으면 허용하고, 벗어났으면 작업을 멈춘 뒤 질문 하나를 한다. 리뷰어는 읽기 전용으로 실행되며 기록은 프로젝트 폴더의 `handoffs/realign/`에 남는다. 자세한 절차는 [intent-anchor 스킬](./skills/intent-anchor/SKILL.md)에 있다.
+`/wrxp:intent-anchor`(Codex에서는 `$wrxp:intent-anchor`)는 작업이 사용자의 원래 의도에서 벗어났는지 사용자 발화 원문 전부를 기준으로 다른 맥락의 최고 수준 모델과 대조한다. 사용자가 작업 방향 자체를 바로잡을 때는 드물게 자동으로 실행된다. 방향 변화의 근거가 사용자 발화에 있으면 허용하고, 벗어났으면 작업을 멈춘 뒤 질문 하나를 한다. 리뷰어는 읽기 전용으로 실행되며 기록은 프로젝트 폴더의 `handoffs/realign/`에 남는다. 자세한 절차는 [intent-anchor 스킬](./skills/intent-anchor/SKILL.md)에 있다.
 
 
 ### 구조화한 공유 메시지
@@ -206,7 +208,7 @@ Jenkins 유지·GitLab CI 최초 구성·환경별 병존/이관은 [배포 경�
 /wrxp:ha "이 함수의 off-by-one 버그 고쳐줘"
 ```
 
-`none` preset은 질문 0개·0라운드이며, 승인·보안 등 실행 통제 경계가 아니라면 바로 실행한다. 하나의 사고 갈래로 수렴하는 작업에 적합하다.
+`none` preset은 시작 전 질문 0개·0라운드이며, 승인·보안 등 실행 통제 경계가 아니라면 바로 실행한다. 하나의 사고 갈래로 수렴하는 작업에 적합하다.
 
 #### /wrxp:haq — 빠른 knife
 
@@ -276,7 +278,7 @@ wrxp의 모든 설계 결정은 publicly verifiable 연구에 근거한다. 구�
 
 | 호출 | 실행 범위 | 사용 시점 |
 |------|---------|---------|
-| `/wrxp:ha "요청"` | 공통 상태 흐름 + 질문 0개/0라운드 | 승인·보안 경계가 아닌 한 즉시 실행 |
+| `/wrxp:ha "요청"` | 공통 상태 흐름 + 시작 전 질문 0개/0라운드 | 승인·보안 경계가 아닌 한 즉시 실행 |
 | `/wrxp:haq "요청"` | 공통 상태 흐름 + 최대 1라운드 | 빠른 확인 |
 | `/wrxp:haqq "요청"` | 공통 상태 흐름 + 최대 2라운드 | 표준 발견 |
 | `/wrxp:haqqq "요청"` | 공통 상태 흐름 + 최대 3라운드(동의 시 5) | 고위험 단일 문제 심층 확인 |
@@ -286,7 +288,7 @@ wrxp의 모든 설계 결정은 publicly verifiable 연구에 근거한다. 구�
 | 상황 | 권장 |
 |---|---|
 | 문제가 한 갈래로 수렴, 산출물 단일 | `/wrxp:ha` 계열 (knife) |
-| 중대형 개발, 단계별 합의가 필요할 때 | `/wrxp:staged-development` |
+| 크거나 되돌리기 어려운 개발, 제품 방향이 정해지지 않은 작업 | `/wrxp:staged-development` |
 
 ## License
 

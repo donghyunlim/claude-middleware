@@ -1,13 +1,15 @@
 # Verification Policy
 
-코드 위임에는 `wrxp:code-delegation`이 우선한다. 현재 코드에 대응하는 작업자의 자체 검증 근거가 충분하면 아래 작성자/verifier 분리를 자동으로 추가하지 않는다. 사용자 요청 리뷰, 근거 누락 또는 구체적인 보안·통합 위험에는 필요한 범위의 추가 검토를 수행한다.
+코드 위임에는 `wrxp:code-delegation`이 우선한다. 현재 코드에 대응하는 작업자의 자체 검증 근거가 충분하면 아래 작성자/verifier 분리를 자동으로 추가하지 않는다. 사용자 요청 리뷰, 근거 누락 또는 구체적인 보안·통합 위험에는 필요한 범위의 추가 검토를 수행한다. 예외로, 공유 계약(정의는 `/ha` 본문)을 바꾸면 새 맥락 sonnet 검토를 1회 붙인다.
 
 이 문서는 `/ha` 계열의 위험 비례 검증과 종료 조건을 정의한다.
 
 ## Contents
 
 - 공통 검증 계약
-- task-type별 검사
+- 대체물과 판단 불가
+- 공유 계약 검토
+- 실제 화면 확인
 - 수정 루프 체크포인트
 - 실패 처리
 - 결과 기록
@@ -20,19 +22,19 @@
 4. 검증하지 못한 항목은 통과로 간주하지 않고 한계를 밝힌다.
 5. 변경 위험과 영향 범위에 비례해 검증 강도를 높인다.
 
-## task-type별 검사
+트랙별 핵심 확인은 [tracks.md](tracks.md)를 따른다.
 
-| task type | 최소 검증 |
-|---|---|
-| code | 관련 테스트, linter/type checker, 영향받는 호출부 확인 |
-| writing | 요구 구조·톤·독자 적합성, 사실 주장과 인용 확인 |
-| planning | 선행 조건, 일정·예산 계산, 자원 충돌과 실패 복구 |
-| research | 최신성, 1차 출처, 인용 연결, 반대 근거와 편향 |
-| analysis | 데이터 무결성, 방법 적합성, 결론-증거 연결, 대안 해석 |
-| decision | 대안, 평가 기준, 가정, 민감도, 되돌림 가능성 |
-| creative | 명시 제약, 스타일 일관성, 권리 위험 |
-| learning | 선행 지식, 자료 최신성, 시간 현실성, 평가 가능성 |
-| other | 사용자가 명시한 수용 기준과 산출물 형태 |
+## 대체물과 판단 불가
+
+대체물(다른 환경, 목업, 자기 보고, 요약본)로 확인한 것은 통과가 아니다. 실제 대상으로 확인하지 못했으면 결과를 `inconclusive`(판단 불가)로 두고, 무엇을 확인하지 못했는지 `limitations`에 적는다.
+
+## 공유 계약 검토
+
+공유 계약을 바꾸면 새 맥락 sonnet 검토를 1회 붙인다. 검토 브리프에는 "변경이 안전한 근거 사실 하나를 찾아 실행으로 확인하고, 검색이 닿지 않는 사용처(설정, 다른 언어, 전송 형식)를 본다"를 넣는다. 이 검토가 영향 범위 점검을 대신한다.
+
+## 실제 화면 확인
+
+화면 확인은 프로젝트 실행 스킬, 내장 `run`, 브라우저·시뮬레이터 도구 순서로 시도한다. 모두 안 되면 이유를 적고 `inconclusive`로 보고한다.
 
 고위험·비가역 변경은 dry-run, 백업·롤백 가능성, 권한 경계, 실제 대상 재확인을 추가한다. 사용자의 별도 승인 없이는 파괴적 실행을 검증 명목으로 수행하지 않는다.
 
@@ -74,7 +76,7 @@ RepairLoopPolicy:
 
 사용자 체크포인트 질문과 실행 중 새 승인·보안 경계를 확인하는 질문은 실행 통제이므로 초기 발견 단계의 `QuestionBudgetState`에 포함하지 않는다. 이 분리는 질문 횟수만 분리할 뿐 승인을 추정하거나 대신하지 않는다. 새 권한, 비밀 접근, 외부 변경, 파괴적 작업 또는 보안 경계 확대는 체크포인트까지 미루지 않고 발견 즉시 사용자 승인을 기다린다.
 
-수정 횟수에 상한은 없지만 동일한 입력·가설·행동을 새 증거 없이 반복하지 않는다. 진전이 없으면 원인을 다시 조사하거나 접근법을 바꾸고, 새 접근도 근거를 만들 수 없으면 검증 불가 blocker로 보고한다.
+수정 횟수에 상한은 없지만 동일한 입력·가설·행동을 새 증거 없이 반복하지 않는다. 같은 전제로 거듭 실패하면 다음 시도 전에 그 전제를 한 문장으로 적고 먼저 확인한다. 진전이 없으면 원인을 다시 조사하거나 접근법을 바꾸고, 새 접근도 근거를 만들 수 없으면 검증 불가 blocker로 보고한다.
 
 ## 실패 처리
 
@@ -88,11 +90,26 @@ RepairLoopPolicy:
 
 ## 결과 기록
 
+`/ha`의 최종 출력은 다음 틀을 따른다. `defaults_taken`에는 `assumptions`를 포함해 묻지 않고 대신 정한 판단을 적고, 확인 절차는 `questioning.md`의 기본값 하한을 따른다. 실제 위임이나 폴백이 없으면 `model_routes`를 생략할 수 있다.
+
+```yaml
+result:
+  outcome: string
+  artifacts: [string]
+  defaults_taken: [string]
+  user_decisions: [string]
+  verification_evidence: [string]
+  remaining_risks: [string]
+  model_routes: [model_route]
+```
+
+검증 결과는 다음 형태로 남긴다.
+
 ```yaml
 verification:
   criteria: [string]
   evidence: [string]
-  result: pass | partial | fail | blocked
+  result: pass | partial | fail | blocked | inconclusive
   limitations: [string]
   retries: integer
   repair_attempts_total: integer

@@ -366,7 +366,74 @@ class WrxpInvariantTests(unittest.TestCase):
         ):
             self.assertIn(rule, questioning)
         self.assertIn("시작 전 discovery 질문을 0개로 둔다", engine)
-        self.assertIn("  defaults_taken: [string]", engine)
+        verification = (
+            WRXP_ROOT / "skills/ha/references/verification.md"
+        ).read_text()
+        self.assertIn("  defaults_taken: [string]", verification)
+        self.assertIn("`defaults_taken`", engine)
+
+    def test_ha_track_list_matches_tracks_reference(self):
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        tracks = (WRXP_ROOT / "skills/ha/references/tracks.md").read_text()
+        listed = re.search(r"트랙은 (.+?)다\.", engine).group(1).split(", ")
+        headings = re.findall(r"(?m)^## (.+)$", tracks)
+        self.assertEqual(headings, listed)
+        self.assertIn("무거운 경로", tracks)
+        self.assertFalse((WRXP_ROOT / "skills/ha/references/tracks").exists())
+        self.assertEqual([], list(WRXP_ROOT.rglob("design.md")))
+
+    def test_shared_contract_definition_lives_only_in_ha(self):
+        definition = (
+            "공유 계약은 API, DB 스키마, 공유 타입, 전송 형식, 공용 모듈, "
+            "설정, 문서·규칙 파일의 삭제·이동이다"
+        )
+        surfaces = list((WRXP_ROOT / "skills").rglob("*.md"))
+        surfaces += list((WRXP_ROOT / "shared").rglob("*.md"))
+        surfaces += [WRXP_ROOT / "README.md"]
+        holders = [p.relative_to(WRXP_ROOT).as_posix()
+                   for p in surfaces if definition in p.read_text()]
+        self.assertEqual(["skills/ha/SKILL.md"], holders)
+
+    def test_verification_reports_inconclusive_and_drops_task_type_table(self):
+        verification = (
+            WRXP_ROOT / "skills/ha/references/verification.md"
+        ).read_text()
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        self.assertIn("inconclusive", verification)
+        self.assertIn("result: pass | partial | fail | blocked | inconclusive", verification)
+        self.assertNotIn("| task type | 최소 검증 |", verification)
+        self.assertIn("[tracks.md](tracks.md)", verification)
+        self.assertIn("검색이 닿지 않는 사용처(설정, 다른 언어, 전송 형식)", verification)
+        self.assertIn("프로젝트 실행 스킬, 내장 `run`, 브라우저·시뮬레이터 도구 순서", verification)
+        self.assertIn("그 전제를 한 문장으로 적고 먼저 확인한다", verification)
+        self.assertIn("실제 경로로 1회 확인한다", engine)
+        self.assertIn("verification.md를 읽지 않고", engine)
+        self.assertIn("쓰기 작업자는 병렬로 돌리지 않는다", engine)
+        self.assertIn("같은 우회가 반복되면 뼈대를 다시 설계한다", engine)
+        self.assertIn("추천은 맞장구가 아니다", engine)
+        routing = (
+            WRXP_ROOT / "skills/ha/references/model-routing.md"
+        ).read_text()
+        self.assertIn("넘기는 비용보다 메인 맥락을 아끼는 이득이 클 때", routing)
+        self.assertNotIn("nontrivial standard/utility", routing)
+
+    def test_rejected_absorption_mechanisms_stay_out(self):
+        surfaces = list((WRXP_ROOT / "skills").rglob("*.md"))
+        surfaces += list((WRXP_ROOT / "shared").rglob("*.md"))
+        surfaces += [WRXP_ROOT / "README.md"]
+        for path in surfaces:
+            text = path.read_text()
+            for removed in ("가설 3라운드", "ladder_counters", "CLASSIFY"):
+                self.assertNotIn(removed, text, str(path))
+
+    def test_shared_contract_review_is_the_reverification_exception(self):
+        exception = "새 맥락 sonnet 검토를 1회 붙인다"
+        for path in (
+            "skills/ha/SKILL.md",
+            "skills/ha/references/verification.md",
+        ):
+            head = (WRXP_ROOT / path).read_text().split("\n## ", 2)
+            self.assertIn(exception, "\n## ".join(head[:2]), path)
 
     def test_direct_ha_has_a_zero_question_none_preset(self):
         """Direct /ha has no discovery budget; gates are a separate control path."""

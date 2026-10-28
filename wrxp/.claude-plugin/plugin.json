@@ -1,6 +1,6 @@
 {
   "name": "wrxp",
-  "version": "0.1.74",
+  "version": "0.1.75",
   "description": "Convergent reasoning-and-execution (ha family), staged development, and delegation skills for Claude Code. Includes fast-worker subagent (local Qwen3.6 with Claude fallback: Haiku 5.5, otherwise Sonnet 5.5 low) for mechanical mid-to-large context tasks.",
   "author": {
     "name": "donghyunlim"

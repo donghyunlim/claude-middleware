@@ -529,6 +529,13 @@ class WrxpInvariantTests(unittest.TestCase):
             for removed in ("가설 3라운드", "ladder_counters", "CLASSIFY"):
                 self.assertNotIn(removed, text, str(path))
 
+    def test_global_block_carries_the_korean_output_principles(self):
+        rules = (WRXP_ROOT / "skills/setup/assets/global-rules.md").read_text()
+        self.assertIn("### 한국어 출력 원칙", rules)
+        self.assertIn("문맥을 이해하는 데 필요한 주체, 대상, 조건과 영향 범위를 생략하지 않습니다", rules)
+        self.assertIn("`wrxp:korean-polish`로 교정합니다", rules)
+        self.assertNotIn("엠대시", rules)
+
     def test_global_coding_rule_keeps_the_shared_contract_exception(self):
         rules = (WRXP_ROOT / "skills/setup/assets/global-rules.md").read_text()
         line = next(l for l in rules.splitlines() if l.startswith("- Coding:"))

@@ -1,6 +1,6 @@
 {
   "name": "wrxp",
-  "version": "0.1.74",
+  "version": "0.1.75",
   "description": "Convergent reasoning-and-execution (ha family), staged development, and delegation skills for Claude Code",
   "author": "donghyunlim",
   "license": "MIT",

@@ -17,7 +17,7 @@
     {
       "name": "wrxp",
       "description": "Convergent reasoning-and-execution (ha family), staged development, and delegation skills",
-      "version": "0.1.74",
+      "version": "0.1.75",
       "source": "./wrxp",
       "category": "productivity",
       "tags": ["orchestration", "agents", "staged-development", "delegation"]

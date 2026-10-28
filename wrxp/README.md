@@ -30,7 +30,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
-wrxp의 **Uncertainty-Driven Questioning**은 질문 전에 대화·파일·문서·도구를 먼저 확인한다. 직접 `/ha`는 `none` preset(시작 전 0문항·0라운드)으로 실행하며, 승인·보안·비밀·외부 변경·파괴적·불가역 경계만 discovery 예산 밖에서 즉시 확인한다. `/haq`·`/haqq`·`/haqqq`는 질문 tier에 따라 `decision_quality` 선택을 물을 수 있다. 요청에 정해지지 않은 취향·제품 판단(`mid_run_decision`)은 구현이 30분 이상 걸릴 것 같을 때 모든 tier에서 실행 전에 묻고, 그보다 작으면 정한 뒤 `defaults_taken`으로 알린다.
+wrxp의 **Uncertainty-Driven Questioning**은 질문 전에 대화·파일·문서·도구를 먼저 확인한다. 직접 `/ha`는 `none` preset(시작 전 0문항·0라운드)으로 실행하며, 승인·보안·비밀·외부 변경·파괴적·불가역 경계만 discovery 예산 밖에서 즉시 확인한다. `/haq`·`/haqq`·`/haqqq`는 질문 tier에 따라 `decision_quality` 선택을 물을 수 있다. 요청에 정해지지 않은 취향·제품 판단(`mid_run_decision`)은 구현이 15분 이상 걸릴 것 같을 때 모든 tier에서 실행 전에 묻고, 그보다 작으면 정한 뒤 `defaults_taken`으로 알린다.
 
 Knife family의 수정 루프는 실제 결함이 남아 있는 동안 횟수만으로 중단하지 않는다. 검증 뒤에도 수정이 더 필요하면 5·15·25회에는 에이전트가 원래 목적·계획·수정의 필수성을 점검하고, 10·20·30회에는 진행 상황과 다음 선택을 요약해 사용자 판단을 받는다. 모든 수용 기준이 충족되면 배수에 도달했더라도 바로 완료하며, 새 권한·외부 변경·보안 경계 확대는 체크포인트를 기다리지 않고 즉시 확인한다.
 

@@ -9,7 +9,7 @@ level: 4
 
 `/ha`는 하나의 수렴하는 작업을 관찰하고, 필요한 사용자 결정만 질문하고, 역할에 맞는 모델로 의존성 그래프를 실행한 뒤 검증하는 공통 엔진이다. `/haq`, `/haqq`, `/haqqq`는 이 엔진의 질문 상한만 바꾸는 thin shim이다.
 
-모든 사용자 대상 출력은 한국어로 작성한다. 사용자가 다른 언어 또는 형식을 명시하면 그 요구를 우선한다.
+사용자 대상 출력은 사용자가 쓴 언어로 작성한다. 사용자가 다른 언어나 형식을 명시하면 그 요구를 우선한다.
 
 ## Requirements
 
@@ -56,7 +56,7 @@ extension_requires_user_consent: boolean
 QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 못해도 질문 판정 자체는 건너뛸 수 없다. 실행 규칙은 이 파일에 있고, 참조는 아래 시점에만 펼쳐 보는 상세다.
 
 - `QuestionGateVerdict`가 `ask`이거나 `mid_run_decision`을 물을 때 [references/questioning.md](references/questioning.md)를 읽는다. 질문 예산, 배치 공식, 질문 작성 규칙이 여기에만 있다.
-- 다른 런타임 작업자를 쓰거나 모델 표가 필요할 때 [references/model-routing.md](references/model-routing.md)를 읽는다.
+- 하위 에이전트에 모델을 지정할 때 [references/model-routing.md](references/model-routing.md)를 읽는다. 공유 계약 sonnet 검토만은 읽지 않고 붙인다.
 - 무거운 경로에 들어가면 [references/tracks.md](references/tracks.md)의 해당 트랙과 [references/verification.md](references/verification.md)를 읽는다.
 - 복잡한 의존성·위험 판단에는 [공통 reasoning framework](../../shared/reasoning-framework.md)를 적용한다. 원시 추론 전문은 출력하지 않는다.
 
@@ -94,7 +94,7 @@ REPAIR_CHECKPOINT
 
 ## 0. CAPABILITY_RESOLVE
 
-도구 목록으로 이번 런타임에서 쓸 수 있는 기능(하위 에이전트와 모델 지정, 질문 도구, 병렬 한도)만 확인한다. 추측해 호출하지 않고, 확인할 수 없는 항목은 `unknown`으로 둔다.
+도구 목록으로 이번 런타임에서 쓸 수 있는 기능(하위 에이전트, 모델 목록, 검토 문맥 분리, 질문 도구, 병렬 한도)만 확인한다. 추측해 호출하지 않고, 확인할 수 없는 항목은 `unknown`으로 둔다.
 
 ## 1. OBSERVE
 
@@ -106,8 +106,6 @@ REPAIR_CHECKPOINT
 2. 저장소의 `AGENTS.md`, `CLAUDE.md`, 관련 문서와 기존 구현을 확인한다.
 3. 필요한 사실을 로컬 검색, 읽기 도구 또는 공식 문서로 확인한다.
 4. 사용자만 결정할 수 있는 선호·정책·승인과 증거로 확인할 사실을 분리한다.
-
-트랙은 질문 수를 결정하지 않는다.
 
 관찰 결과를 내부적으로 다음 형태로 정리한다.
 
@@ -168,7 +166,7 @@ QuestionGateVerdict:
 
 `pass_zero`는 후보를 실제로 평가한 결과가 0개일 때만 유효하다. 평가를 건너뛴 상태는 `pass_zero`가 아니다. 질문 수는 상한이며 할당량이 아니므로, 평가를 마친 0문항은 모든 프리셋에서 정상이다.
 
-`mid_run_decision`: 요청에 정해지지 않았는데 결과물을 바꾸는 취향·제품 판단은, 구현이 30분 이상 걸릴 것 같으면 질문 예산과 관계없이 `/ha`에서도 실행 전에 묻는다. 30분 미만이면 묻지 않고 진행해 `defaults_taken`에 적는다. 위임 전 사전 질문, staged-development 개요 확인, 프로토타입 전환 질문, 같은 패턴을 함께 고칠지 여부가 여기에 속한다. 비슷한 판단은 한 번에 묶고, 묻는 방식은 `questioning.md`를 따른다. QUESTION_GATE에서 이미 기본값으로 정한 항목은 새 증거 없이 다시 묻지 않는다.
+`mid_run_decision`: 요청에 정해지지 않았는데 결과물을 바꾸는 취향·제품 판단은, 그 판단이 드러난 시점에 남은 구현이 30분 이상 걸릴 것 같으면 질문 예산과 관계없이 `/ha`에서도 그 판단에 기대는 작업 전에 묻는다. 30분 미만이면 묻지 않고 진행해 `defaults_taken`에 적는다. 위임 전 사전 질문, staged-development 개요 확인, 프로토타입 전환 질문, 같은 패턴을 함께 고칠지 여부는 시간과 관계없이 묻는다. 비슷한 판단은 한 번에 묶고, 묻는 방식은 `questioning.md`를 따른다. QUESTION_GATE에서 이미 기본값으로 정한 항목은 새 증거 없이 다시 묻지 않는다.
 
 질문 tier 스킬을 호출한 것 자체가 명확화를 요청하는 명시적 사용자 지시다. 런타임 기본 설정이 질문보다 가정을 선호하도록 안내하더라도, 이 계약이 정한 `must_ask`와 예산 안의 `decision_quality` 질문은 그 기본 선호보다 우선한다. 사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다.
 
@@ -246,7 +244,7 @@ controller는 확정 의도를 실행 단위와 의존선으로 나눈다. `runt
 
 ## 최종 출력
 
-필요한 내용만 간결하게 전달한다. 출력은 `result`(outcome, artifacts, defaults_taken, user_decisions, verification_evidence, remaining_risks)이고 세부는 `references/verification.md`에 있다. 묻지 않고 대신 정한 판단은 `defaults_taken`에 적어 답 첫머리에 영향이 큰 것부터 보인다. 내부 후보 목록과 상세 추론은 출력하지 않는다.
+필요한 내용만 간결하게 전달한다. 출력은 `result`(outcome, artifacts, defaults_taken, user_decisions, verification_evidence, remaining_risks)이고 세부는 `references/verification.md`에 있다. 묻지 않고 대신 정한 판단은 `defaults_taken`에 적어 답 첫머리에 영향이 큰 것부터 보인다.
 
 ## 중첩 호출이 없는 런타임
 

@@ -28,7 +28,7 @@ max_rounds: 0
 ```
 
 - 질문 수는 항상 상한이다. 적격 질문이 없으면 0개가 정상이다.
-- 직접 `/ha`의 `none` 프리셋은 선제 discovery 질문을 0개로 둔다. 승인·보안·비밀·외부 변경·파괴적·불가역 경계는 discovery 예산 밖의 실행 통제 게이트이므로 즉시 확인한다.
+- 직접 `/ha`의 `none` 프리셋은 시작 전 discovery 질문을 0개로 둔다. 승인·보안·비밀·외부 변경·파괴적·불가역 경계는 discovery 예산 밖의 실행 통제 게이트이므로 즉시 확인한다. 실행 중에 드러난 `mid_run_decision`도 이 예산과 관계없이 묻는다.
 - 질문 프리셋은 모델 라우팅에 영향을 주지 않는다.
 - 하나의 확정 의도는 dependency DAG로 나누며, 독립 실행 단위는 런타임 한도 안에서 병렬 위임할 수 있다.
 - 상세한 내부 사고 과정을 노출하지 않는다. 사용자에게는 결정, 가정, 실행 경로, 검증 근거만 보여준다.
@@ -148,6 +148,8 @@ Observation:
 2. `answer_owner == user`: 사용자만 답할 수 있다. 승인, 비공개 조직 정책, 의도, 개인 선호가 여기에 해당한다.
 3. `materially_branching`: 답에 따라 실행 경로가 실제로 달라진다.
 
+`answer_owner`는 `user`, `evidence`, `agent_default`, `experiment` 중 하나이며, "사용자가 말해 줘야만 아는가, 해 보면 관찰되는가"로 가른다. `experiment`는 묻지 않고 PROBE로 확인한다. PROBE는 읽기 전용이거나 버릴 수 있는 곳에서만 하고, 외부 변경이 필요하면 `must_ask`로 묻는다. PROBE로 결론이 나지 않으면 그 결과를 붙여 묻는다.
+
 후보는 다음 세 가지로 분류한다.
 
 - `must_ask`: 승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계이며 안전한 기본값이 없다. 질문 예산과 무관하게 즉시 묻는다.
@@ -168,6 +170,8 @@ QuestionGateVerdict:
 - `blocked`: 안전한 기본값이 없는 후보가 남았는데 물을 수 없다. 실행하지 않고 남은 결정을 보고한다.
 
 `pass_zero`는 후보를 실제로 평가한 결과가 0개일 때만 유효하다. 평가를 건너뛴 상태는 `pass_zero`가 아니다. 질문 수는 상한이며 할당량이 아니므로, 평가를 마친 0문항은 모든 프리셋에서 정상이다.
+
+`mid_run_decision`: COMMIT_INTENT 이후에 드러난 판단이 취향·제품 판단이고 결과물을 바꾸거나 나중에 바꾸면 재작업이 크면, 질문 예산과 관계없이 `/ha`에서도 묻는다. 위임 전 사전 질문, staged-development 개요 확인, 프로토타입 전환 질문, 같은 패턴을 함께 고칠지 여부가 여기에 속한다. 비슷한 판단은 한 번에 묶고, 묻는 방식은 `questioning.md`를 따른다. QUESTION_GATE에서 이미 기본값으로 정한 항목은 새 증거 없이 다시 묻지 않는다.
 
 질문 tier 스킬을 호출한 것 자체가 명확화를 요청하는 명시적 사용자 지시다. 런타임 기본 설정이 질문보다 가정을 선호하도록 안내하더라도, 이 계약이 정한 `must_ask`와 예산 안의 `decision_quality` 질문은 그 기본 선호보다 우선한다. 사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다.
 
@@ -248,14 +252,14 @@ controller는 확정 의도를 실행 단위와 의존선으로 나눈다. 런�
 result:
   outcome: string
   artifacts: [string]
-  assumptions: [string]
+  defaults_taken: [string]
   user_decisions: [string]
   verification_evidence: [string]
   remaining_risks: [string]
   model_routes: [model_route]
 ```
 
-실제 위임이나 폴백이 없으면 `model_routes`를 생략할 수 있다. 내부 후보 목록과 상세 추론은 출력하지 않는다.
+`defaults_taken`에는 `assumptions`를 포함해 묻지 않고 대신 정한 판단을 적고, 확인 절차는 `questioning.md`의 기본값 하한을 따른다. 실제 위임이나 폴백이 없으면 `model_routes`를 생략할 수 있다. 내부 후보 목록과 상세 추론은 출력하지 않는다.
 
 ## 중첩 호출이 없는 런타임
 

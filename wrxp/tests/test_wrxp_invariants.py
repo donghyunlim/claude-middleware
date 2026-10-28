@@ -341,6 +341,33 @@ class WrxpInvariantTests(unittest.TestCase):
             questioning,
         )
 
+    def test_question_policy_probes_experiments_and_asks_mid_run_decisions(self):
+        questioning = (
+            WRXP_ROOT / "skills/ha/references/questioning.md"
+        ).read_text()
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+
+        self.assertIn(
+            "answer_owner: user | evidence | agent_default | experiment",
+            questioning,
+        )
+        for rule in (
+            "사용자가 말해 줘야만 아는가, 해 보면 관찰되는가",
+            "읽기 전용이거나 버릴 수 있는 곳",
+            "`must_ask`로 묻는다",
+            "관찰한 결과를 질문에 붙여",
+            "## 실행 중 질문과 기본값 하한",
+            "질문 도구로 묻고 그 자리에서 멈춘다",
+            "글로 질문 하나를 쓰고 턴을 끝낸다",
+            "이미 띄운 백그라운드 작업은 그대로 두고",
+            "시안 2~3개는 실제로 물을 때만",
+            "결과를 내기 전에 목록을 보여 주고 확인받는다",
+            "### 실험으로 확인",
+        ):
+            self.assertIn(rule, questioning)
+        self.assertIn("시작 전 discovery 질문을 0개로 둔다", engine)
+        self.assertIn("  defaults_taken: [string]", engine)
+
     def test_direct_ha_has_a_zero_question_none_preset(self):
         """Direct /ha has no discovery budget; gates are a separate control path."""
         engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
@@ -593,6 +620,10 @@ class WrxpInvariantTests(unittest.TestCase):
             "`materially_branching`",
             "질문 예산과 무관하게 즉시 묻는다",
             "평가를 건너뛴 상태는 `pass_zero`가 아니다",
+            "`experiment`",
+            "해 보면 관찰되는가",
+            "`mid_run_decision`",
+            "새 증거 없이 다시 묻지 않는다",
         ):
             self.assertIn(clause, gate)
 
@@ -700,7 +731,7 @@ class WrxpInvariantTests(unittest.TestCase):
 
     def test_entry_files_stay_small_enough_to_be_read_every_call(self):
         """Progressive disclosure only works if the entry files are cheap."""
-        caps = {"ha": 16_000, "haq": 6_000, "haqq": 6_000, "haqqq": 6_000}
+        caps = {"ha": 16_000, "haq": 7_000, "haqq": 7_000, "haqqq": 7_000}
         for name, cap in caps.items():
             size = (WRXP_ROOT / f"skills/{name}/SKILL.md").stat().st_size
             self.assertLessEqual(

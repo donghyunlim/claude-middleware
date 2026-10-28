@@ -9,6 +9,7 @@
 - 적격성 게이트
 - 우선순위와 프리셋
 - 질문 작성과 런타임 적응
+- 실행 중 질문과 기본값 하한
 - 답변 통합과 중단 조건
 - 예시
 
@@ -34,7 +35,7 @@ QuestionCandidate:
   decision: string
   unresolved: boolean
   evidence_checked: [string]
-  answer_owner: user | evidence | agent_default
+  answer_owner: user | evidence | agent_default | experiment
   user_only_reason: string | null
   materially_branching: boolean
   concrete_next_action_blocked: boolean
@@ -50,7 +51,7 @@ QuestionCandidate:
 
 - `decision`: 이번 질문으로 확정하려는 하나의 결정이다.
 - `evidence_checked`: 질문 전에 확인한 대화·파일·문서·도구다.
-- `answer_owner`: 누가 답을 소유하는지 나타낸다. 개인 선호, 비공개 조직 정책, 승인, 의도는 `user`다. 저장소 상태나 API 사양은 `evidence`다.
+- `answer_owner`: 누가 답을 소유하는지 나타낸다. 개인 선호, 비공개 조직 정책, 승인, 의도는 `user`다. 저장소 상태나 API 사양은 `evidence`다. 해 보면 관찰되는 사실은 `experiment`다. 판별 문장은 "사용자가 말해 줘야만 아는가, 해 보면 관찰되는가"다.
 - `unresolved`: 관찰과 증거 확인을 마친 뒤에도 결정이 남아 있는지를 나타낸다.
 - `materially_branching`: 답에 따라 아래에서 정의한 실행 경계가 실제로 달라질 때만 `true`다.
 - `concrete_next_action_blocked`: concrete next action blocked, 즉 지금 수행할 다음 행동이 이 결정 없이는 안전하게 시작될 수 없을 때만 `true`다.
@@ -66,6 +67,8 @@ QuestionCandidate:
 1. `unresolved == true`: 관찰 후에도 결정이 남아 있다.
 2. `answer_owner == user`: 사용자만 답할 수 있다.
 3. `materially_branching == true`: 답에 따라 실행 경로가 실질적으로 달라진다.
+
+`answer_owner: experiment`인 후보는 묻지 않고 PROBE로 확인한다. PROBE는 읽기 전용이거나 버릴 수 있는 곳(임시 폴더, 복사본, 로컬 실행)에서만 한다. 확인에 외부 변경이 필요하면 그 변경은 `must_ask`로 묻는다. PROBE로 결론이 나지 않으면 관찰한 결과를 질문에 붙여 사용자에게 묻는다.
 
 세 조건을 통과한 후보는 다음처럼 분류한다.
 
@@ -161,6 +164,19 @@ QuestionBudgetState:
 실행 경로를 바꾸는 결정 N개만 확인하겠습니다. 답변으로 충분해지면 남은 질문은 생략합니다.
 ```
 
+## 실행 중 질문과 기본값 하한
+
+`mid_run_decision`은 COMMIT_INTENT 이후에 드러난 판단 중 취향·제품 판단이고, 결과물을 바꾸거나 나중에 바꾸면 재작업이 큰 것이다. 프리셋의 질문 예산과 관계없이 `none`을 포함한 모든 프리셋에서 묻는다. 위임 전 사전 질문, staged-development 개요 확인, 프로토타입 전환 질문("이 결정을 위해 프로토타입을 만들까요?"), 같은 패턴을 다른 곳에서 찾았을 때 함께 고칠지 여부가 여기에 속한다. 비슷한 판단은 한 번에 묶어 묻는다. QUESTION_GATE에서 이미 기본값으로 정한 항목은 새 증거 없이 다시 묻지 않는다.
+
+묻는 방식은 모든 질문에 같다.
+
+- 질문 도구로 묻고 그 자리에서 멈춘다. 답을 받기 전에는 그 판단에 기대는 작업을 진행하지 않는다.
+- 질문 도구가 없는 런타임에서는 글로 질문 하나를 쓰고 턴을 끝낸다.
+- 이미 띄운 백그라운드 작업은 그대로 두고, 그 결과는 답을 받은 뒤 반영한다.
+- 시안 2~3개는 실제로 물을 때만, 레이아웃·문체·구조 같은 취향 판단에 붙인다.
+
+기본값 하한: 묻지 않고 대신 정한 판단은 결과의 `defaults_taken`에 적는다. 그중 취향 판단이 있으면 결과를 내기 전에 목록을 보여 주고 확인받는다. 기술 기본값뿐이면 "다르게 원하면 이렇게 말하면 된다"는 안내와 함께 보고만 한다.
+
 ## 답변 통합과 중단 조건
 
 각 라운드 뒤에 다음을 수행한다.
@@ -242,6 +258,12 @@ priority: high
 1. “이번 자료는 내부 진행용, 파트너 공유 가능 초안, 승인·Go/No-go 판단 자료 중 어디에 맞출까요?”
 2. “P0/P1 항목은 내부 검토 제안으로 둘까요, 아니면 회의에서 확정할 승인 기준으로 만들까요?”
 3. “회의록과 초대 명단이 다르면 미확정 참석자로 표시할까요, 아니면 작성 전에 참석자 확인을 진행할까요?”
+
+### 실험으로 확인
+
+요청: “이 CLI가 설정 파일이 없을 때도 실행되게 해줘.”
+
+설정 파일이 없을 때 지금 어떤 오류가 나는지는 사용자가 아니라 실행 결과가 답한다. `answer_owner: experiment`로 두고, 임시 폴더에서 설정 파일 없이 한 번 실행해 오류를 관찰한다. 관찰로 결론이 나면 묻지 않고, 기본 동작을 무엇으로 할지처럼 사용자만 정할 수 있는 판단이 남을 때만 관찰 결과를 붙여 묻는다.
 
 ### 기본값 적용
 

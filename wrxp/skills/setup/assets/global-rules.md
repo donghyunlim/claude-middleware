@@ -1,6 +1,6 @@
 ## wrxp
 
-Use available wrxp skills only when their scope matches the task. Keep detailed procedures in the plugin, not in this file. Preserve user/project instructions and existing approvals; simplify small edits and do not stack full pipelines for the same phase.
+Reply in the language the user writes in unless they ask otherwise. Use available wrxp skills only when their scope matches the task. Keep detailed procedures in the plugin, not in this file. Preserve user/project instructions and existing approvals; simplify small edits and do not stack full pipelines for the same phase.
 
 - Development: use `wrxp:staged-development` for large or hard-to-reverse development, or work whose product direction is unresolved. If unavailable, reuse one canonical plan and proceed through outline agreement → core implementation/review → detail/tests; consult the user when scope or important decisions change.
 - Tests: run existing project commands for already-needed checks and retain command, exit status, and raw evidence. Do not repeat or expand checks without relevant changes, failures, or concrete risks.

@@ -53,16 +53,16 @@ extension_requires_user_consent: boolean
 
 ## 필요한 참조
 
-QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 못해도 질문 판정 자체는 건너뛸 수 없다. 상세 참조는 실제로 필요한 시점에 읽는다.
+QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 못해도 질문 판정 자체는 건너뛸 수 없다. 실행 규칙은 이 파일에 있고, 참조는 아래 시점에만 펼쳐 보는 상세다.
 
-- `QuestionGateVerdict`가 `ask`이거나 `mid_run_decision`을 물을 때 [references/questioning.md](references/questioning.md)를 끝까지 읽는다. 질문 예산, 배치 공식, 질문 작성 규칙이 여기에만 있다.
-- 첫 모델·에이전트 위임 전에 [references/model-routing.md](references/model-routing.md)를 끝까지 읽는다.
-- 사소한 단일 수정이 아니면 검증 기준을 정할 때 [references/verification.md](references/verification.md)를 끝까지 읽는다.
+- `QuestionGateVerdict`가 `ask`이거나 `mid_run_decision`을 물을 때 [references/questioning.md](references/questioning.md)를 읽는다. 질문 예산, 배치 공식, 질문 작성 규칙이 여기에만 있다.
+- 다른 런타임 작업자를 쓰거나 모델 표가 필요할 때 [references/model-routing.md](references/model-routing.md)를 읽는다.
+- 무거운 경로에 들어가면 [references/tracks.md](references/tracks.md)의 해당 트랙과 [references/verification.md](references/verification.md)를 읽는다.
 - 복잡한 의존성·위험 판단에는 [공통 reasoning framework](../../shared/reasoning-framework.md)를 적용한다. 원시 추론 전문은 출력하지 않는다.
 
 ## 트랙과 무거운 경로
 
-트랙은 버그, 기능, 조사, 글쓰기·기획서, 데이터·수치, 리팩터링, 프로토타입, 맞춤 절차다. 트랙을 정하면 [references/tracks.md](references/tracks.md)의 해당 트랙을 읽는다.
+트랙은 버그, 기능, 조사, 글쓰기·기획서, 데이터·수치, 리팩터링, 프로토타입, 맞춤 절차다.
 
 평소 절차는 모델이 판단한다. 되돌리기 어려운 변경·외부 공개, 공유 계약 변경, 재발 버그, 사용자 지정일 때만 해당 트랙의 "무거운 경로" 단계를 작업 목록에 옮겨 따르고, 들어갈 때 이유를 한 줄로 보고한다.
 
@@ -94,7 +94,7 @@ REPAIR_CHECKPOINT
 
 ## 0. CAPABILITY_RESOLVE
 
-이번 런타임에서 실제로 쓸 수 있는 기능만 확인한다. 이 단계에서는 `references/model-routing.md`의 `## 런타임 능력 확인` 절만 읽는다. 추측해 호출하지 않고, 확인할 수 없는 항목은 `unknown`으로 둔다.
+도구 목록으로 이번 런타임에서 쓸 수 있는 기능(하위 에이전트와 모델 지정, 질문 도구, 병렬 한도)만 확인한다. 추측해 호출하지 않고, 확인할 수 없는 항목은 `unknown`으로 둔다.
 
 ## 1. OBSERVE
 
@@ -168,7 +168,7 @@ QuestionGateVerdict:
 
 `pass_zero`는 후보를 실제로 평가한 결과가 0개일 때만 유효하다. 평가를 건너뛴 상태는 `pass_zero`가 아니다. 질문 수는 상한이며 할당량이 아니므로, 평가를 마친 0문항은 모든 프리셋에서 정상이다.
 
-`mid_run_decision`: COMMIT_INTENT 이후에 드러난 판단이 취향·제품 판단이고 결과물을 바꾸거나 나중에 바꾸면 재작업이 크면, 질문 예산과 관계없이 `/ha`에서도 묻는다. 위임 전 사전 질문, staged-development 개요 확인, 프로토타입 전환 질문, 같은 패턴을 함께 고칠지 여부가 여기에 속한다. 비슷한 판단은 한 번에 묶고, 묻는 방식은 `questioning.md`를 따른다. QUESTION_GATE에서 이미 기본값으로 정한 항목은 새 증거 없이 다시 묻지 않는다.
+`mid_run_decision`: 요청에 정해지지 않았는데 결과물을 바꾸는 취향·제품 판단은, 구현이 30분 이상 걸릴 것 같으면 질문 예산과 관계없이 `/ha`에서도 실행 전에 묻는다. 30분 미만이면 묻지 않고 진행해 `defaults_taken`에 적는다. 위임 전 사전 질문, staged-development 개요 확인, 프로토타입 전환 질문, 같은 패턴을 함께 고칠지 여부가 여기에 속한다. 비슷한 판단은 한 번에 묶고, 묻는 방식은 `questioning.md`를 따른다. QUESTION_GATE에서 이미 기본값으로 정한 항목은 새 증거 없이 다시 묻지 않는다.
 
 질문 tier 스킬을 호출한 것 자체가 명확화를 요청하는 명시적 사용자 지시다. 런타임 기본 설정이 질문보다 가정을 선호하도록 안내하더라도, 이 계약이 정한 `must_ask`와 예산 안의 `decision_quality` 질문은 그 기본 선호보다 우선한다. 사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다.
 
@@ -199,7 +199,7 @@ CommittedIntent:
 
 ## 5. ROUTE_AND_EXECUTE
 
-`references/model-routing.md`의 역할 기준으로 각 실행 단위를 고른다.
+아래 역할 기준으로 각 실행 단위를 고르고, 위임하면 작업자 모델을 명시한다.
 
 - **controller**: 종합 판단, 아키텍처, 보안, 비가역 결정, 교차 계약과 blocker 분류
 - **standard executor**: 일반 코드 작업, 중간 규모 리팩터링, 버그 수정, 테스트
@@ -221,11 +221,11 @@ controller는 확정 의도를 실행 단위와 의존선으로 나눈다. `runt
 
 실행자는 새 제품 결정을 임의로 만들지 않는다. 새 사용자 전용 결정이 발견되면 controller에 blocker로 돌려보낸다.
 
-위임은 넘기는 비용보다 메인 맥락을 아끼는 이득이 클 때만 한다. 버그 재현과 가설 좁히기, 조사, 데이터, 글쓰기는 controller가 직접 하고, 버그는 수정만 위임한다. 쓰기 작업자는 병렬로 돌리지 않는다.
+위임은 넘기는 비용보다 메인 맥락을 아끼는 이득이 클 때만 한다. 작업자가 메인과 같은 모델이면 메인 맥락이 넘칠 만큼 큰 작업만 넘긴다. 버그 재현과 가설 좁히기, 조사, 데이터, 글쓰기는 controller가 직접 하고, 버그는 수정만 위임한다. 쓰기 작업자는 병렬로 돌리지 않는다.
 
 ## 6. VERIFY
 
-`references/verification.md`의 공통 계약과 `references/tracks.md`의 트랙별 확인을 적용한다. 사소한 단일 수정은 verification.md를 읽지 않고 다음 두 줄로 끝낸다.
+무거운 경로가 아니면 verification.md를 읽지 않고 다음 두 줄로 끝낸다.
 
 - 실제 경로로 1회 확인한다.
 - 대체물(다른 환경, 목업, 자기 보고, 요약본)로 확인한 것은 통과가 아니다. 확인하지 못한 것을 적고 `inconclusive`로 보고한다.
@@ -246,7 +246,7 @@ controller는 확정 의도를 실행 단위와 의존선으로 나눈다. `runt
 
 ## 최종 출력
 
-필요한 내용만 간결하게 전달한다. 출력은 `result`(outcome, artifacts, defaults_taken, user_decisions, verification_evidence, remaining_risks)이고 세부는 `references/verification.md`에 있다. 묻지 않고 대신 정한 판단은 `defaults_taken`에 적고, 그중 취향 판단(독자·구조·문체)이 있으면 결과 전에 보여 주고 확인받는다. 내부 후보 목록과 상세 추론은 출력하지 않는다.
+필요한 내용만 간결하게 전달한다. 출력은 `result`(outcome, artifacts, defaults_taken, user_decisions, verification_evidence, remaining_risks)이고 세부는 `references/verification.md`에 있다. 묻지 않고 대신 정한 판단은 `defaults_taken`에 적어 답 첫머리에 영향이 큰 것부터 보인다. 내부 후보 목록과 상세 추론은 출력하지 않는다.
 
 ## 중첩 호출이 없는 런타임
 

@@ -362,7 +362,8 @@ class WrxpInvariantTests(unittest.TestCase):
             "글로 질문 하나를 쓰고 턴을 끝낸다",
             "이미 띄운 백그라운드 작업은 그대로 두고",
             "시안 2~3개는 실제로 물을 때만",
-            "결과를 내기 전에 목록을 보여 주고 확인받는다",
+            "구현이 30분 이상 걸릴 것 같으면",
+            "답 첫머리에 영향이 큰 것부터 보인다",
             "### 실험으로 확인",
         ):
             self.assertIn(rule, questioning)

@@ -325,10 +325,11 @@ class WrxpInvariantTests(unittest.TestCase):
             "안전한 기본값이 있어도 `decision_quality` 후보를 버리지 않는다",
             questioning,
         )
-        self.assertIn(
+        for rule in (
             "`standard`: 가장 중요한 후보 1~3개",
-            questioning,
-        )
+            "프리셋별로 첫 라운드에서 다음만큼만 선제 확인한다",
+        ):
+            self.assertIn(rule, questioning)
 
     def test_question_policy_probes_experiments_and_asks_mid_run_decisions(self):
         questioning = (
@@ -344,11 +345,11 @@ class WrxpInvariantTests(unittest.TestCase):
             "읽기 전용이거나 버릴 수 있는 곳",
             "`must_ask`로 묻는다",
             "결과를 붙여 묻는다",
+            "사용자가 말해 줘야만 아는가, 해 보면 관찰되는가",
             "구현이 5분 이상 걸릴 것 같으면",
         ):
             self.assertIn(rule, engine)
         for rule in (
-            "사용자가 말해 줘야만 아는가, 해 보면 관찰되는가",
             "## 묻는 방식",
             "질문 도구로 묻고 그 자리에서 멈춘다",
             "글로 질문 하나를 쓰고 턴을 끝낸다",
@@ -908,6 +909,18 @@ class WrxpInvariantTests(unittest.TestCase):
             "Information only available by asking the user (last resort)",
             framework,
         )
+
+    def test_section_pointers_match_ha_headings(self):
+        """"SKILL.md N절" pointers must name the section that holds the rule."""
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        headings = dict(re.findall(r"^## (\d)\. (\S+)", engine, re.M))
+        self.assertEqual("QUESTION_GATE", headings["3"])
+        self.assertEqual("ROUTE_AND_EXECUTE", headings["5"])
+        self.assertEqual("VERIFY", headings["6"])
+        self.assertIn("공유 계약 검토는 모두 이것이다", engine.split("## 6. VERIFY", 1)[1])
+        self.assertIn("`wrxp:code-delegation`이 이 절", engine.split("## 5. ROUTE_AND_EXECUTE", 1)[1].split("## 6.", 1)[0])
+        verification = (WRXP_ROOT / "skills/ha/references/verification.md").read_text()
+        self.assertIn("코드 위임 우선 규칙은 `SKILL.md` 5절", verification)
 
     def test_entry_files_stay_small_enough_to_be_read_every_call(self):
         """Progressive disclosure only works if the entry files are cheap."""

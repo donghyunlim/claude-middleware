@@ -18,7 +18,7 @@
 | 작업 순서·병렬 한도·위임 비용 | `ha/SKILL.md` 5절 | model-routing.md의 task-graph 절 삭제 |
 | 역할 정의 | `ha/SKILL.md` 5절 | model-routing.md 표는 모델만 |
 | 대체물·판단 불가, 실패 처리 기본 | `ha/SKILL.md` 6절 | verification.md 중복 절 삭제 |
-| 수정 반복 점검 | 규칙은 `ha/SKILL.md` 6절, 세부는 verification.md YAML과 절차 | verification.md 표 삭제 |
+| 수정 반복 점검 | 규칙과 세는 법은 `ha/SKILL.md` 6절, 체크포인트 판정 표·YAML·할 일은 verification.md | verification.md의 조건 재진술을 할 일 목록으로 바꿈(표는 판정 기준으로 유지) |
 | 최종 답 틀 | `ha/SKILL.md` 최종 출력 | 완료(앞 커밋) |
 
 함께 고칠 내용 충돌: `shared/reasoning-framework.md`의 "모든 행동 전에 반드시"를 호출 쪽 조건("복잡한 의존성·위험 판단")에 맞춘다.

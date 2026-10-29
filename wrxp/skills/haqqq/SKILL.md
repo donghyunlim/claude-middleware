@@ -28,7 +28,7 @@ extended_max_rounds: 5
 extension_requires_user_consent: true
 ```
 
-12개와 3라운드는 기본 상한이며 적격 질문이 없으면 0개로 실행한다. 사용자 동의를 받아 20개·5라운드까지 넓히는 규칙은 `../ha/references/questioning.md`에 있다.
+기본 상한은 `max_questions`·`max_rounds`이며 적격 질문이 없으면 0개로 실행한다. 사용자 동의를 받아 `extended_*`까지 넓히는 규칙은 `../ha/references/questioning.md`에 있다.
 
 ## 질문 판정 (필수)
 

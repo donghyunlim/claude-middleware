@@ -9,6 +9,9 @@
 - `ha`: 최종 답 틀(`result`)과 `defaults_taken` 표시 규칙을 `references/verification.md`·`questioning.md`에서 `SKILL.md` 본문으로 옮겨, 가벼운 경로에서도 항상 읽히게 했습니다. `defaults_taken`을 틀의 첫 항목으로 올렸고, 사용자에게는 키 이름 대신 문장과 목록으로 쓰며 없는 항목은 뺀다는 지시를 새로 넣었습니다.
 - `intent-anchor`: 자동 실행 조건 목록의 깨진 형식을 고치고, Codex 메인일 때 리뷰어가 Astra가 없으면 Sol로 내려간다는 실제 동작을 적었습니다.
 - 플러그인·마켓플레이스 설명과 README 배지를 현재 구성에 맞게 고쳤습니다.
+- **`ha` 계열 규칙을 한 곳으로 모았습니다.** 행동은 바꾸지 않았습니다. 질문 판정, `mid_run_decision`(5분 기준), 역할·병렬·위임 기준, 공유 계약 정의와 검토, 기본 실패 처리는 `ha/SKILL.md`에만 둡니다. 참조 문서(`questioning.md`, `model-routing.md`, `verification.md`)는 그 규칙을 다시 적지 않고 세부만 담습니다. 질문 수 한도 값은 각 진입 파일의 preset에만 둡니다.
+- `haq`·`haqq`·`haqqq`: 질문 판정 규칙 사본을 지우고 "`ha/SKILL.md` 3절 판정을 반드시 마친다"는 두 줄 요약만 남겼습니다. 파일 크기가 약 6KB에서 2.3KB로 줄었습니다.
+- `shared/reasoning-framework.md`: "모든 행동 전에 반드시"를 "호출한 스킬이 정한 경우(ha는 복잡한 의존성·위험 판단)"로 고쳐 ha와 맞췄습니다.
 
 ## [0.1.75] - 2026-10-28
 

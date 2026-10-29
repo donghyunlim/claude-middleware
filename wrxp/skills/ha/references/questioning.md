@@ -1,29 +1,16 @@
 # Question Policy
 
-이 문서는 `/ha` 계열의 사용자 질문 게이트를 정의한다. 질문 프리셋은 질문의 **상한**만 바꾸며, 질문 수를 채우는 할당량이 아니다. 모든 프리셋에서 질문 0개가 정상이다.
+이 문서는 `/ha` 계열의 질문 후보 필드, 분류 상세, 질문 예산, 배치, 작성 규칙을 정한다. 질문 여부 판정(QUESTION_GATE)의 3조건·3분류·판정과 `mid_run_decision`, 관찰 순서는 `SKILL.md`에만 있고 여기서 다시 정의하지 않는다.
 
 ## Contents
 
-- 관찰 우선 원칙
 - 질문 후보 계약
-- 적격성 게이트
-- 우선순위와 프리셋
+- 분류 상세
+- 우선순위와 질문 예산
 - 질문 작성과 런타임 적응
-- 실행 중 질문과 기본값 하한
+- 묻는 방식
 - 답변 통합과 중단 조건
 - 예시
-
-## 관찰 우선 원칙
-
-질문 후보를 만들기 전에 다음 순서로 이미 있는 답을 찾는다.
-
-1. 현재 사용자 요청과 이전 대화
-2. 사용자가 지정한 파일, 첨부물, 링크
-3. `AGENTS.md`, `CLAUDE.md`, 저장소 문서와 기존 구현
-4. 사용 가능한 읽기 도구, 검색, 공식 문서와 런타임 메타데이터
-5. 안전하고 되돌릴 수 있는 합리적 기본값
-
-파일·문서·도구로 확인할 수 있는 사실은 사용자에게 묻지 않는다. 질문 카테고리 목록을 채우기 위해 질문하지 않는다.
 
 ## 질문 후보 계약
 
@@ -60,17 +47,9 @@ QuestionCandidate:
 - `safe_default`: 틀려도 손쉽게 되돌릴 수 있는 기본값이다. 고위험·승인 문제에는 두지 않는다.
 - `question_class`: 증거 확인 뒤 후보를 `must_ask`, `decision_quality`, `skip`으로 분류한 결과다.
 
-## 적격성 게이트
+## 분류 상세
 
-먼저 다음 세 조건을 모두 만족하지 않는 후보는 `skip`으로 둔다.
-
-1. `unresolved == true`: 관찰 후에도 결정이 남아 있다.
-2. `answer_owner == user`: 사용자만 답할 수 있다.
-3. `materially_branching == true`: 답에 따라 실행 경로가 실질적으로 달라진다.
-
-`answer_owner: experiment`인 후보는 묻지 않고 PROBE로 확인한다. PROBE는 읽기 전용이거나 버릴 수 있는 곳(임시 폴더, 복사본, 저장소와 데이터를 바꾸지 않는 로컬 실행)에서만 한다. 확인에 외부 변경이 필요하면 그 변경은 `must_ask`로 묻는다. PROBE로 결론이 나지 않으면 관찰한 결과를 질문에 붙여 사용자에게 묻는다.
-
-세 조건을 통과한 후보는 다음처럼 분류한다.
+`SKILL.md`의 3조건을 통과한 후보를 다음 기준으로 나눈다. PROBE의 "버릴 수 있는 곳"은 임시 폴더, 복사본, 저장소와 데이터를 바꾸지 않는 로컬 실행이다.
 
 1. **`must_ask`**: 사용자 소유·미해결·실질 분기 상태이며, `concrete_next_action_blocked == true`, `safe_default: null`이고 승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계인 경우다. 실행이나 외부 변경 전에 묻되 discovery 예산·라운드에는 넣지 않는다. 실행 통제 경계 후보는 이 조건을 잃었다는 이유로 `decision_quality`로 우회 분류하지 않고, 증거로 해소하거나 blocker로 보고한다.
 2. **`decision_quality`**: 세 기본 조건을 만족하고, 답이 산출물의 쓰임을 바꾸는 경우다. `assumption_cost`가 `lower_than_question`이어도 다음 중 하나가 바뀌면 해당한다.
@@ -78,7 +57,7 @@ QuestionCandidate:
    - 공유·공개 범위
    - 결정의 상태·권한: 내부 검토안, 승인 기준, 대외 공유 초안 등의 차이
    - 참석자·소유자·수용 기준
-3. **`skip`**: 사실을 증거로 확인할 수 있거나, 모든 답이 같은 실행으로 이어지거나, 차이가 사소한 표현·형식뿐인 경우다. 결과물을 바꾸는 취향·제품 판단은 발견 시점과 관계없이 `mid_run_decision`의 5분 기준을 따른다.
+3. **`skip`**: 사실을 증거로 확인할 수 있거나, 모든 답이 같은 실행으로 이어지거나, 차이가 사소한 표현·형식뿐인 경우다. 결과물을 바꾸는 취향·제품 판단은 `SKILL.md`의 `mid_run_decision`을 따른다.
 
 안전한 기본값이 있어도 `decision_quality` 후보를 버리지 않는다. 안전한 기본값은 사용자가 질문을 건너뛰거나 답변을 보류했을 때의 진행 경로일 뿐, 독자·용도·공유·결정 권한처럼 산출물의 가치와 사용 방식을 바꾸는 선택을 자동으로 숨기는 근거가 아니다. `risk_if_assumed`와 `branches`는 이 분류를 설명하는 근거이며, 필수 불리언·열거 필드를 대신하지 않는다.
 
@@ -100,7 +79,7 @@ QuestionCandidate:
 
 고위험 사용자 결정에는 안전한 기본값을 만들지 않는다. 질문 상한에 도달했는데 blocker가 남으면 실행하지 말고 남은 결정을 보고한다.
 
-## 우선순위와 프리셋
+## 우선순위와 질문 예산
 
 후보는 다음 순서로 묻는다.
 
@@ -111,18 +90,18 @@ QuestionCandidate:
 
 같은 실행 경로를 만드는 후보는 제거한다. 연관된 결정이라도 서로 독립적으로 답할 수 있으면 질문을 분리한다.
 
-승인·보안·비밀·권한·외부 변경·파괴적·불가역 경계를 확인하는 `must_ask`는 실행 통제 질문이므로 discovery 예산과 라운드에 넣지 않고 즉시 처리한다. `decision_quality`는 질문 수 할당량이 아니다. 적격 후보가 전혀 없으면 모든 프리셋이 0문항으로 진행한다. 새 문서·회의 자료·메시지·결정 기록처럼 사람이 사용할 산출물을 만들고 그 쓰임이 불명확한 경우에는 프리셋별로 다음만큼만 선제 확인한다.
+`must_ask` 실행 통제 질문은 discovery 예산과 라운드에 넣지 않고 별도 경로로 즉시 보낸다. 이 경로에는 아래 QuestionBudgetState 사전검사와 배치 공식을 적용하지 않으며, discovery 카운터를 갱신하지 않는다.
 
-`must_ask` 실행 통제 질문은 별도 전송 경로로 즉시 보낸다. 이 경로에는 QuestionBudgetState 사전검사 또는 discovery 배치 공식을 적용하지 않으며, discovery 카운터를 갱신하지 않는다. `remaining_total_budget`과 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`은 `decision_quality` 배치에만 적용한다.
+`decision_quality`는 질문 수 할당량이 아니며, 적격 후보가 없으면 모든 프리셋이 0문항으로 진행한다. 새 문서·회의 자료·메시지·결정 기록처럼 사람이 사용할 산출물을 만들고 그 쓰임이 불명확할 때, 첫 라운드에서 선제 확인하는 수는 다음과 같다. 이것은 첫 라운드의 수이며 총 상한은 프리셋 값이다.
 
-- `none`은 `decision_quality` 후보를 선제 질문하지 않는다. 관찰 근거가 없으면 안전한 기본값을 `assumptions`에 기록하고 진행하며, 안전한 기본값이 없으면 실행하지 말고 blocker로 보고한다. 기록한 기본값에는 기본값 하한을 적용한다.
-- `quick`: 가장 영향이 큰 `decision_quality` 후보 1개만 첫 라운드에 묻는다.
-- `standard` 프리셋은 1~3개의 가장 중요한 `decision_quality` 후보를 첫 라운드에 묻는다.
-- `deep`: 최대 4개의 `decision_quality` 후보를 첫 라운드에 묻는다.
+- `none`: 선제 질문하지 않는다. 관찰 근거가 없으면 안전한 기본값을 `assumptions`에 기록하고 진행하며, 안전한 기본값이 없으면 실행하지 말고 blocker로 보고한다.
+- `quick`: 가장 영향이 큰 후보 1개
+- `standard`: 가장 중요한 후보 1~3개
+- `deep`: 최대 4개
 
 `decision_quality` 질문 라운드는 서로 관련된 실질 결정 질문을 한 번에 전달하고 답을 받은 단위다. 한 라운드에는 최대 4개만 묻는다. 호출당 한도가 양의 정수이면 `normalized_runtime_limit = runtime_limit`이고, `unknown`이거나 유효하지 않으면 `normalized_runtime_limit = 1`이다. 실제 배치 크기는 `min(4, normalized_runtime_limit, remaining_eligible, remaining_total_budget)`이다. 구조화 질문 도구가 없으면 한 라운드에 자유 응답형 질문 하나만 묻는다.
 
-질문 예산은 다음 상태로 관리한다. 이 정의와 갱신 규칙은 이 문서에만 두며, 진입 파일은 값을 다시 기술하지 않는다.
+질문 예산은 다음 상태로 관리한다. 상태 정의와 갱신 규칙은 이 문서에만 두고, 프리셋 값(질문·라운드 상한, 확장 상한)은 진입 파일의 preset YAML(`/ha`는 `SKILL.md` 핵심 계약)에만 둔다.
 
 ```yaml
 QuestionBudgetState:
@@ -136,14 +115,7 @@ QuestionBudgetState:
 
 `decision_quality` 배치를 실제로 보낸 직후에는 같은 `QuestionBudgetState`에 `questions_asked_total += batch_size`와 `substantive_rounds_completed += 1`을 적용한다. `batch_size`는 실제 전송된 질문 수여야 한다. 그 뒤 `remaining_total_budget = effective_max_questions - questions_asked_total`로 다시 계산한 값으로 다음 배치를 제한한다. 따라서 새 라운드에서 예산을 초기화하거나 이전 배치 수를 다시 사용할 수 없다.
 
-| preset | 기본 질문 상한 | 라운드당 상한 | 기본 라운드 상한 | 용도 |
-|---|---:|---:|---:|---|
-| `none` | 0 | 0 | 0 | `/ha` 직접 호출의 선제 discovery 없음 |
-| `quick` | 4 | 4 | 1 | 한 번의 빠른 확인 |
-| `standard` | 8 | 4 | 2 | 답변 후 재평가가 필요한 표준 발견 |
-| `deep` | 12 | 4 | 3 | 고위험 단일 문제의 단계적 확인 |
-
-`deep` 프리셋은 명시적인 확장 동의를 받은 뒤에만 `effective_max_questions = extended_max_questions`, `effective_max_rounds = extended_max_rounds`로 바꾼다. `deep`의 12개 또는 3라운드를 넘겨야 한다면 먼저 사용자의 계속 진행 의사를 확인한다. 이 제어 질문은 기본 상한에 도달한 뒤에도 새 실질 질문이 남고 `questions_asked_total < extended_max_questions`일 때 한 번만 보낼 수 있다. 확장 동의 제어 질문은 `questions_asked_total += 1`만 적용하고 `substantive_rounds_completed`는 증가시키지 않는다. 동의한 경우에만 최대 5개의 실질 질문 라운드와 사용자에게 보낸 모든 질문을 합쳐 총 20개까지 확장한다. 동의하지 않으면 즉시 질문을 끝낸다. 따라서 동의 뒤에는 `20 - questions_asked_total`개보다 많이 물을 수 없다. 20개도 목표가 아니라 절대 상한이다.
+`deep` 프리셋은 명시적인 확장 동의를 받은 뒤에만 `effective_max_questions = extended_max_questions`, `effective_max_rounds = extended_max_rounds`로 바꾼다. `deep`의 기본 상한을 넘겨야 한다면 먼저 사용자의 계속 진행 의사를 확인한다. 이 제어 질문은 기본 상한에 도달한 뒤에도 새 실질 질문이 남고 `questions_asked_total < extended_max_questions`일 때 한 번만 보낼 수 있다. 확장 동의 제어 질문은 `questions_asked_total += 1`만 적용하고 `substantive_rounds_completed`는 증가시키지 않는다. 동의한 경우에만 실질 질문 라운드는 `extended_max_rounds`까지, 사용자에게 보낸 모든 질문(확장 동의 질문 포함)은 합쳐서 `extended_max_questions`까지 넓힌다. 동의하지 않으면 즉시 질문을 끝내고, 위험한 기본값으로 진행하지 않고 남은 blocker를 보고한다. 확장 상한도 목표가 아니라 절대 상한이다.
 
 ## 질문 작성과 런타임 적응
 
@@ -164,18 +136,16 @@ QuestionBudgetState:
 실행 경로를 바꾸는 결정 N개만 확인하겠습니다. 답변으로 충분해지면 남은 질문은 생략합니다.
 ```
 
-## 실행 중 질문과 기본값 하한
+## 묻는 방식
 
-`mid_run_decision`은 요청에 정해지지 않았는데 결과물을 바꾸는 취향·제품 판단이다. 그 판단이 드러난 시점에 에이전트의 남은 구현이 5분 이상 걸릴 것 같으면 프리셋의 질문 예산과 관계없이 `none`을 포함한 모든 프리셋에서 그 판단에 기대는 작업 전에 묻는다. 5분 미만이면 묻지 않고 진행한다. 기준이 되돌리기 쉬운지가 아니라 시간인 이유는, 잘못 정했을 때 버려지는 시간과 토큰이 확인 한 번보다 클 때만 묻기 위해서다. 밖으로 나가는 행동(전송, push, 배포, 외부 시스템 쓰기, 작업 트리 밖 삭제)은 이와 별개로 `must_ask`다. 위임 전 사전 질문(작업자가 혼자 정할 수 없는 판단을 넘기기 전에 묻기, 이미 승인된 결정은 제외), staged-development 개요 확인, 프로토타입 전환 질문("이 결정을 위해 프로토타입을 만들까요?"), 같은 패턴을 다른 곳에서 찾았을 때 함께 고칠지 여부는 시간과 관계없이 묻는다. 비슷한 판단은 한 번에 묶어 묻는다. QUESTION_GATE에서 이미 기본값으로 정한 항목은 새 증거 없이 다시 묻지 않는다.
-
-묻는 방식은 모든 질문에 같다.
+`mid_run_decision`의 정의와 5분 기준은 `SKILL.md`에 있다. 묻는 방식은 시작 전 질문과 실행 중 질문 모두 같다.
 
 - 질문 도구로 묻고 그 자리에서 멈춘다. 답을 받기 전에는 그 판단에 기대는 작업을 진행하지 않는다.
 - 질문 도구가 없는 런타임에서는 글로 질문 하나를 쓰고 턴을 끝낸다.
 - 이미 띄운 백그라운드 작업은 그대로 두고, 그 결과는 답을 받은 뒤 반영한다.
 - 시안 2~3개는 실제로 물을 때만, 레이아웃·문체·구조 같은 취향 판단에 붙인다.
 
-기본값 하한: 묻지 않고 대신 정한 판단은 `SKILL.md` 최종 출력 절의 `defaults_taken` 규칙대로 보인다.
+묻지 않고 대신 정한 판단은 `SKILL.md` 최종 출력 절의 `defaults_taken` 규칙대로 보인다.
 
 ## 답변 통합과 중단 조건
 

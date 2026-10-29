@@ -1,8 +1,6 @@
 # Model and Agent Routing
 
-**코드 위임 예외:** 합의된 독립 구현은 `wrxp:code-delegation`이 우선한다. Codex 작업자는 `gpt-6.1-sol` + 명시적인 `medium`(기본) 또는 `high`(AI 선택)를, Claude 작업자는 Codex로 오프로딩하지 않고 `opus`(기본) 또는 `sonnet`(가벼운 구현, AI 선택)을 사용한다. 아래 일반 역할표·사고 수준 생략·기본 모델 폴백·자동 verifier 규칙을 이 경로에 적용하지 않는다. 실행할 수 없으면 보고하고 대안을 협의한다. 검색·문서 등 다른 역할의 라우팅은 유지한다.
-
-이 문서는 `/ha` 계열의 역할 기반 모델·에이전트 라우팅 정본이다. 질문 프리셋은 모델 라우팅에 영향을 주지 않는다. 모델 이름은 선호 후보이며, 실제 런타임이 제공한 목록과 기능이 항상 우선한다.
+이 문서는 `/ha` 계열의 역할별 모델 후보와 폴백을 정한다. 역할 정의, 작업 순서·병렬 한도, 위임 여부 기준, 코드 위임 우선 규칙은 `SKILL.md` 5절에만 있다. 합의된 독립 코드 구현은 `wrxp:code-delegation`의 모델 고정(Codex `gpt-6.1-sol` `medium`/`high`, Claude Opus 5.5, 가볍고 좁은 일은 Sonnet 5.5)을 따르며 이 문서를 적용하지 않는다. 모델 이름은 선호 후보이며, 실제 런타임이 제공한 목록과 기능이 항상 우선한다.
 
 ## Contents
 
@@ -38,14 +36,14 @@ RuntimeCapabilities:
 
 ## 역할 매핑
 
-코드 구현 위임에는 이 표보다 `wrxp:code-delegation`의 모델 고정이 우선한다(Codex `gpt-6.1-sol` `medium`/`high`, Claude Opus 5.5, 가볍고 좁은 일은 Sonnet 5.5). 표의 Haiku 5.5와 `low`는 코드 구현이 아닌 실행 단위에만 쓴다.
+표의 Haiku 5.5와 `low`는 합의된 코드 구현이 아닌 실행 단위에만 쓴다.
 
-| 논리 역할 | Codex 선호 후보 | Claude 선호 후보 | 주된 책임 |
-|---|---|---|---|
-| controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) | 종합 판단, 의도 통합, 아키텍처·보안·비가역 결정, blocker 분류 |
-| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Haiku 5.5 (`claude-haiku-5-5`), 어려운 작업은 Claude Sonnet 5.5 (`claude-sonnet-5-5`) | 일반 코드 구현, 중간 규모 리팩터링, 버그 수정, 테스트 |
-| utility executor | `gpt-6-luna` + `low` | Claude Haiku 5.5 (`claude-haiku-5-5`) | 단순 탐색, 목록화, 포맷, 명확한 국소 코드 변경, 기계 검사 |
-| verifier | 보통 Sol, 고위험 Astra | 보통 Sonnet 5.5, 고위험 Opus 5.5 | 작성 결과와 분리된 검증 패스 |
+| 역할 | Codex 선호 후보 | Claude 선호 후보 |
+|---|---|---|
+| controller | `gpt-6-astra` + `high` | Claude Opus 5.5 (`claude-opus-5-5`) |
+| standard executor | `gpt-6.1-sol` + `medium` (가벼운 작업 `low`) | Claude Haiku 5.5 (`claude-haiku-5-5`), 어려운 작업은 Claude Sonnet 5.5 (`claude-sonnet-5-5`) |
+| utility executor | `gpt-6-luna` + `low` | Claude Haiku 5.5 (`claude-haiku-5-5`) |
+| verifier | 보통 Sol, 고위험 Astra | 보통 Sonnet 5.5, 고위험 Opus 5.5 |
 
 Claude 실행자는 Haiku 5.5를 기본으로 한다. Haiku 5.5는 런타임이 그 모델을 정확한 이름·ID로 제공할 때만 쓰고, ID를 추측하지 않는다. `haiku` 별칭이 5.5보다 낮은 버전으로 해석되면 쓰지 않고 Sonnet 5.5를 쓰며, Haiku 4.5는 사용하지 않는다.
 
@@ -69,7 +67,7 @@ Codex 위임 API가 모델과 사고 수준을 별도 인자로 받으면 검증
 
 ### standard executor
 
-경계와 수용 기준이 정해진 일반 구현·중간 규모 리팩터링·버그 수정·테스트는 standard executor에 맡긴다. 버그 재현과 가설 좁히기, 데이터, 글쓰기는 controller가 직접 한다. 조사는 넓게 흩어진 탐색만 `wrxp:search-delegation` 기준으로 읽기 전용 위임한다. 여러 파일을 수정한다는 이유만으로 controller나 병렬 체계로 올리지 않는다.
+경계와 수용 기준이 정해진 일반 구현·중간 규모 리팩터링·버그 수정·테스트는 standard executor에 맡긴다. 여러 파일을 수정한다는 이유만으로 controller나 병렬 체계로 올리지 않는다.
 
 Claude에서는 애매하면 Haiku 5.5로 시작하고, 다음 작업만 Sonnet 5.5로 올린다.
 
@@ -125,26 +123,6 @@ utility가 범위·설계·보안 판단을 새로 내려야 하면 standard 또
 범위: 작성자의 결론을 전제로 삼지 않고 실제 파일·테스트·출처를 확인한다.
 산출물: PASS/FAIL, 증거, 수정이 필요한 정확한 항목.
 ```
-
-## task-graph 실행
-
-```yaml
-RuntimeParallelism:
-  max_parallel_delegations: positive_integer | unknown
-  runtime_parallel_limit:
-    when_can_delegate_false: 1
-    when_max_unknown: 1
-    when_max_positive: max_parallel_delegations
-  dependency_edges: [same_file_write, shared_state, external_side_effect, producer_consumer, writer_verifier]
-```
-
-`runtime_parallel_limit`은 런타임이 공개한 양의 `max_parallel_delegations`이며, 값을 확인할 수 없거나 위임할 수 없으면 `1`이다. 동시 활성 subagent 수는 이 한도를 넘지 않는다.
-
-controller는 하나의 확정 의도를 실행 단위와 의존선으로 나눈다. 독립 실행 단위만 같은 wave로 실행하고, 쓰기 단위는 파일이 달라도 직렬로 둔다. 같은 파일을 쓰는 단위, 공유 상태나 외부 부작용을 갖는 단위, 생산자→소비자, writer→verifier는 의존선으로 연결하고 앞 wave가 끝난 뒤 시작한다. 각 wave 결과는 controller가 통합하며, 실패나 blocker가 있으면 의존 후속 wave를 시작하지 않는다.
-
-런타임이 위임을 지원하면, 넘기는 비용보다 메인 맥락을 아끼는 이득이 클 때(작업자가 메인과 같은 모델이면 메인 맥락이 넘칠 만큼 큰 구현일 때) 실행 단위와 독립 verifier를 실제 subagent 호출로 위임한다. 사소한 수정과 위임 불가 폴백은 controller가 직접 수행한다. 가용 슬롯을 채우는 것이 목적은 아니며, 수용 기준을 충족하는 최소 충분 위임만 사용한다.
-
-여러 파일·단계가 하나의 수렴 목적의 task graph라면 `/ha` 범위다.
 
 ## 검증 분리
 

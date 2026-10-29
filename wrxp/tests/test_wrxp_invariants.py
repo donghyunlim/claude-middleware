@@ -257,17 +257,15 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertIn("`opus`, `sonnet`, `haiku`", routing)
         self.assertIn("Haiku 4.5는 사용하지 않는다", routing)
         self.assertIn("Claude API 모델 ID", routing)
-        self.assertIn("runtime_parallel_limit", routing)
-        self.assertIn("독립 실행 단위만 같은 wave", routing)
-        self.assertIn("동시 활성 subagent 수", routing)
+        self.assertNotIn("## task-graph 실행", routing)
 
         benchmark = (
             WRXP_ROOT / "docs/benchmark/model-routing-0.1.26.md"
         ).read_text()
         self.assertIn("모델 분류나 동률 판단 성향을 바꾸지 않는다", benchmark)
         self.assertNotIn("동률 판단의 비용 성향만", benchmark)
-        self.assertIn("실제 subagent 호출", routing)
-        self.assertIn("최소 충분 위임", routing)
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        self.assertIn("최소 충분 위임", engine)
 
     def test_question_policy_requires_user_ownership_and_execution_delta(self):
         questioning = (
@@ -297,10 +295,10 @@ class WrxpInvariantTests(unittest.TestCase):
                 self.assertIn(field, candidate_match.group(1))
             else:
                 self.assertIn(field, candidate_fields)
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        for gate in ("`unresolved`", "`answer_owner == user`", "`materially_branching`"):
+            self.assertIn(gate, engine)
         for gate in (
-            "`unresolved == true`",
-            "`answer_owner == user`",
-            "`materially_branching == true`",
             "`concrete_next_action_blocked == true`",
             "`safe_default: null`",
         ):
@@ -328,8 +326,7 @@ class WrxpInvariantTests(unittest.TestCase):
             questioning,
         )
         self.assertIn(
-            "`standard` 프리셋은 1~3개의 가장 중요한 "
-            "`decision_quality` 후보를 첫 라운드에 묻는다",
+            "`standard`: 가장 중요한 후보 1~3개",
             questioning,
         )
 
@@ -344,16 +341,19 @@ class WrxpInvariantTests(unittest.TestCase):
             questioning,
         )
         for rule in (
-            "사용자가 말해 줘야만 아는가, 해 보면 관찰되는가",
             "읽기 전용이거나 버릴 수 있는 곳",
             "`must_ask`로 묻는다",
-            "관찰한 결과를 질문에 붙여",
-            "## 실행 중 질문과 기본값 하한",
+            "결과를 붙여 묻는다",
+            "구현이 5분 이상 걸릴 것 같으면",
+        ):
+            self.assertIn(rule, engine)
+        for rule in (
+            "사용자가 말해 줘야만 아는가, 해 보면 관찰되는가",
+            "## 묻는 방식",
             "질문 도구로 묻고 그 자리에서 멈춘다",
             "글로 질문 하나를 쓰고 턴을 끝낸다",
             "이미 띄운 백그라운드 작업은 그대로 두고",
             "시안 2~3개는 실제로 물을 때만",
-            "구현이 5분 이상 걸릴 것 같으면",
             "### 실험으로 확인",
         ):
             self.assertIn(rule, questioning)
@@ -393,7 +393,7 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertIn("result: pass | partial | fail | blocked | inconclusive", verification)
         self.assertNotIn("| task type | 최소 검증 |", verification)
         self.assertIn("[tracks.md](tracks.md)", verification)
-        self.assertIn("검색이 닿지 않는 사용처(설정, 다른 언어, 전송 형식)", verification)
+        self.assertIn("검색이 닿지 않는 사용처(설정, 다른 언어, 전송 형식)", engine)
         self.assertIn("프로젝트 실행 스킬, 내장 `run`, 브라우저·시뮬레이터 도구 순서", verification)
         self.assertIn("그 전제를 한 문장으로 적고 먼저 확인한다", verification)
         self.assertIn("실제 경로로 1회 확인한다", engine)
@@ -404,7 +404,7 @@ class WrxpInvariantTests(unittest.TestCase):
         routing = (
             WRXP_ROOT / "skills/ha/references/model-routing.md"
         ).read_text()
-        self.assertIn("넘기는 비용보다 메인 맥락을 아끼는 이득이 클 때", routing)
+        self.assertIn("넘기는 비용보다 메인 맥락을 아끼는 이득이 클 때", engine)
         self.assertNotIn("nontrivial standard/utility", routing)
 
     def test_staged_development_scope_is_large_or_irreversible_work(self):
@@ -548,12 +548,11 @@ class WrxpInvariantTests(unittest.TestCase):
         changelog = (WRXP_ROOT / "CHANGELOG.md").read_text()
         self.assertIn("## [0.1.74]", changelog)
         self.assertIn("`staged-development` 적용 범위가 좁아졌습니다", changelog)
-        for path in (
-            "skills/ha/SKILL.md",
-            "skills/ha/references/verification.md",
-        ):
-            head = (WRXP_ROOT / path).read_text().split("\n## ", 2)
-            self.assertIn(exception, "\n## ".join(head[:2]), path)
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        self.assertEqual(1, engine.count(exception))
+        verification = (WRXP_ROOT / "skills/ha/references/verification.md").read_text()
+        self.assertNotIn(exception, verification)
+        self.assertIn("공유 계약 검토", verification.split("\n## ", 1)[0])
 
     def test_direct_ha_has_a_zero_question_none_preset(self):
         """Direct /ha has no discovery budget; gates are a separate control path."""
@@ -573,7 +572,6 @@ class WrxpInvariantTests(unittest.TestCase):
             parse_flat_yaml_block_after(engine, "## 핵심 계약"),
         )
         self.assertIn("none | quick | standard | deep", engine)
-        self.assertIn("| `none` | 0 | 0 | 0 |", questioning)
         self.assertIn("승인·보안·비밀·외부 변경·파괴적·불가역", engine)
         self.assertIn("`concrete_next_action_blocked == true`", questioning)
         self.assertIn("safe_default: null", questioning)
@@ -588,8 +586,8 @@ class WrxpInvariantTests(unittest.TestCase):
             WRXP_ROOT / "skills/ha/references/questioning.md"
         ).read_text()
 
-        for contract in ("별도 전송 경로", "QuestionBudgetState 사전검사",
-                         "갱신하지 않는다", "`decision_quality` 배치에만"):
+        for contract in ("별도 경로로 즉시 보낸다", "QuestionBudgetState 사전검사",
+                         "갱신하지 않는다"):
             self.assertIn(contract, questioning)
         self.assertIn("must_ask 있음 → EXECUTION_CONTROL_ASK", engine)
         self.assertIn("예산 내 decision_quality 있음 → DISCOVERY_ASK", engine)
@@ -597,33 +595,20 @@ class WrxpInvariantTests(unittest.TestCase):
             "승인·보안·비밀·외부 변경·파괴적·불가역 경계는 discovery 예산 밖",
             engine,
         )
-        for name in ("ha", "haq", "haqq", "haqqq"):
+        self.assertIn("질문 예산과 무관하게 즉시 묻는다", engine)
+        for name in ("haq", "haqq", "haqqq"):
             entry = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
-            self.assertIn("질문 예산과 무관하게 즉시 묻는다", entry)
+            self.assertIn("`../ha/SKILL.md` 3절 QUESTION_GATE 판정", entry)
 
     def test_runtime_caps_and_dependency_waves_have_a_structured_contract(self):
-        engine = (
-            WRXP_ROOT / "skills/ha/references/model-routing.md"
-        ).read_text()
-        self.assertIn(
-            "`runtime_parallel_limit`",
-            (WRXP_ROOT / "skills/ha/SKILL.md").read_text(),
-        )
-
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
         for contract in (
-            "max_parallel_delegations: positive_integer | unknown",
-            "runtime_parallel_limit:",
-            "when_can_delegate_false: 1",
-            "when_max_unknown: 1",
-            "when_max_positive: max_parallel_delegations",
-            "same_file_write",
-            "shared_state",
-            "external_side_effect",
-            "producer_consumer",
-            "writer_verifier",
+            "`runtime_parallel_limit`",
+            "위임할 수 없거나 확인할 수 없으면 1",
+            "같은 파일 쓰기·공유 상태·외부 부작용·생산자→소비자·작성자→검증자",
+            "쓰기 단위면 직렬로 둔다",
         ):
             self.assertIn(contract, engine)
-
     def test_tier_shims_only_supply_question_presets(self):
         expected = {
             "haq": {
@@ -732,8 +717,11 @@ class WrxpInvariantTests(unittest.TestCase):
             "확장 동의 제어 질문은 `questions_asked_total += 1`만 적용",
             questioning,
         )
-        self.assertIn("최대 5개의 실질 질문 라운드", questioning)
-        self.assertIn("20 - questions_asked_total", questioning)
+        self.assertIn("`extended_max_questions`까지", questioning)
+        deep = parse_flat_yaml_block_after(
+            (WRXP_ROOT / "skills/haqqq/SKILL.md").read_text(), "## Preset"
+        )
+        self.assertEqual((20, 5), (deep["extended_max_questions"], deep["extended_max_rounds"]))
 
     def test_question_budget_state_records_each_dispatched_batch(self):
         """A sent question batch must consume its question and round budget."""
@@ -765,8 +753,8 @@ class WrxpInvariantTests(unittest.TestCase):
         skill = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
 
         self.assertIn(
-            "QuestionGate 계약은 이 파일 안에 있으므로 참조 문서를 읽지 못해도 "
-            "질문 판정 자체는 건너뛸 수 없다",
+            "질문 판정, `mid_run_decision`, 역할·병렬·위임 기준, 공유 계약 검토, "
+            "최종 답 틀은 이 파일에만 있다",
             skill,
         )
         self.assertIn(
@@ -782,20 +770,21 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertLess(gate_heading, commit_heading)
 
     def test_question_gate_contract_is_byte_identical_across_entry_files(self):
-        """Every entry file carries the same gate; shims never fork the policy."""
-        blocks = {}
-        for name in ("ha", "haq", "haqq", "haqqq"):
+        """The gate lives once in /ha; every shim carries the same two-line pointer."""
+        summaries = set()
+        for name in ("haq", "haqq", "haqqq"):
             text = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
-            start = text.index("읽기 전용 탐색과 버릴 수 있는 곳의 PROBE는 판정 전에도 허용한다")
-            tail = "사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다."
-            end = text.index(tail) + len(tail)
-            blocks[name] = text[start:end]
+            start = text.index("## 질문 판정 (필수)")
+            end = text.index("## Common Engine Invocation")
+            summaries.add(text[start:end])
+            self.assertNotIn("QuestionGateVerdict", text)
+            self.assertNotIn("`mid_run_decision`:", text)
+        self.assertEqual(1, len(summaries), "shim gate summaries diverged")
 
-        self.assertEqual(
-            1,
-            len(set(blocks.values())),
-            f"QuestionGate blocks diverged across {sorted(blocks)}",
-        )
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        start = engine.index("읽기 전용 탐색과 버릴 수 있는 곳의 PROBE는 판정 전에도 허용한다")
+        tail = "사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다."
+        blocks = {"ha": engine[start:engine.index(tail) + len(tail)]}
 
         gate = blocks["ha"]
         verdict_match = re.search(
@@ -822,24 +811,21 @@ class WrxpInvariantTests(unittest.TestCase):
 
     def test_gate_outranks_a_runtime_default_that_discourages_questions(self):
         """Codex Default mode prefers assumptions over questions; the tier call overrides it."""
-        for name in ("ha", "haq", "haqq", "haqqq"):
+        engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
+        for clause in (
+            "질문 tier 스킬을 호출한 것 자체가 명확화를 요청하는 명시적 사용자 지시다",
+            "런타임 기본 설정이 질문보다 가정을 선호하도록 안내하더라도, "
+            "이 계약이 정한 `must_ask`와 예산 안의 `decision_quality` 질문은 "
+            "그 기본 선호보다 우선한다",
+            "사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다",
+        ):
+            self.assertIn(clause, engine)
+        for name in ("haq", "haqq", "haqqq"):
             entry = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
+            self.assertIn("이 tier를 부른 것 자체가 명확화 요청", entry)
             self.assertIn(
-                "질문 tier 스킬을 호출한 것 자체가 명확화를 요청하는 "
-                "명시적 사용자 지시다",
-                entry,
+                "`must_ask`와 예산 안의 `decision_quality` 질문이 우선한다", entry
             )
-            self.assertIn(
-                "런타임 기본 설정이 질문보다 가정을 선호하도록 안내하더라도, "
-                "이 계약이 정한 `must_ask`와 예산 안의 `decision_quality` 질문은 "
-                "그 기본 선호보다 우선한다",
-                entry,
-            )
-            self.assertIn(
-                "사용자가 이 대화에서 질문 중단을 밝힌 경우에만 그 지시를 따른다",
-                entry,
-            )
-
     def test_free_form_fallback_matches_runtimes_without_a_choice_widget(self):
         """Codex forbids faking a multiple-choice question as assistant text."""
         questioning = (
@@ -855,7 +841,7 @@ class WrxpInvariantTests(unittest.TestCase):
         # Observed in the 0.1.27 behavior run: with questioning.md unreadable the
         # model asked four text questions with (a)/(b)/(c) options, which Codex
         # forbids. The fallback has to survive a failed reference read.
-        for name in ("ha", "haq", "haqq", "haqqq"):
+        for name in ("ha",):
             entry = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
             self.assertIn(
                 "참조를 읽을 수 없으면 한 라운드 최대 4개 상한만 적용하되, "
@@ -867,7 +853,7 @@ class WrxpInvariantTests(unittest.TestCase):
 
     def test_gate_covers_the_scenarios_that_regressed_in_0_1_26(self):
         """Each observed scenario must map to a discriminating rule in the contract."""
-        gate = (WRXP_ROOT / "skills/haqq/SKILL.md").read_text()
+        gate = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()
         questioning = (
             WRXP_ROOT / "skills/ha/references/questioning.md"
         ).read_text()
@@ -924,7 +910,7 @@ class WrxpInvariantTests(unittest.TestCase):
 
     def test_entry_files_stay_small_enough_to_be_read_every_call(self):
         """Progressive disclosure only works if the entry files are cheap."""
-        caps = {"ha": 16_000, "haq": 7_000, "haqq": 7_000, "haqqq": 7_000}
+        caps = {"ha": 18_000, "haq": 3_000, "haqq": 3_000, "haqqq": 3_000}
         for name, cap in caps.items():
             size = (WRXP_ROOT / f"skills/{name}/SKILL.md").stat().st_size
             self.assertLessEqual(

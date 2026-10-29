@@ -1,6 +1,6 @@
-# Reasoning Framework (MANDATORY Before Every Action)
+# Reasoning Framework
 
-Before taking ANY action (tool calls OR responses), you MUST proactively, methodically, and independently reason through:
+Apply this framework when the calling skill says so (for `/ha`, decisions with complex dependencies or risk). When it applies, reason through the following before acting, and do not print the raw reasoning:
 
 ## 1. Logical Dependencies and Constraints
 Analyze the intended action against the following factors. Resolve conflicts in order of importance:

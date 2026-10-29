@@ -71,13 +71,7 @@ QuestionGateVerdict:
 
 위 preset을 원본 요청 앞에 붙여 `/ha`를 호출한다.
 
-중첩 skill 호출을 지원하지 않는 런타임에서는 다음 파일을 끝까지 읽고 같은 preset으로 직접 실행한다.
-
-1. `../ha/SKILL.md`
-2. `../ha/references/questioning.md`
-3. `../ha/references/model-routing.md`
-4. `../ha/references/verification.md`
-5. `../ha/references/tracks.md`(무거운 경로에 들어갈 때)
+중첩 skill 호출을 지원하지 않는 런타임에서는 `../ha/SKILL.md`를 끝까지 읽고 같은 preset으로 직접 실행한다. 참조 파일은 `/ha`와 똑같이 그 파일이 정한 시점에만 읽는다. 질문할 때 `../ha/references/questioning.md`, 하위 에이전트 모델을 정할 때 `../ha/references/model-routing.md`, 무거운 경로에 들어갈 때 `../ha/references/tracks.md`와 `../ha/references/verification.md`를 읽는다.
 
 shim은 task-type 질문 목록, 모델명, 실행자 역할 또는 검증 규칙을 추가하지 않는다.
 

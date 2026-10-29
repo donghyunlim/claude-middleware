@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.74-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.76-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -85,7 +85,7 @@ claude plugin update wrxp@donghyunlim
 
 기존 관리 표시가 깨졌거나 모호하면 원문을 고치거나 설치를 막지 않고 새 규칙만 추가한다. 갱신·제거는 안전하게 식별되는 추가분에 한정하며, 남아 있는 기존 규칙을 함께 보고한다. 잘못된 인코딩·심볼릭 링크·권한·동시 변경 등의 실제 파일 접근 오류는 이 추가 방식으로 우회하지 않는다. 공통 배포본은 다른 플러그인과의 우선순위를 지정하지 않는다.
 
-셋업 실행기는 Python 3.9 이상이 필요하다. 코드 위임은 Codex에서는 `gpt-6.1-sol` medium/high, Claude에서는 Opus·Sonnet을 명시할 수 있는 실행 경로가 필요하며, 해당 경로가 없으면 코드 위임만 준비 미완료로 안내한다. Semble·MAGMA·Qwen·BWS나 다른 플러그인은 자동 설치하지 않는다. 전역 연결 설치와 실제 모델·도구 접근 가능 여부는 별도로 확인한다.
+셋업 실행기는 Python 3.9 이상이 필요하다. 코드 위임은 Codex에서는 `gpt-6.1-sol` medium/high, Claude에서는 Opus·Sonnet을 명시할 수 있는 실행 경로가 필요하며, 해당 경로가 없으면 코드 위임만 준비 미완료로 안내한다. Semble·MAGMA·BWS나 다른 플러그인은 자동 설치하지 않는다. 전역 연결 설치와 실제 모델·도구 접근 가능 여부는 별도로 확인한다.
 
 ### 맥락 기반 검색 위임
 

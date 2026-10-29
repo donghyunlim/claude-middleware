@@ -15,7 +15,7 @@ description: Use when a user wants to set up, update, inspect, or remove wrxp gl
 2. [references/runtime-setup.md](references/runtime-setup.md)를 읽고 선택한 런타임에서 wrxp가 설치·활성화되어 있는지 확인한다. 없는 쪽에 설치하는 것은 사용자의 셋업 범위에 포함될 때만 수행한다. CLI 설치·계정 로그인·MCP 인증은 별도이며 임의로 실행하거나 비밀값을 복사하지 않는다.
 3. [assets/global-rules.md](assets/global-rules.md)의 연결 규칙과 대상 전역 파일을 확인한다. 포함된 모든 스킬은 플러그인에서 제공한다. 자주 쓰는 개발·테스트·검색·코드 위임은 조건부 연결하고, 명령형 스킬은 선택 용도만 안내한다. `handoff`의 명시 호출 제한을 유지한다.
 4. 플러그인과 같은 이름의 개인 스킬(`~/.claude/skills/`, `~/.codex/skills/`)이 있으면 알린다. 실행기 보고의 `personal_skill_copies`와 경고로 확인하며, 알림만 하고 지우지 않는다.
-5. Python 3.9 이상이 있는지 확인한다. 코드 위임에는 Codex는 Sol medium/high, Claude는 Opus·Sonnet을 실제로 실행할 수 있는 경로가 필요하다. 해당 모델 접근이 없으면 코드 위임을 '준비 미완료'로 보고한다. 코드 위임을 사용할 수 없어도 다른 스킬 연결은 설치할 수 있다. 검색 도구·Semble·MAGMA·Qwen은 선택 기능이며 없다고 자동 설치하지 않는다.
+5. Python 3.9 이상이 있는지 확인한다. 코드 위임에는 Codex는 Sol medium/high, Claude는 Opus·Sonnet을 실제로 실행할 수 있는 경로가 필요하다. 해당 모델 접근이 없으면 코드 위임을 '준비 미완료'로 보고한다. 코드 위임을 사용할 수 없어도 다른 스킬 연결은 설치할 수 있다. 검색 도구·Semble·MAGMA는 선택 기능이며 없다고 자동 설치하지 않는다.
 
 ## 미리보기 → 적용 → 확인
 

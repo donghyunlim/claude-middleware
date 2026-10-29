@@ -1,19 +1,19 @@
 {
   "name": "wrxp",
-  "version": "0.1.75",
-  "description": "Convergent reasoning-and-execution (ha family), staged development, and delegation skills for Claude Code. Includes fast-worker subagent (local Qwen3.6 with Claude fallback: Haiku 5.5, otherwise Sonnet 5.5 low) for mechanical mid-to-large context tasks.",
+  "version": "0.1.76",
+  "description": "ha family (one entry point that asks only the decisions you must make, then executes and verifies), staged development, search and code delegation, session handoff, intent check, Korean polishing and share drafts, plus WorxSales QA and cloud infra review skills for Claude Code and Codex.",
   "author": {
     "name": "donghyunlim"
   },
   "license": "MIT",
   "keywords": [
     "claude-code",
+    "codex",
     "plugin",
     "orchestration",
-    "agents",
-    "fast-worker",
-    "qwen",
-    "claude-fallback"
+    "delegation",
+    "staged-development",
+    "korean"
   ],
   "skills": "./skills/"
 }

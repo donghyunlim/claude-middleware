@@ -1,15 +1,12 @@
 {
   "name": "wrxp",
-  "version": "0.1.75",
-  "description": "Convergent reasoning-and-execution (ha family), staged development, and delegation skills for Claude Code",
+  "version": "0.1.76",
+  "description": "ha family (one entry point that asks only the decisions you must make, then executes and verifies), staged development, search and code delegation, session handoff, intent check, Korean polishing and share drafts, plus WorxSales QA and cloud infra review skills for Claude Code and Codex.",
   "author": "donghyunlim",
   "license": "MIT",
   "files": [
     "skills",
     "shared",
-    "agents",
-    "scripts/qwen.py",
-    "docs/fast-worker-routing.md",
     "README.md",
     "CHANGELOG.md"
   ]

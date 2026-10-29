@@ -173,7 +173,20 @@ controller는 확정 의도를 실행 단위와 의존선으로 나눈다. `runt
 
 ## 최종 출력
 
-필요한 내용만 간결하게 전달한다. 출력은 `result`(outcome, artifacts, defaults_taken, user_decisions, verification_evidence, remaining_risks)이고 세부는 `references/verification.md`에 있다. 묻지 않고 대신 정한 판단은 `defaults_taken`에 적어 답 첫머리에 영향이 큰 것부터 보인다.
+모든 경로(가벼운 경로 포함)의 마지막 답은 아래 `result` 틀을 채운다. 사용자에게는 키 이름 대신 문장과 목록으로 쓰고, 없는 항목은 뺀다. 내부 추론은 쓰지 않는다.
+
+```yaml
+result:
+  defaults_taken: [string]        # 대신 정한 판단(assumptions 포함). 답 첫머리에, 큰 것부터
+  outcome: string
+  artifacts: [string]
+  user_decisions: [string]
+  verification_evidence: [string] # 실제로 돌린 확인과 결과
+  remaining_risks: [string]       # 확인 못 한 것, 남은 위험
+  model_routes: [model_route]     # 실제 위임·폴백이 있을 때만
+```
+
+`defaults_taken`의 확인 절차는 `references/questioning.md`의 기본값 하한을 따른다. 무거운 경로에서 남기는 `verification` 기록은 `references/verification.md`에 있다.
 
 ## 중첩 호출이 없는 런타임
 

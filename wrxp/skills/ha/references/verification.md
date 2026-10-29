@@ -90,20 +90,7 @@ RepairLoopPolicy:
 
 ## 결과 기록
 
-`/ha`의 최종 출력은 다음 틀을 따른다. `defaults_taken`에는 `assumptions`를 포함해 묻지 않고 대신 정한 판단을 적고, 확인 절차는 `questioning.md`의 기본값 하한을 따른다. 실제 위임이나 폴백이 없으면 `model_routes`를 생략할 수 있다.
-
-```yaml
-result:
-  outcome: string
-  artifacts: [string]
-  defaults_taken: [string]
-  user_decisions: [string]
-  verification_evidence: [string]
-  remaining_risks: [string]
-  model_routes: [model_route]
-```
-
-검증 결과는 다음 형태로 남긴다.
+`/ha`의 최종 답 틀(`result`)은 `SKILL.md`의 최종 출력 절에 있다. 무거운 경로에서는 그에 더해 검증 결과를 다음 형태로 남긴다.
 
 ```yaml
 verification:
@@ -116,4 +103,3 @@ verification:
   checkpoint: none | agent | user
 ```
 
-사용자에게는 상세 내부 추론이 아니라 결과, 증거, 남은 위험만 전달한다.

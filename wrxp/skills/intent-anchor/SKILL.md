@@ -10,8 +10,7 @@ description: "Use when the user explicitly invokes /wrxp:intent-anchor ($wrxp:in
 ## 언제 실행하는가
 
 - 사용자가 명시적으로 호출하면 실행한다.
-- 자동 실행은 드물게 한다. 다음 중 하나가 분명할 때만 실행한다.
-  - 사용자가 작업 방향 자체를 바로잡는다. 단순 버그·오타·표현 지적과 재시도만 쌓인 경우는 해당하지 않는다.
+- 자동 실행은 드물게, 사용자가 작업 방향 자체를 바로잡는 것이 분명할 때만 한다. 단순 버그·오타·표현 지적과 재시도만 쌓인 경우는 해당하지 않는다.
 - 자동으로 실행할 때는 첫 줄에 어떤 신호였는지 밝히고, 진행 중인 작업을 멈춘 상태로 둔다.
 - 이 스킬을 다른 스킬의 선행 조건이나 훅에 연결하지 않는다.
 
@@ -33,7 +32,7 @@ description: "Use when the user explicitly invokes /wrxp:intent-anchor ($wrxp:in
    - 현재 세션은 자동으로 찾는다. 다른 세션은 `--session-id` 또는 `--log`로 지정한다.
    - 사용자 발화에 경로가 없는 이전 핸드오프를 알고 있으면 `--handoff <경로>`로 추가한다.
    - 메인 런타임을 알 수 없다는 오류가 나오면 `--main-runtime claude|codex`를 지정한다.
-   - 리뷰어는 새 맥락의 최고 모델을 사용한다. Claude 메인이면 Codex로 오프로딩하지 않고 Claude Opus → Sonnet 순으로, Codex 메인이면 반대 계열인 Claude Opus → Sonnet을 우선한 뒤 Codex Astra로 내려간다. effort는 high, 권한은 읽기 전용이다.
+   - 리뷰어는 새 맥락의 최고 모델을 사용한다. Claude 메인이면 Codex로 오프로딩하지 않고 Claude Opus → Sonnet 순으로, Codex 메인이면 반대 계열인 Claude Opus → Sonnet을 우선한 뒤 Codex 최상위 모델(Astra, 없으면 Sol) 하나로 내려간다. effort는 high, 권한은 읽기 전용이다.
 
    종료 코드에 따라 다음과 같이 처리한다.
    - `0`: `round-N/response.md`를 읽는다.

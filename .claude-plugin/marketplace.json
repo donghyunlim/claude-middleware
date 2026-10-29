@@ -16,8 +16,8 @@
     },
     {
       "name": "wrxp",
-      "description": "Convergent reasoning-and-execution (ha family), staged development, and delegation skills",
-      "version": "0.1.75",
+      "description": "ha family entry point plus staged development, delegation, handoff, intent check, Korean writing, and WorxSales QA skills",
+      "version": "0.1.76",
       "source": "./wrxp",
       "category": "productivity",
       "tags": ["orchestration", "agents", "staged-development", "delegation"]

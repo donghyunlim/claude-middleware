@@ -2,6 +2,14 @@
 
 이 문서는 wrxp 플러그인의 사용자에게 영향을 주는 변경 사항을 기록합니다.
 
+## [0.1.76] - 2026-10-29
+
+- **`fast-worker` 에이전트와 로컬 Qwen 의존을 없앴습니다.** `agents/fast-worker.md`, `scripts/qwen.py`, `docs/fast-worker-routing.md`를 지웠습니다. 단순 작업은 `ha` 모델 라우팅의 단순 작업자 역할(Claude는 Haiku, Codex는 `gpt-6-luna`)이 맡고, 합의된 코드 구현은 전처럼 `code-delegation`이 맡습니다. 개인 환경에 `~/.claude/scripts/qwen.py` 같은 연결을 따로 두었다면 지워도 됩니다.
+- `haq`·`haqq`·`haqqq`: 중첩 호출이 없는 런타임에서도 `ha`의 참조 파일을 한꺼번에 읽지 않고, `/ha`와 같은 시점(질문할 때, 모델을 정할 때, 무거운 경로에 들어갈 때)에만 읽습니다.
+- `ha`: 최종 답 틀(`result`)을 `references/verification.md`에서 `SKILL.md` 본문으로 옮겼습니다. 이제 가벼운 경로에서도 항상 읽히며, 사용자에게는 키 이름 대신 문장과 목록으로 씁니다.
+- `intent-anchor`: 자동 실행 조건 목록의 깨진 형식을 고치고, Codex 메인일 때 리뷰어가 Astra가 없으면 Sol로 내려간다는 실제 동작을 적었습니다.
+- 플러그인·마켓플레이스 설명과 README 배지를 현재 구성에 맞게 고쳤습니다.
+
 ## [0.1.75] - 2026-10-28
 
 - **팀원 안내: 전역 지침 블록에 "한국어 출력 원칙"이 들어갔습니다.** 주체·대상을 생략하지 않기, 조사·어미 갖추기, 완결된 문장, 정확한 어휘, 기술 용어 표기, 코드·로그 원문 유지 등 11줄과, 완성된 한국어 산출물은 `wrxp:korean-polish`로 교정한다는 안내입니다. Claude와 Codex 모두 `/wrxp:setup`(Codex는 `$wrxp:setup`)으로 갱신하십시오. 엠대시 사용 줄은 개인 취향이라 넣지 않았습니다.

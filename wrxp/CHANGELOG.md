@@ -4,6 +4,7 @@
 
 ## [0.1.76] - 2026-10-29
 
+- **팀원 안내: Claude에서 `/wrxp:setup`을 다시 실행해 주십시오.** setup이 이제 `~/.claude/settings.json`의 `permissions.allow`에 wrxp 플러그인 폴더 읽기 허용 규칙 하나(`Read(~/.claude/plugins/cache/<마켓플레이스>/wrxp/**)`)를 넣습니다. 이 규칙이 없으면 `ha`가 참고 파일(질문 예산, 모델 후보, 무거운 경로 검증)을 읽을 때마다 권한 확인 창이 뜨고, 무인 실행에서는 읽기가 거부됩니다. 다른 설정은 바꾸지 않고 백업을 남기며, `--remove`는 이 규칙만 지웁니다.
 - **`fast-worker` 에이전트와 로컬 Qwen 의존을 없앴습니다.** `agents/fast-worker.md`, `scripts/qwen.py`, `docs/fast-worker-routing.md`를 지웠습니다. 단순 작업은 `ha` 모델 라우팅의 단순 작업자 역할(Claude는 Haiku, Codex는 `gpt-6-luna`)이 맡고, 합의된 코드 구현은 전처럼 `code-delegation`이 맡습니다. 개인 환경에 `~/.claude/scripts/qwen.py` 같은 연결을 따로 두었다면 지워도 됩니다.
 - `haq`·`haqq`·`haqqq`: 중첩 호출이 없는 런타임에서도 `ha`의 참조 파일을 한꺼번에 읽지 않고, `/ha`와 같은 시점(질문할 때, 모델을 정할 때, 무거운 경로에 들어갈 때)에만 읽습니다.
 - `ha`: 최종 답 틀(`result`)과 `defaults_taken` 표시 규칙을 `references/verification.md`·`questioning.md`에서 `SKILL.md` 본문으로 옮겨, 가벼운 경로에서도 항상 읽히게 했습니다. `defaults_taken`을 틀의 첫 항목으로 올렸고, 사용자에게는 키 이름 대신 문장과 목록으로 쓰며 없는 항목은 뺀다는 지시를 새로 넣었습니다.

@@ -222,6 +222,40 @@ def load_body(script, inventory):
     return body
 
 
+def plugin_read_rule(script, claude_home):
+    """Read allow rule for the installed plugin, covering every cached version."""
+    root = script.parents[3]
+    cache = claude_home / "plugins" / "cache"
+    if cache in root.parents:
+        root = root.parent
+    home = Path.home()
+    if home in root.parents:
+        return f"Read(~/{root.relative_to(home).as_posix()}/**)"
+    return f"Read(/{root.as_posix()}/**)"
+
+
+def permission_plan(path, raw, rule, remove):
+    """Add or remove one exact permissions.allow entry; never touch other settings."""
+    try:
+        data = json.loads(raw.decode("utf-8")) if raw else {}
+    except ValueError:
+        return raw, "invalid", ["settings.json is not valid JSON; read permission not changed."]
+    allow = data.get("permissions", {}).get("allow", []) if isinstance(data, dict) else None
+    if not isinstance(allow, list) or not isinstance(data.get("permissions", {}), dict):
+        return raw, "invalid", ["settings.json permissions.allow is not a list; read permission not changed."]
+    present = rule in allow
+    if remove:
+        if not present:
+            return raw, "absent", []
+        data["permissions"]["allow"] = [entry for entry in allow if entry != rule]
+    else:
+        if present:
+            return raw, "unchanged", []
+        data.setdefault("permissions", {}).setdefault("allow", []).append(rule)
+    output = (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    return output, "removed" if remove else "added" if raw is None else "updated", []
+
+
 def choose_codex_path(home):
     override = home / "AGENTS.override.md"
     raw, _ = read_target(override)
@@ -322,9 +356,18 @@ def main(argv=None):
                 item["planned_block"] = preview
             report["targets"].append(item)
             plans.append((path, raw, info, output, item))
+            if runtime == "claude":
+                rule = plugin_read_rule(script, claude_home)
+                path = claude_home / "settings.json"
+                raw, info = read_target(path)
+                output, status, notes = permission_plan(path, raw, rule, args.remove)
+                item = {"runtime": "claude-permission", "path": str(path), "status": status,
+                        "backup": None, "warnings": notes, "rule": rule}
+                report["targets"].append(item)
+                plans.append((path, raw, info, output, item))
         if args.apply:
             for path, raw, info, output, item in plans:
-                if item["status"] in ("unchanged", "absent", "unmanaged"):
+                if item["status"] in ("unchanged", "absent", "unmanaged", "invalid"):
                     continue
                 if not snapshot_matches(path, raw, info):
                     raise SetupError(f"target changed during setup: {path}")

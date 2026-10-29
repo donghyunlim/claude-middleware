@@ -51,7 +51,7 @@ class SetupGlobalTests(unittest.TestCase):
     def test_new_both_targets_and_bundled_inventory(self):
         result, report = self.run_cli("--target", "both", "--apply")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual([t["status"] for t in report["targets"]], ["added", "added"])
+        self.assertEqual([t["status"] for t in report["targets"]], ["added", "added", "added"])
         self.assertEqual(report["bundled_skills"], ["cast", "ha"])
         self.assertIn("Use wrxp:ha", (self.codex / "AGENTS.md").read_text())
         self.assertIn(START, (self.claude / "CLAUDE.md").read_text())
@@ -69,7 +69,7 @@ class SetupGlobalTests(unittest.TestCase):
         (codex_copy / "SKILL.md").write_text("personal\n")
         result, report = self.run_cli("--target", "both", "--apply")
         self.assertEqual(result.returncode, 0, result.stderr)
-        codex, claude = report["targets"]
+        codex, claude, _ = report["targets"]
         self.assertEqual(codex["personal_skill_copies"], [str(codex_copy)])
         self.assertEqual(claude["personal_skill_copies"], [str(personal)])
         self.assertTrue(any(str(personal) in w for w in claude["warnings"]))
@@ -82,9 +82,50 @@ class SetupGlobalTests(unittest.TestCase):
         result, report = self.run_cli("--target", "both")
         self.assertEqual(result.returncode, 0)
         self.assertEqual(report["mode"], "plan")
-        self.assertEqual([t["status"] for t in report["targets"]], ["added", "added"])
+        self.assertEqual([t["status"] for t in report["targets"]], ["added", "added", "added"])
         self.assertFalse(self.codex.exists())
         self.assertFalse(self.claude.exists())
+
+    def test_claude_read_permission_is_added_once_and_keeps_other_settings(self):
+        self.claude.mkdir()
+        settings = self.claude / "settings.json"
+        settings.write_text(json.dumps({"model": "opus", "permissions": {"allow": ["Bash(ls)"]}}))
+        result, report = self.run_cli("--target", "claude", "--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        permission = report["targets"][1]
+        self.assertEqual(("claude-permission", "updated"), (permission["runtime"], permission["status"]))
+        self.assertTrue(permission["backup"])
+        data = json.loads(settings.read_text())
+        self.assertEqual("opus", data["model"])
+        self.assertEqual(["Bash(ls)", permission["rule"]], data["permissions"]["allow"])
+        self.assertTrue(permission["rule"].startswith("Read(") and permission["rule"].endswith("/**)"))
+        result, report = self.run_cli("--target", "claude", "--check")
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual("unchanged", report["targets"][1]["status"])
+        result, report = self.run_cli("--target", "claude", "--remove", "--apply")
+        self.assertEqual("removed", report["targets"][1]["status"])
+        self.assertEqual(["Bash(ls)"], json.loads(settings.read_text())["permissions"]["allow"])
+
+    def test_invalid_settings_json_is_reported_and_left_untouched(self):
+        self.claude.mkdir()
+        settings = self.claude / "settings.json"
+        settings.write_text("{not json")
+        result, report = self.run_cli("--target", "claude", "--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual("invalid", report["targets"][1]["status"])
+        self.assertEqual("{not json", settings.read_text())
+
+    def test_read_rule_covers_every_cached_plugin_version(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("setup_global", SOURCE)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        home = Path.home()
+        cached = home / ".claude/plugins/cache/team/wrxp/0.1.76/skills/setup/scripts/setup_global.py"
+        self.assertEqual("Read(~/.claude/plugins/cache/team/wrxp/**)",
+                         module.plugin_read_rule(cached, home / ".claude"))
+        checkout = Path("/opt/src/wrxp/skills/setup/scripts/setup_global.py")
+        self.assertEqual("Read(//opt/src/wrxp/**)", module.plugin_read_rule(checkout, home / ".claude"))
 
     def test_idempotent_apply_does_not_rewrite_or_backup(self):
         self.run_cli("--target", "codex", "--apply")

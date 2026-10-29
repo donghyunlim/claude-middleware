@@ -599,6 +599,7 @@ class WrxpInvariantTests(unittest.TestCase):
         for name in ("haq", "haqq", "haqqq"):
             entry = (WRXP_ROOT / f"skills/{name}/SKILL.md").read_text()
             self.assertIn("`../ha/SKILL.md` 3절 QUESTION_GATE 판정", entry)
+            self.assertIn("Skill 도구로 `wrxp:ha`를 부른다", entry)
 
     def test_runtime_caps_and_dependency_waves_have_a_structured_contract(self):
         engine = (WRXP_ROOT / "skills/ha/SKILL.md").read_text()

@@ -37,7 +37,7 @@ extension_requires_user_consent: true
 
 ## Common Engine Invocation
 
-위 preset을 원본 요청 앞에 붙여 `/ha`를 호출한다.
+위 preset을 원본 요청 앞에 붙여 `/ha`를 호출한다. Skill 도구가 있는 런타임(Claude Code)에서는 파일을 직접 읽지 말고 Skill 도구로 `wrxp:ha`를 부른다. 다른 스킬 폴더의 파일 읽기는 권한 확인에 막힐 수 있다.
 
 중첩 skill 호출을 지원하지 않는 런타임에서는 `../ha/SKILL.md`를 끝까지 읽고 같은 preset으로 직접 실행한다. 참조 파일은 `/ha`와 똑같이 그 파일이 정한 시점에만 읽는다. 질문할 때 `../ha/references/questioning.md`, 하위 에이전트 모델을 정할 때 `../ha/references/model-routing.md`, 무거운 경로에 들어갈 때 `../ha/references/tracks.md`와 `../ha/references/verification.md`를 읽는다.
 

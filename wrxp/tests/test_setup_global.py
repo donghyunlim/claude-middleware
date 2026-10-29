@@ -29,6 +29,9 @@ class SetupGlobalTests(unittest.TestCase):
             folder = self.skills / name
             folder.mkdir()
             (folder / "SKILL.md").write_text("skill\n")
+        manifest = self.root / "plugin/.claude-plugin/plugin.json"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text('{"name": "wrxp"}')
         self.codex = self.root / "codex"
         self.claude = self.root / "claude"
 
@@ -115,17 +118,74 @@ class SetupGlobalTests(unittest.TestCase):
         self.assertEqual("invalid", report["targets"][1]["status"])
         self.assertEqual("{not json", settings.read_text())
 
-    def test_read_rule_covers_every_cached_plugin_version(self):
+    def load_module(self):
         import importlib.util
         spec = importlib.util.spec_from_file_location("setup_global", SOURCE)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        home = Path.home()
-        cached = home / ".claude/plugins/cache/team/wrxp/0.1.76/skills/setup/scripts/setup_global.py"
-        self.assertEqual("Read(~/.claude/plugins/cache/team/wrxp/**)",
-                         module.plugin_read_rule(cached, home / ".claude"))
-        checkout = Path("/opt/src/wrxp/skills/setup/scripts/setup_global.py")
-        self.assertEqual("Read(//opt/src/wrxp/**)", module.plugin_read_rule(checkout, home / ".claude"))
+        return module
+
+    def make_plugin(self, root, name="wrxp"):
+        script = root / "skills/setup/scripts/setup_global.py"
+        script.parent.mkdir(parents=True)
+        (root / ".claude-plugin").mkdir(parents=True)
+        (root / ".claude-plugin/plugin.json").write_text(json.dumps({"name": name}))
+        return script
+
+    def test_read_rule_covers_every_cached_plugin_version(self):
+        module = self.load_module()
+        cached = self.make_plugin(self.claude / "plugins/cache/team/wrxp/0.1.76")
+        rule = module.plugin_read_rule(cached.resolve(), self.claude)
+        self.assertTrue(rule.endswith("/claude/plugins/cache/team/wrxp/**)"), rule)
+        checkout = self.make_plugin(self.root / "src/wrxp")
+        self.assertTrue(module.plugin_read_rule(checkout.resolve(), self.claude).endswith("/src/wrxp/**)"))
+
+    def test_read_rule_follows_a_symlinked_claude_home(self):
+        module = self.load_module()
+        real = self.root / "real-claude"
+        cached = self.make_plugin(real / "plugins/cache/team/wrxp/0.1.76")
+        self.claude.symlink_to(real)
+        rule = module.plugin_read_rule(cached.resolve(), self.claude)
+        self.assertIn("/claude/plugins/cache/team/wrxp/**", rule)
+        self.assertNotIn("0.1.76", rule)
+
+    def test_read_rule_refuses_unidentified_or_too_wide_roots(self):
+        module = self.load_module()
+        other = self.make_plugin(self.root / "other", name="not-wrxp")
+        self.assertIsNone(module.plugin_read_rule(other.resolve(), self.claude))
+        flat = self.make_plugin(self.claude / "plugins/cache/team/wrxp")
+        self.assertIsNone(module.plugin_read_rule(flat.resolve(), self.claude))
+        bare = self.root / "bare/skills/setup/scripts/setup_global.py"
+        bare.parent.mkdir(parents=True)
+        self.assertIsNone(module.plugin_read_rule(bare, self.claude))
+
+    def test_odd_settings_shapes_are_reported_not_crashed(self):
+        self.claude.mkdir()
+        settings = self.claude / "settings.json"
+        for body in ('{"permissions": "x"}', '{"permissions": null}', '[]',
+                     '{"permissions": {"allow": null}}'):
+            settings.write_text(body)
+            result, report = self.run_cli("--target", "claude", "--apply")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual("invalid", report["targets"][1]["status"])
+            self.assertEqual(body, settings.read_text())
+
+    def test_symlinked_settings_is_skipped_without_blocking_claude_md(self):
+        self.claude.mkdir()
+        real = self.root / "dotfiles-settings.json"
+        real.write_text("{}")
+        (self.claude / "settings.json").symlink_to(real)
+        result, report = self.run_cli("--target", "claude", "--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual("added", report["targets"][0]["status"])
+        self.assertEqual("skipped", report["targets"][1]["status"])
+        self.assertEqual("{}", real.read_text())
+
+    def test_new_settings_file_is_owner_only(self):
+        result, report = self.run_cli("--target", "claude", "--apply")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        mode = stat.S_IMODE((self.claude / "settings.json").stat().st_mode)
+        self.assertEqual(0o600, mode)
 
     def test_idempotent_apply_does_not_rewrite_or_backup(self):
         self.run_cli("--target", "codex", "--apply")

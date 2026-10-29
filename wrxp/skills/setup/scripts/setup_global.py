@@ -223,36 +223,50 @@ def load_body(script, inventory):
 
 
 def plugin_read_rule(script, claude_home):
-    """Read allow rule for the installed plugin, covering every cached version."""
+    """Read allow rule for this wrxp plugin, covering every cached version, or None."""
     root = script.parents[3]
-    cache = claude_home / "plugins" / "cache"
+    try:
+        manifest = json.loads((root / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(manifest, dict) or manifest.get("name") != "wrxp":
+        return None
+    cache = (claude_home / "plugins" / "cache").resolve()
     if cache in root.parents:
-        root = root.parent
+        if root.parent.name != "wrxp":
+            return None
+        root = claude_home / "plugins" / "cache" / root.parent.relative_to(cache)
     home = Path.home()
+    if root in (home, claude_home) or root in home.parents or root in claude_home.parents:
+        return None
     if home in root.parents:
         return f"Read(~/{root.relative_to(home).as_posix()}/**)"
     return f"Read(/{root.as_posix()}/**)"
 
 
-def permission_plan(path, raw, rule, remove):
-    """Add or remove one exact permissions.allow entry; never touch other settings."""
+def permission_plan(raw, rule, remove):
+    """Add or remove one exact permissions.allow entry; other settings keep their values."""
     try:
-        data = json.loads(raw.decode("utf-8")) if raw else {}
+        data = json.loads(raw.decode("utf-8")) if raw and raw.strip() else {}
     except ValueError:
         return raw, "invalid", ["settings.json is not valid JSON; read permission not changed."]
-    allow = data.get("permissions", {}).get("allow", []) if isinstance(data, dict) else None
-    if not isinstance(allow, list) or not isinstance(data.get("permissions", {}), dict):
+    permissions = data.get("permissions", {}) if isinstance(data, dict) else None
+    allow = permissions.get("allow", []) if isinstance(permissions, dict) else None
+    if not isinstance(allow, list):
         return raw, "invalid", ["settings.json permissions.allow is not a list; read permission not changed."]
-    present = rule in allow
     if remove:
-        if not present:
+        if rule not in allow:
             return raw, "absent", []
-        data["permissions"]["allow"] = [entry for entry in allow if entry != rule]
+        permissions["allow"] = [entry for entry in allow if entry != rule]
     else:
-        if present:
+        if rule in allow:
             return raw, "unchanged", []
-        data.setdefault("permissions", {}).setdefault("allow", []).append(rule)
-    output = (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+        data["permissions"] = permissions
+        permissions["allow"] = allow + [rule]
+    try:
+        output = (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    except UnicodeError:
+        return raw, "invalid", ["settings.json has text that cannot be re-encoded; read permission not changed."]
     return output, "removed" if remove else "added" if raw is None else "updated", []
 
 
@@ -359,15 +373,23 @@ def main(argv=None):
             if runtime == "claude":
                 rule = plugin_read_rule(script, claude_home)
                 path = claude_home / "settings.json"
-                raw, info = read_target(path)
-                output, status, notes = permission_plan(path, raw, rule, args.remove)
+                raw = info = output = None
+                if rule is None:
+                    status, notes = "skipped", ["Plugin folder could not be identified; read permission not changed."]
+                else:
+                    try:
+                        raw, info = read_target(path)
+                    except SetupError as exc:
+                        status, notes = "skipped", [f"{exc}; read permission not changed."]
+                    else:
+                        output, status, notes = permission_plan(raw, rule, args.remove)
                 item = {"runtime": "claude-permission", "path": str(path), "status": status,
                         "backup": None, "warnings": notes, "rule": rule}
                 report["targets"].append(item)
                 plans.append((path, raw, info, output, item))
         if args.apply:
             for path, raw, info, output, item in plans:
-                if item["status"] in ("unchanged", "absent", "unmanaged", "invalid"):
+                if item["status"] in ("unchanged", "absent", "unmanaged", "invalid", "skipped"):
                     continue
                 if not snapshot_matches(path, raw, info):
                     raise SetupError(f"target changed during setup: {path}")
@@ -375,7 +397,7 @@ def main(argv=None):
                     item["backup"] = str(backup_original(path, raw))
                 if not snapshot_matches(path, raw, info):
                     raise SetupError(f"target changed during setup: {path}")
-                write_atomic(path, output, stat.S_IMODE(info.st_mode) if info else 0o644)
+                write_atomic(path, output, stat.S_IMODE(info.st_mode) if info else (0o600 if item["runtime"] == "claude-permission" else 0o644))
                 item["committed"] = True
         code = int(args.check and any(t["status"] != "unchanged" for t in report["targets"]))
     except (SetupError, OSError) as exc:

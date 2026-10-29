@@ -177,7 +177,7 @@ controller는 확정 의도를 실행 단위와 의존선으로 나눈다. `runt
 
 ```yaml
 result:
-  defaults_taken: [string]        # 대신 정한 판단(assumptions 포함). 답 첫머리에, 큰 것부터
+  defaults_taken: [string]        # 대신 정한 판단(assumptions 포함)
   outcome: string
   artifacts: [string]
   user_decisions: [string]
@@ -186,7 +186,7 @@ result:
   model_routes: [model_route]     # 실제 위임·폴백이 있을 때만
 ```
 
-`defaults_taken`의 확인 절차는 `references/questioning.md`의 기본값 하한을 따른다. 무거운 경로에서 남기는 `verification` 기록은 `references/verification.md`에 있다.
+`defaults_taken`은 답 첫머리에 영향이 큰 것부터 보이고, "다르게 원하면 이렇게 말하면 된다"는 안내를 붙인다. 무거운 경로에서 남기는 `verification` 기록은 `references/verification.md`에 있다.
 
 ## 중첩 호출이 없는 런타임
 

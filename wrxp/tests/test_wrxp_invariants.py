@@ -196,7 +196,6 @@ class WrxpInvariantTests(unittest.TestCase):
             research.index("## Executive Summary"),
         )
 
-
     def test_packaging_and_git_exclude_python_caches(self):
         for ignore_file in (".npmignore", ".gitignore"):
             patterns = (WRXP_ROOT / ignore_file).read_text().splitlines()
@@ -225,6 +224,11 @@ class WrxpInvariantTests(unittest.TestCase):
             {plugin_version},
             {plugin_version, package_version, marketplace_version},
         )
+        readme = (WRXP_ROOT / "README.md").read_text()
+        self.assertIn(f"version-{plugin_version}-blue", readme)
+        changelog = (WRXP_ROOT / "CHANGELOG.md").read_text()
+        first_entry = re.search(r"^## \[([^\]]+)\]", changelog, re.M).group(1)
+        self.assertEqual(plugin_version, first_entry)
 
     def test_model_registry_covers_codex_and_claude_runtime_candidates(self):
         routing = (
@@ -350,15 +354,12 @@ class WrxpInvariantTests(unittest.TestCase):
             "이미 띄운 백그라운드 작업은 그대로 두고",
             "시안 2~3개는 실제로 물을 때만",
             "구현이 5분 이상 걸릴 것 같으면",
-            "답 첫머리에 영향이 큰 것부터 보인다",
             "### 실험으로 확인",
         ):
             self.assertIn(rule, questioning)
         self.assertIn("시작 전 discovery 질문을 0개로 둔다", engine)
-        verification = (
-            WRXP_ROOT / "skills/ha/references/verification.md"
-        ).read_text()
         self.assertIn("  defaults_taken: [string]", engine)
+        self.assertIn("답 첫머리에 영향이 큰 것부터", engine)
         self.assertIn("`defaults_taken`", engine)
 
     def test_ha_track_list_matches_tracks_reference(self):

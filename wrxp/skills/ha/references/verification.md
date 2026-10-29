@@ -102,4 +102,3 @@ verification:
   repair_attempts_total: integer
   checkpoint: none | agent | user
 ```
-

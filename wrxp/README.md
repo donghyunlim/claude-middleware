@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.76-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.77-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 

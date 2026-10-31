@@ -17,7 +17,7 @@
     {
       "name": "wrxp",
       "description": "ha family entry point plus staged development, delegation, handoff, intent check, Korean writing, and WorxSales QA skills",
-      "version": "0.1.77",
+      "version": "0.1.78",
       "source": "./wrxp",
       "category": "productivity",
       "tags": ["orchestration", "agents", "staged-development", "delegation"]

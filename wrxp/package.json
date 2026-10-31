@@ -1,6 +1,6 @@
 {
   "name": "wrxp",
-  "version": "0.1.77",
+  "version": "0.1.78",
   "description": "ha family (one entry point that asks only the decisions you must make, then executes and verifies), staged development, search and code delegation, session handoff, intent check, Korean polishing and share drafts, plus WorxSales QA and cloud infra review skills for Claude Code and Codex.",
   "author": "donghyunlim",
   "license": "MIT",

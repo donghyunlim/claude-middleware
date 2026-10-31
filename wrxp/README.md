@@ -2,7 +2,7 @@
 
 > 필요한 사용자 결정만 질문하고, 작업 속성에 맞는 모델로 실행한 뒤 근거를 검증하는 범용 reasoning-and-execution 파이프라인.
 
-[![version](https://img.shields.io/badge/version-0.1.77-blue.svg)](./package.json)
+[![version](https://img.shields.io/badge/version-0.1.78-blue.svg)](./package.json)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![marketplace](https://img.shields.io/badge/marketplace-donghyunlim-orange.svg)](https://github.com/donghyunlim/claude-middleware)
 
@@ -26,7 +26,7 @@ Knife family는 `shared/reasoning-framework.md`의 9원칙을 따른다.
 
 `/haq`·`/haqq`·`/haqqq`는 질문 상한만 전달한다. **질문 깊이와 모델 라우팅은 서로 독립적인 축이다.** 동시 위임 수는 런타임이 공개한 한도를 따르며, 미확인 또는 위임 불가 시 1로 폴백한다.
 
-추가로 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, 빈 상태에서 WorxSales QA 작업 폴더·시나리오 DB·상황판·앱 슬롯을 준비하는 `worxsales-qa-bootstrap`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`, 완성된 한국어 산출물을 최종 교정하는 `korean-polish`가 있다. 총 20개 skill.
+추가로 단계별 협업의 `staged-development`, 맥락 기반 검색 위임의 `search-delegation`, 세션 인계의 `handoff`, 의도 대조의 `intent-anchor`, 합의된 구현 위임의 `code-delegation`, 전역 연결 관리의 `setup`, 인프라 요청 검토의 `cloudinfra-review`, WorxSales 시나리오 실행의 `worxsales-qa-executor`, 빈 상태에서 WorxSales QA 작업 폴더·시나리오 DB·상황판·앱 슬롯을 준비하는 `worxsales-qa-bootstrap`, WorxSales QA 원천·DB 최신화의 `worxsales-qa-refresh`, QA 상황판 회차 이력의 `worxsales-qa-dashboard-update`, 이 세 단계를 한 번에 도는 `worxsales-qa-all-in-one`, OK가 아닌 행을 메뉴와 관계없이 모두 다시 도는 `worxsales-qa-rerun-not-ok`, 그 재실행으로 한 바퀴를 도는 `worxsales-qa-all-in-one-not-ok`, 복잡한 맥락을 구조화한 공유 메시지로 정리하는 `structured-share-thing`, 완성된 한국어 산출물을 최종 교정하는 `korean-polish`, 눈으로 봐야 판단하는 결정이 많을 때 비교 페이지를 띄워 묻는 `visual-ask`가 있다. 총 21개 skill.
 
 **핵심 철학**: Knife family는 controller가 의도를 통합하고 의존성 그래프의 독립 단위를 실행한다.
 
@@ -125,6 +125,10 @@ claude plugin update wrxp@donghyunlim
 ### 구조화한 공유 메시지
 
 `/wrxp:structured-share-thing`(Codex에서는 `$wrxp:structured-share-thing`)은 복잡한 맥락을 처음 보는 사람(CTO, 리드, 다른 팀)에게 보낼 한국어 Slack·DM 공유 초안으로 정리합니다. 순서는 문제 → 왜 해결해야 하는가 → 막혀 있던 이유 → 진행 방향 → 현재 상황 → 안 되는 경우이고, "이렇게 진행하겠습니다, 문제가 있으면 말씀 부탁드립니다"로 마무리합니다. 결론이나 작업 결과부터 꺼내지 않고, 승인 요청 형식을 쓰지 않으며, 초안만 만들고 전송하지 않습니다. "이 상황 정리해서 공유 초안 써 줘" 같은 요청에는 자동으로 실행됩니다. 자세한 규칙은 [스킬 본문](./skills/structured-share-thing/SKILL.md)에 있습니다.
+
+### 보면서 결정하는 페이지
+
+`/wrxp:visual-ask`(Codex에서는 `$wrxp:visual-ask`)는 전/후 스크린샷, 디자인·배치 시안, 목업처럼 눈으로 봐야 판단하는 결정이 많을 때 채팅 질문 대신 결정 페이지를 띄웁니다. 왼쪽 레일에 페이지별 결정 상태와 전체 진행이 보이고, 본문에서는 선택지를 같은 자리에서 바꿔 보거나 나란히 놓고 승인·수정 필요·기각 또는 A/B/C 중 하나를 고른 뒤 의견을 남깁니다. 고른 답은 바로 저장되어 에이전트가 읽고 반영합니다. Claude에서는 비공개 아티팩트로 게시하고, 아티팩트가 없으면(Codex 등) 이 컴퓨터에서만 열리는 로컬 서버로 띄워 `answers.json`에 모읍니다. `ha` 계열에서 이런 질문이 많아지면 자동으로 이 페이지를 씁니다. 자세한 절차는 [스킬 본문](./skills/visual-ask/SKILL.md)에 있습니다.
 
 ### 클라우드 인프라 요청 검토
 

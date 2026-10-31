@@ -1,0 +1,6 @@
+interface:
+  display_name: "Visual Ask"
+  short_description: "보고 판단해야 하는 결정이 많을 때 전후·시안 비교 페이지를 띄워 승인과 선택을 받습니다"
+  default_prompt: "$wrxp:visual-ask로 이 전후 스크린샷들을 페이지로 띄워 내가 하나씩 승인하게 해 줘."
+policy:
+  allow_implicit_invocation: true

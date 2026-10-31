@@ -498,6 +498,29 @@ class WrxpInvariantTests(unittest.TestCase):
         self.assertNotIn("엠대시", body)
         self.assertIn("Not for chat replies", frontmatter)
 
+    def test_visual_ask_ships_on_both_runtimes_and_is_wired_into_questioning(self):
+        skill_dir = WRXP_ROOT / "skills/visual-ask"
+        frontmatter = (skill_dir / "SKILL.md").read_text().split("---", 2)[1]
+        self.assertRegex(frontmatter, r"(?m)^name: visual-ask$")
+        self.assertIn("Not for a few text-only questions", frontmatter)
+        metadata = (skill_dir / "agents/openai.yaml").read_text()
+        self.assertIn("$wrxp:visual-ask", metadata)
+        self.assertRegex(metadata, r"(?m)^policy:\n  allow_implicit_invocation: true$")
+        for rel in ("assets/template.html", "scripts/build.py", "scripts/serve.py", "references/spec.md"):
+            self.assertTrue((skill_dir / rel).exists(), rel)
+        template = (skill_dir / "assets/template.html").read_text()
+        self.assertIn("/*__DATA__*/null", template)
+        self.assertIn('use?.("db")', template)
+        self.assertIn('fetch("api/answers"', template)
+        serve = (skill_dir / "scripts/serve.py").read_text()
+        self.assertIn('("127.0.0.1", args.port)', serve)
+        questioning = (WRXP_ROOT / "skills/ha/references/questioning.md").read_text()
+        how = questioning.split("## 묻는 방식", 1)[1].split("## ", 1)[0]
+        self.assertIn("`wrxp:visual-ask`", how)
+        self.assertIn("카드 하나를 질문 하나로", how)
+        tracks = (WRXP_ROOT / "skills/ha/references/tracks.md").read_text()
+        self.assertIn("`wrxp:visual-ask`", tracks.split("## 프로토타입", 1)[1].split("## ", 1)[0])
+
     def test_handoff_receiver_rechecks_decisions_and_completion_claims(self):
         handoff = (WRXP_ROOT / "skills/handoff/SKILL.md").read_text()
         self.assertIn(
@@ -543,8 +566,8 @@ class WrxpInvariantTests(unittest.TestCase):
         )
         self.assertIn("애매하면 `/ha`만 부르면 된다", readme)
         self.assertIn("(skills/ha/references/tracks.md)", readme)
-        self.assertNotIn("총 19개 skill", readme)
-        self.assertIn("총 20개 skill", readme)
+        self.assertNotIn("총 20개 skill", readme)
+        self.assertIn("총 21개 skill", readme)
         self.assertNotIn("같은 목표의 재시도가 계속 쌓일 때", readme)
         changelog = (WRXP_ROOT / "CHANGELOG.md").read_text()
         self.assertIn("## [0.1.74]", changelog)

@@ -1,0 +1,333 @@
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 왼쪽 레일(묶음·페이지와 결정 현황) + 오른쪽 본문(페이지 하나의 결정 카드들). 선택지는 같은 자리에서 바꿔 보거나 나란히 본다. */
+:root {
+  --bg: #f5faff; --surface: #ffffff; --ink: #182432; --ink-2: #5a646e; --line: #d2dae1;
+  --rail: #2d3741; --rail-ink: #e4eaf0; --rail-dim: #96a0aa; --glow: #faffdc;
+  --ok: #3f7a5a; --ok-bg: #e6f1ea; --fix: #8a6a1f; --fix-bg: #f6efdc; --no: #9a4848; --no-bg: #f5e4e4;
+  --tag: #2f6a8a; --tag-2: #8a6a1f;
+  --sans: "Pretendard Variable", Pretendard, "IBM Plex Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11171f; --surface: #182432; --ink: #e4eaf0; --ink-2: #96a0aa; --line: #2d3741;
+  --rail: #0c1117; --rail-ink: #e4eaf0; --rail-dim: #7d8791; --glow: #faffdc;
+  --ok: #8cc7a3; --ok-bg: #1c3226; --fix: #d9bd73; --fix-bg: #352d17; --no: #e09a9a; --no-bg: #3a2020;
+  --tag: #8cc4e0; --tag-2: #d9bd73; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11171f; --surface: #182432; --ink: #e4eaf0; --ink-2: #96a0aa; --line: #2d3741;
+  --rail: #0c1117; --rail-ink: #e4eaf0; --rail-dim: #7d8791; --glow: #faffdc;
+  --ok: #8cc7a3; --ok-bg: #1c3226; --fix: #d9bd73; --fix-bg: #352d17; --no: #e09a9a; --no-bg: #3a2020;
+  --tag: #8cc4e0; --tag-2: #d9bd73; color-scheme: dark }
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.55; letter-spacing: -0.01em }
+.app { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 100vh }
+.rail { background: var(--rail); color: var(--rail-ink); position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  padding-block: 20px 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: 16px }
+.brand { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 4px }
+.brand i { flex: none; width: 26px; height: 26px; border-radius: 8px; background: var(--glow); color: #182432; display: grid; place-items: center; font-style: normal; font-size: 13px }
+.progress { font-size: 12px; color: var(--rail-dim); margin: 0 0 12px }
+.bar { display: block; height: 4px; background: rgba(255,255,255,.12); border-radius: 4px; overflow: hidden; margin: 6px 0 0 }
+.bar span { display: block; height: 100%; background: var(--glow) }
+.meta-note { font-size: 12px; color: var(--rail-dim); margin: 0 0 12px; line-height: 1.5; white-space: pre-line }
+.store { font-size: 12px; color: var(--rail-dim); margin: 0 0 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
+.store button { border: 1px solid rgba(255,255,255,.18); background: transparent; color: var(--rail-ink); font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 6px; cursor: pointer }
+.filter { display: flex; gap: 4px; margin: 0 0 16px; background: rgba(255,255,255,.06); padding: 3px; border-radius: 8px }
+.filter button { flex: 1; border: 0; background: transparent; color: var(--rail-dim); font: inherit; font-size: 12px; padding: 5px 0; border-radius: 6px; cursor: pointer }
+.filter button[aria-pressed="true"] { background: rgba(255,255,255,.14); color: var(--rail-ink) }
+.g-title { font-size: 11px; letter-spacing: .02em; color: var(--rail-dim); margin: 16px 0 6px; display: flex; justify-content: space-between; gap: 8px }
+.p-link { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 0; background: transparent; color: var(--rail-ink);
+  font: inherit; font-size: 13px; padding: 7px 8px; border-radius: 6px; cursor: pointer }
+.p-link:hover { background: rgba(255,255,255,.06) }
+.p-link[aria-current="true"] { background: rgba(250,255,220,.12); box-shadow: inset 2px 0 0 var(--glow) }
+.p-link .cnt { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--rail-dim) }
+.dots { display: inline-flex; flex-wrap: wrap; gap: 2px; max-width: 70px }
+.dots b { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.2) }
+.dots b.ok { background: var(--ok) } .dots b.fix { background: var(--fix) } .dots b.no { background: var(--no) }
+main { min-width: 0; padding-block: 28px 80px; padding-left: 32px; padding-right: max(32px, env(safe-area-inset-right, 0px)) }
+.head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; margin-bottom: 12px }
+.head h1 { font-size: 24px; margin: 0; text-wrap: balance; letter-spacing: -0.02em }
+.eyebrow { font-size: 12px; color: var(--ink-2); width: 100% }
+.badge { font-family: var(--mono); font-size: 12px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); padding: 2px 8px; border-radius: 6px }
+.summary { margin: 0 0 16px; max-width: 72ch; white-space: pre-line }
+.legend { font-size: 12px; color: var(--ink-2); margin: 0 0 20px }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; align-items: start }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px }
+.box h3 { margin: 0 0 8px; font-size: 13px }
+.box summary { cursor: pointer; font-weight: 600; font-size: 13px }
+.box[open] summary { margin-bottom: 8px }
+.box ul { margin: 0; padding-left: 18px; display: grid; gap: 8px }
+.box li { font-size: 13px } .box li small { display: block; color: var(--ink-2); font-size: 12px }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 24px }
+.card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px; border-bottom: 1px solid var(--line) }
+.card-top h2 { font-size: 15px; margin: 0; margin-right: auto }
+.question { margin: 0; padding: 12px 16px 0; white-space: pre-line }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px }
+.seg button { border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface) }
+.hint { font-size: 12px; color: var(--ink-2); padding: 8px 16px 8px; margin: 0 }
+.stage { position: relative; background: var(--bg) }
+.stage.cycle { cursor: pointer; user-select: none }
+.stage img { display: block; width: 100%; height: auto }
+.stage iframe { display: block; width: 100%; border: 0; background: #fff }
+.stage .text { padding: 48px 24px 24px; white-space: pre-line; min-height: 80px }
+.tag { position: absolute; top: 10px; left: 10px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 6px; color: var(--surface); background: var(--tag); pointer-events: none }
+.tag.alt { background: var(--tag-2) }
+.tag em { font-style: normal; font-weight: 500; opacity: .85 }
+.side { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2px; background: var(--line) }
+.side .stage { min-width: 0 }
+.decide { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px }
+.decide button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; font-weight: 500;
+  padding: 6px 14px; border-radius: 8px; cursor: pointer }
+.decide button[aria-pressed="true"] { background: var(--ok-bg); border-color: var(--ok); color: var(--ok) }
+.decide button[data-s="fix"][aria-pressed="true"], .decide button[data-s="other"][aria-pressed="true"] { background: var(--fix-bg); border-color: var(--fix); color: var(--fix) }
+.decide button[data-s="no"][aria-pressed="true"] { background: var(--no-bg); border-color: var(--no); color: var(--no) }
+.decide textarea { flex: 1 1 260px; min-width: 0; min-height: 36px; resize: vertical; font: inherit; font-size: 13px; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px }
+.saved { font-size: 12px; color: var(--ink-2); min-width: 60px }
+.stale { margin: 0 16px; padding: 8px 12px; border-radius: 8px; background: var(--fix-bg); color: var(--fix); font-size: 12px }
+button:focus-visible, textarea:focus-visible, .stage:focus-visible { outline: 3px solid var(--tag); outline-offset: 2px }
+.empty { padding: 48px 24px; text-align: center; color: var(--ink-2) }
+kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--surface) }
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr) }
+  .rail { position: static; height: auto; padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+  main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+  .side { grid-template-columns: minmax(0, 1fr) }
+}
+@media (prefers-reduced-motion: no-preference) { .p-link, .decide button { transition: background .12s, border-color .12s } }
+</style>
+
+<div class="app">
+  <nav class="rail" aria-label="결정할 페이지">
+    <div class="brand"><i id="brand-mark" aria-hidden="true"></i><span id="brand-title"></span></div>
+    <div class="progress"><span id="prog-text">-</span><div class="bar"><span id="prog-bar" style="width:0"></span></div></div>
+    <p class="meta-note" id="meta-note"></p>
+    <p class="store"><span id="store-text">이 브라우저에만 저장됩니다</span><button id="copy">결과 복사</button></p>
+    <div class="filter" role="group" aria-label="목록 거르기">
+      <button id="f-all" aria-pressed="true">전체</button>
+      <button id="f-open" aria-pressed="false">남은 것</button>
+    </div>
+    <div id="nav"></div>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<script>
+// 데이터는 build.py가 넣는다. 답은 Claude 아티팩트 db → 로컬 serve.py → 브라우저 저장 순서로 저장한다.
+const DATA = /*__DATA__*/null;
+const LS = "visual-ask:" + DATA.id;
+const STATUS = { ok: "승인", fix: "수정 필요", no: "기각" };
+let answers = {};
+try { answers = JSON.parse(localStorage.getItem(LS) || "{}") } catch (e) {}
+let cur = null;
+try { cur = localStorage.getItem(LS + ":cur") } catch (e) {}
+let store = null, onlyOpen = false;
+
+const pages = DATA.sections.flatMap(s => s.pages.map(p => ({ ...p, section: s })));
+const items = pages.flatMap(p => p.items);
+
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (v !== undefined && v !== null && v !== false) e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k !== null && k !== undefined) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+
+// 항목을 고친 뒤 rev를 올리면 이전 답은 "다시 봐 주세요"로 남고 미결정으로 센다.
+function answerOf(it) { const a = answers[it.key]; return a && (a.rev || 1) === it.rev ? a : null }
+function decided(it) { const a = answerOf(it); return !!(a && (a.status || a.choice)) }
+function tone(it) {
+  const a = answerOf(it); if (!a) return "";
+  if (a.status) return a.status;
+  if (a.choice) return a.choice === "__other" ? "fix" : "ok";
+  return "";
+}
+
+function renderNav() {
+  const nav = document.getElementById("nav"); nav.textContent = "";
+  for (const s of DATA.sections) {
+    const ps = s.pages.filter(p => !onlyOpen || p.items.some(it => !decided(it)));
+    if (!ps.length) continue;
+    nav.append(el("div", { class: "g-title" }, el("span", {}, s.title), s.badge ? el("span", {}, s.badge) : null));
+    for (const p of ps) {
+      const done = p.items.filter(decided).length;
+      nav.append(el("button", { class: "p-link", "aria-current": String(p.key === cur), onclick: () => show(p.key) },
+        p.title, el("span", { class: "dots", "aria-hidden": "true" }, p.items.map(it => el("b", { class: tone(it) }))),
+        el("span", { class: "cnt" }, `${done}/${p.items.length}`)));
+    }
+  }
+  const done = items.filter(decided).length;
+  document.getElementById("prog-text").textContent = `${done} / ${items.length}개 결정`;
+  document.getElementById("prog-bar").style.width = (items.length ? done / items.length * 100 : 0) + "%";
+}
+
+async function save(it, patch, savedEl) {
+  const prev = answers[it.key] && (answers[it.key].rev || 1) === it.rev ? answers[it.key] : {};
+  const next = { ...prev, ...patch, kind: it.kind, rev: it.rev, at: new Date().toISOString() };
+  answers[it.key] = next;
+  try { localStorage.setItem(LS, JSON.stringify(answers)) } catch (e) {}
+  renderNav();
+  if (!store) { if (savedEl) savedEl.textContent = "이 브라우저에만 저장됨"; return }
+  if (savedEl) savedEl.textContent = "저장 중…";
+  try { await store.put(it.key, next); if (savedEl) savedEl.textContent = "저장됨" }
+  catch (e) { if (savedEl) savedEl.textContent = "이 브라우저에만 저장됨" }
+}
+
+function optionView(o, i, it) {
+  const tagClass = it.kind === "approve" && i === 0 && it.options.length === 2 ? "tag alt" : "tag";
+  const tag = el("span", { class: tagClass }, o.label, it.recommend === o.id ? el("em", {}, " · 권장") : null);
+  let body;
+  if (o.src) body = el("img", { src: o.src, alt: `${it.title} ${o.label}`, loading: "lazy" });
+  else if (o.html) { body = el("iframe", { sandbox: "", title: `${it.title} ${o.label}`, style: `height:${o.height || 360}px` }); body.srcdoc = o.html }
+  else body = el("div", { class: "text" }, o.text || "");
+  return [body, tag];
+}
+
+function card(it) {
+  const opts = it.options;
+  const visual = opts.length > 1;
+  let mode = "flip", idx = it.kind === "approve" && opts.length === 2 ? 1 : 0;
+  const stage = el("div");
+  const hint = el("p", { class: "hint" });
+  const pick = el("span", { class: "seg", role: "group", "aria-label": "선택지 보기" });
+  const modeSeg = el("span", { class: "seg", role: "group", "aria-label": "보기 방식" });
+  function draw() {
+    stage.textContent = "";
+    if (mode === "flip") {
+      const o = opts[idx];
+      const cycles = visual && !o.html;
+      const box = el("div", { class: "stage" + (cycles ? " cycle" : ""), role: cycles ? "button" : null, tabindex: cycles ? "0" : null,
+        "aria-label": cycles ? "다음 선택지로 바꿔 보기" : null,
+        onclick: () => { if (cycles) { idx = (idx + 1) % opts.length; draw() } },
+        onkeydown: e => { if (cycles && (e.key === " " || e.key === "Enter")) { e.preventDefault(); e.currentTarget.click() } } },
+        ...optionView(o, idx, it));
+      stage.append(box);
+      hint.textContent = !visual ? "" : opts.length === 2 && it.kind === "approve"
+        ? "화면을 누르면 두 장이 같은 자리에서 바뀝니다." : "화면을 누르거나 위 단추로 선택지를 바꿔 봅니다.";
+    } else {
+      stage.append(el("div", { class: "side" }, opts.map((o, i) => el("div", { class: "stage" }, ...optionView(o, i, it)))));
+      hint.textContent = "선택지를 나란히 놓았습니다.";
+    }
+    pick.querySelectorAll("button").forEach((b, i) => b.setAttribute("aria-pressed", String(mode === "flip" && i === idx)));
+    modeSeg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === mode)));
+  }
+  opts.forEach((o, i) => pick.append(el("button", { onclick: () => { mode = "flip"; idx = i; draw() } }, o.label)));
+  [["flip", "한 장씩"], ["side", "나란히"]].forEach(([m, t]) => { const b = el("button", { onclick: () => { mode = m; draw() } }, t); b.dataset.m = m; modeSeg.append(b) });
+
+  const a = answerOf(it) || {};
+  const old = answers[it.key] && !answerOf(it) ? answers[it.key] : null;
+  const saved = el("span", { class: "saved", "aria-live": "polite" }, a.status || a.choice ? "저장됨" : "");
+  const choices = it.kind === "approve"
+    ? Object.entries(STATUS).map(([k, t]) => ({ field: "status", value: k, label: t, s: k }))
+    : [...opts.map(o => ({ field: "choice", value: o.id, label: o.label + (it.recommend === o.id ? " (권장)" : ""), s: "ok" })),
+       { field: "choice", value: "__other", label: "다른 안", s: "other" }];
+  const btns = choices.map(c => el("button", { "data-s": c.s, "aria-pressed": String(a[c.field] === c.value), onclick: () => {
+    const curA = answerOf(it) || {};
+    const next = curA[c.field] === c.value ? null : c.value;
+    btns.forEach((b, i) => b.setAttribute("aria-pressed", String(choices[i].value === next)));
+    save(it, { [c.field]: next }, saved);
+  } }, c.label));
+  let tmr;
+  const note = el("textarea", { placeholder: it.kind === "approve" ? "의견(선택): 고칠 점이나 이유" : "의견(선택): 고른 이유, 다른 안의 내용", "aria-label": `${it.title} 의견` });
+  note.value = a.note || "";
+  note.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(() => save(it, { note: note.value }, saved), 700) });
+  const c = el("section", { class: "card", id: "card-" + it.key },
+    el("div", { class: "card-top" }, el("h2", {}, it.title), visual ? pick : null, visual ? modeSeg : null),
+    it.question ? el("p", { class: "question" }, it.question) : null,
+    old ? el("p", { class: "stale" }, `고친 뒤 다시 올린 항목입니다. 이전 답: ${STATUS[old.status] || (old.choice === "__other" ? "다른 안" : old.choice) || "-"}${old.note ? " · " + old.note : ""}`) : null,
+    visual ? hint : null, stage, el("div", { class: "decide" }, btns, note, saved));
+  draw();
+  return c;
+}
+
+function noteBox(n) {
+  const list = el("ul", {}, (n.items || []).map(t => typeof t === "string" ? el("li", {}, t) : el("li", {}, t.text, t.why ? el("small", {}, t.why) : null)));
+  return n.collapsed ? el("details", { class: "box" }, el("summary", {}, n.title), list) : el("div", { class: "box" }, el("h3", {}, n.title), list);
+}
+
+function show(k) {
+  const p = pages.find(x => x.key === k) || pages[0];
+  const main = document.getElementById("main"); main.textContent = "";
+  if (!p) { main.append(el("div", { class: "empty" }, "아직 올라온 항목이 없습니다.")); renderNav(); return }
+  cur = p.key; try { localStorage.setItem(LS + ":cur", cur) } catch (e) {}
+  main.append(el("div", { class: "head" },
+    el("span", { class: "eyebrow" }, p.section.title),
+    el("h1", {}, p.title), p.badge ? el("span", { class: "badge" }, p.badge) : null));
+  if (p.summary) main.append(el("p", { class: "summary" }, p.summary));
+  main.append(el("p", { class: "legend" }, "항목마다 결정을 고르고 필요하면 의견을 적어 주세요. 고르는 즉시 저장됩니다. ",
+    el("kbd", {}, "J"), " ", el("kbd", {}, "K"), " 로 다음·이전 페이지로 이동합니다."));
+  const notes = (p.notes || []).length ? el("aside", { class: "notes" }, p.notes.map(noteBox)) : null;
+  main.append(el("div", { class: "cols" }, notes, el("div", {}, p.items.length ? p.items.map(card) : el("div", { class: "empty box" }, "결정할 항목이 없습니다."))));
+  renderNav(); window.scrollTo(0, 0);
+}
+
+function step(d) {
+  const i = pages.findIndex(p => p.key === cur);
+  const n = pages[Math.min(pages.length - 1, Math.max(0, i + d))];
+  if (n) show(n.key);
+}
+
+function merge(remote) {
+  let changed = false;
+  for (const [k, v] of Object.entries(remote || {})) {
+    const mine = answers[k];
+    if (v && (!mine || (v.at || "") > (mine.at || ""))) { answers[k] = v; changed = true }
+  }
+  if (!changed) return;
+  try { localStorage.setItem(LS, JSON.stringify(answers)) } catch (e) {}
+  if (document.activeElement?.tagName === "TEXTAREA") renderNav(); else show(cur);
+}
+
+function useStore(s, label) {
+  if (store) return;
+  store = s; document.getElementById("store-text").textContent = label;
+  // 저장소가 늦게 붙어도 그 전에 고른 답을 올린다.
+  for (const it of items) if (answers[it.key] && (answers[it.key].rev || 1) === it.rev) s.put(it.key, answers[it.key]).catch(() => {});
+}
+
+document.addEventListener("keydown", e => {
+  if (e.target.closest("textarea, input")) return;
+  if (e.key === "j") step(1); if (e.key === "k") step(-1);
+});
+document.getElementById("brand-title").textContent = DATA.title;
+document.getElementById("brand-mark").textContent = (DATA.mark || DATA.title || "?").trim().charAt(0);
+document.getElementById("meta-note").textContent = DATA.note || "";
+document.getElementById("f-all").onclick = () => { onlyOpen = false; setF() };
+document.getElementById("f-open").onclick = () => { onlyOpen = true; setF() };
+function setF() { document.getElementById("f-all").setAttribute("aria-pressed", String(!onlyOpen)); document.getElementById("f-open").setAttribute("aria-pressed", String(onlyOpen)); renderNav() }
+document.getElementById("copy").onclick = async e => {
+  const out = items.filter(it => answers[it.key]).map(it => ({ key: it.key, title: it.title, ...answers[it.key] }));
+  try { await navigator.clipboard.writeText(JSON.stringify(out, null, 1)); e.target.textContent = "복사됨" }
+  catch (err) { e.target.textContent = "복사 실패" }
+  setTimeout(() => { e.target.textContent = "결과 복사" }, 1500);
+};
+
+show(cur && pages.some(p => p.key === cur) ? cur : pages[0] && pages[0].key);
+
+(async () => {
+  try {
+    const r = await fetch("api/answers", { cache: "no-store" });
+    if (!r.ok || !(r.headers.get("content-type") || "").includes("json")) return;
+    merge(await r.json());
+    useStore({ put: (k, v) => fetch("api/answers", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ [k]: v }) })
+      .then(x => { if (!x.ok) throw new Error(x.status) }) }, "로컬 파일(answers.json)에 저장됩니다");
+  } catch (e) {}
+})();
+(async () => {
+  try {
+    const db = await window.claude?.use?.("db");
+    if (!db) return;
+    const col = db.collection("answers");
+    useStore({ put: (k, v) => col.doc(k).set(v) }, "Claude가 읽을 수 있게 저장됩니다");
+    col.onSnapshot(snap => merge(Object.fromEntries(snap.docs.map(d => [d.id, d.data()]))), () => {});
+  } catch (e) {}
+})();
+</script>

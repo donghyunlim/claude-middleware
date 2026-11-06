@@ -1,0 +1,5 @@
+payment:
+  base_url: https://pg.example.com
+  timeout_sec: 5
+  max_attempts: 3
+  backoff_sec: [1, 2, 4]

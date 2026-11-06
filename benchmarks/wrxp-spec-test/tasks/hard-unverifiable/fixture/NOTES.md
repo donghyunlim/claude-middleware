@@ -1,0 +1,2 @@
+- Slack Incoming Webhook URL은 운영 서버의 환경변수 `SLACK_DEPLOY_WEBHOOK`에만 있다. 개발 PC나 저장소에는 없다.
+- 운영 서버 접속은 인프라팀만 가능.

@@ -1,0 +1,788 @@
+{
+"fmt": [
+[
+"format_krw",
+null,
+[
+"ok",
+"-"
+]
+],
+[
+"format_krw",
+0,
+[
+"ok",
+"0원"
+]
+],
+[
+"format_krw",
+1,
+[
+"ok",
+"1원"
+]
+],
+[
+"format_krw",
+-1,
+[
+"ok",
+"-1원"
+]
+],
+[
+"format_krw",
+0.5,
+[
+"ok",
+"0원"
+]
+],
+[
+"format_krw",
+1.5,
+[
+"ok",
+"1원"
+]
+],
+[
+"format_krw",
+2.5,
+[
+"ok",
+"2원"
+]
+],
+[
+"format_krw",
+-2.5,
+[
+"ok",
+"-2원"
+]
+],
+[
+"format_krw",
+999.999,
+[
+"ok",
+"999원"
+]
+],
+[
+"format_krw",
+1234.5,
+[
+"ok",
+"1,234원"
+]
+],
+[
+"format_krw",
+-1234.5,
+[
+"ok",
+"-1,234원"
+]
+],
+[
+"format_krw",
+0.005,
+[
+"ok",
+"0원"
+]
+],
+[
+"format_krw",
+0.015,
+[
+"ok",
+"0원"
+]
+],
+[
+"format_krw",
+1000000.0,
+[
+"ok",
+"1,000,000원"
+]
+],
+[
+"format_krw",
+-0.4,
+[
+"ok",
+"-0원"
+]
+],
+[
+"format_krw",
+12345678.9,
+[
+"ok",
+"12,345,678원"
+]
+],
+[
+"format_krw",
+3,
+[
+"ok",
+"3원"
+]
+],
+[
+"format_krw",
+-0.0049,
+[
+"ok",
+"-0원"
+]
+],
+[
+"format_usd",
+null,
+[
+"ok",
+"-"
+]
+],
+[
+"format_usd",
+0,
+[
+"ok",
+"$0.00"
+]
+],
+[
+"format_usd",
+1,
+[
+"ok",
+"$1.00"
+]
+],
+[
+"format_usd",
+-1,
+[
+"ok",
+"($1.00)"
+]
+],
+[
+"format_usd",
+0.5,
+[
+"ok",
+"$0.50"
+]
+],
+[
+"format_usd",
+1.5,
+[
+"ok",
+"$1.50"
+]
+],
+[
+"format_usd",
+2.5,
+[
+"ok",
+"$2.50"
+]
+],
+[
+"format_usd",
+-2.5,
+[
+"ok",
+"($2.50)"
+]
+],
+[
+"format_usd",
+999.999,
+[
+"ok",
+"$1,000.00"
+]
+],
+[
+"format_usd",
+1234.5,
+[
+"ok",
+"$1,234.50"
+]
+],
+[
+"format_usd",
+-1234.5,
+[
+"ok",
+"($1,234.50)"
+]
+],
+[
+"format_usd",
+0.005,
+[
+"ok",
+"$0.01"
+]
+],
+[
+"format_usd",
+0.015,
+[
+"ok",
+"$0.01"
+]
+],
+[
+"format_usd",
+1000000.0,
+[
+"ok",
+"$1,000,000.00"
+]
+],
+[
+"format_usd",
+-0.4,
+[
+"ok",
+"($0.40)"
+]
+],
+[
+"format_usd",
+12345678.9,
+[
+"ok",
+"$12,345,678.90"
+]
+],
+[
+"format_usd",
+3,
+[
+"ok",
+"$3.00"
+]
+],
+[
+"format_usd",
+-0.0049,
+[
+"ok",
+"($0.00)"
+]
+],
+[
+"format_jpy",
+null,
+[
+"ok",
+"-"
+]
+],
+[
+"format_jpy",
+0,
+[
+"ok",
+"¥0"
+]
+],
+[
+"format_jpy",
+1,
+[
+"ok",
+"¥1"
+]
+],
+[
+"format_jpy",
+-1,
+[
+"ok",
+"-¥1"
+]
+],
+[
+"format_jpy",
+0.5,
+[
+"ok",
+"¥0"
+]
+],
+[
+"format_jpy",
+1.5,
+[
+"ok",
+"¥2"
+]
+],
+[
+"format_jpy",
+2.5,
+[
+"ok",
+"¥2"
+]
+],
+[
+"format_jpy",
+-2.5,
+[
+"ok",
+"-¥2"
+]
+],
+[
+"format_jpy",
+999.999,
+[
+"ok",
+"¥1,000"
+]
+],
+[
+"format_jpy",
+1234.5,
+[
+"ok",
+"¥1,234"
+]
+],
+[
+"format_jpy",
+-1234.5,
+[
+"ok",
+"-¥1,234"
+]
+],
+[
+"format_jpy",
+0.005,
+[
+"ok",
+"¥0"
+]
+],
+[
+"format_jpy",
+0.015,
+[
+"ok",
+"¥0"
+]
+],
+[
+"format_jpy",
+1000000.0,
+[
+"ok",
+"¥1,000,000"
+]
+],
+[
+"format_jpy",
+-0.4,
+[
+"ok",
+"-¥0"
+]
+],
+[
+"format_jpy",
+12345678.9,
+[
+"ok",
+"¥12,345,679"
+]
+],
+[
+"format_jpy",
+3,
+[
+"ok",
+"¥3"
+]
+],
+[
+"format_jpy",
+-0.0049,
+[
+"ok",
+"-¥0"
+]
+]
+],
+"lines": [
+[
+{
+"name": "Widget",
+"price": 1500,
+"qty": 3
+},
+"KRW",
+[
+"ok",
+"Widget                 3 x         1,500원 =         4,500원"
+]
+],
+[
+{
+"name": "Widget",
+"price": 1500,
+"qty": 3
+},
+"USD",
+[
+"ok",
+"Widget                 3 x      $1,500.00 =      $4,500.00"
+]
+],
+[
+{
+"name": "Widget",
+"price": 1500,
+"qty": 3
+},
+"JPY",
+[
+"ok",
+"Widget                 3 x         ¥1,500 =         ¥4,500"
+]
+],
+[
+{
+"name": "Widget",
+"price": 1500,
+"qty": 3
+},
+"EUR",
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "Widget",
+"price": 1500,
+"qty": 3
+},
+null,
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "AAAAAAAAAAAAAAAAAAAAAAAAA",
+"price": 2.5,
+"qty": 2
+},
+"KRW",
+[
+"ok",
+"AAAAAAAAAAAAAAAAAAA…   2 x             2원 =             5원"
+]
+],
+[
+{
+"name": "AAAAAAAAAAAAAAAAAAAAAAAAA",
+"price": 2.5,
+"qty": 2
+},
+"USD",
+[
+"ok",
+"AAAAAAAAAAAAAAAAAAA…   2 x          $2.50 =          $5.00"
+]
+],
+[
+{
+"name": "AAAAAAAAAAAAAAAAAAAAAAAAA",
+"price": 2.5,
+"qty": 2
+},
+"JPY",
+[
+"ok",
+"AAAAAAAAAAAAAAAAAAA…   2 x             ¥2 =             ¥5"
+]
+],
+[
+{
+"name": "AAAAAAAAAAAAAAAAAAAAAAAAA",
+"price": 2.5,
+"qty": 2
+},
+"EUR",
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "AAAAAAAAAAAAAAAAAAAAAAAAA",
+"price": 2.5,
+"qty": 2
+},
+null,
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "가나다라마바사아자차카타파하가나다라마바사",
+"price": -10.125
+},
+"KRW",
+[
+"ok",
+"가나다라마바사아자차카타파하가나다라마…   1 x           -10원 =           -10원"
+]
+],
+[
+{
+"name": "가나다라마바사아자차카타파하가나다라마바사",
+"price": -10.125
+},
+"USD",
+[
+"ok",
+"가나다라마바사아자차카타파하가나다라마…   1 x       ($10.12) =       ($10.12)"
+]
+],
+[
+{
+"name": "가나다라마바사아자차카타파하가나다라마바사",
+"price": -10.125
+},
+"JPY",
+[
+"ok",
+"가나다라마바사아자차카타파하가나다라마…   1 x           -¥10 =           -¥10"
+]
+],
+[
+{
+"name": "가나다라마바사아자차카타파하가나다라마바사",
+"price": -10.125
+},
+"EUR",
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "가나다라마바사아자차카타파하가나다라마바사",
+"price": -10.125
+},
+null,
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "x",
+"price": null,
+"qty": 2
+},
+"KRW",
+[
+"ok",
+"x                      2 x              - =              -"
+]
+],
+[
+{
+"name": "x",
+"price": null,
+"qty": 2
+},
+"USD",
+[
+"ok",
+"x                      2 x              - =              -"
+]
+],
+[
+{
+"name": "x",
+"price": null,
+"qty": 2
+},
+"JPY",
+[
+"ok",
+"x                      2 x              - =              -"
+]
+],
+[
+{
+"name": "x",
+"price": null,
+"qty": 2
+},
+"EUR",
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "x",
+"price": null,
+"qty": 2
+},
+null,
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"price": 0.5,
+"qty": 7
+},
+"KRW",
+[
+"ok",
+"                       7 x             0원 =             3원"
+]
+],
+[
+{
+"price": 0.5,
+"qty": 7
+},
+"USD",
+[
+"ok",
+"                       7 x          $0.50 =          $3.50"
+]
+],
+[
+{
+"price": 0.5,
+"qty": 7
+},
+"JPY",
+[
+"ok",
+"                       7 x             ¥0 =             ¥4"
+]
+],
+[
+{
+"price": 0.5,
+"qty": 7
+},
+"EUR",
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"price": 0.5,
+"qty": 7
+},
+null,
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "BBBBBBBBBBBBBBBBBBBB",
+"price": 99.995,
+"qty": 1
+},
+"KRW",
+[
+"ok",
+"BBBBBBBBBBBBBBBBBBBB   1 x            99원 =            99원"
+]
+],
+[
+{
+"name": "BBBBBBBBBBBBBBBBBBBB",
+"price": 99.995,
+"qty": 1
+},
+"USD",
+[
+"ok",
+"BBBBBBBBBBBBBBBBBBBB   1 x        $100.00 =        $100.00"
+]
+],
+[
+{
+"name": "BBBBBBBBBBBBBBBBBBBB",
+"price": 99.995,
+"qty": 1
+},
+"JPY",
+[
+"ok",
+"BBBBBBBBBBBBBBBBBBBB   1 x           ¥100 =           ¥100"
+]
+],
+[
+{
+"name": "BBBBBBBBBBBBBBBBBBBB",
+"price": 99.995,
+"qty": 1
+},
+"EUR",
+[
+"err",
+"ValueError"
+]
+],
+[
+{
+"name": "BBBBBBBBBBBBBBBBBBBB",
+"price": 99.995,
+"qty": 1
+},
+null,
+[
+"err",
+"ValueError"
+]
+]
+]
+}

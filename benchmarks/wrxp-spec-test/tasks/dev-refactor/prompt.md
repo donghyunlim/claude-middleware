@@ -1,0 +1,1 @@
+`billing/report.py`에 비슷한 코드가 너무 많이 반복됩니다. 외부에서 보이는 동작(출력 문자열, 예외)은 하나도 바꾸지 말고 읽기 쉽게 정리해 주세요. 공개 함수 이름(format_krw, format_usd, format_jpy, format_line)은 다른 모듈이 쓰고 있으니 유지해야 합니다. 테스트는 `python3 -m pytest -q`로 돌릴 수 있습니다.

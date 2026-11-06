@@ -1,0 +1,4 @@
+# overrides default.yaml in production
+payment:
+  timeout_sec: 8
+  max_attempts: 5

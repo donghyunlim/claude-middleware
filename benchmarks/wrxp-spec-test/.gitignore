@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+std/items/scifact_corpus/
+std/items_pilot/

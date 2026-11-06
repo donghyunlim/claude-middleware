@@ -1,0 +1,984 @@
+{
+ "conds": [
+  "base",
+  "global",
+  "ha",
+  "global_ha"
+ ],
+ "bench": {
+  "mmlu_pro": {
+   "name": "MMLU-Pro",
+   "area": "지식·추론",
+   "metric": "정확도",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.0,
+    "ha": 0.0,
+    "interaction": 0.0
+   },
+   "secondary": {},
+   "process": {
+    "base": {
+     "cost_usd": 0.08441023,
+     "duration_sec": 7.20405,
+     "output_tokens": 316.65,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.1134412,
+     "duration_sec": 7.5273,
+     "output_tokens": 328.45,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.15823122,
+     "duration_sec": 8.021650000000001,
+     "output_tokens": 416.85,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.1796692,
+     "duration_sec": 8.7169,
+     "output_tokens": 436.95,
+     "parsed": 1.0
+    }
+   }
+  },
+  "gpqa": {
+   "name": "GPQA Diamond",
+   "area": "대학원 과학",
+   "metric": "정확도",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.0,
+    "ha": 0.0,
+    "interaction": 0.0
+   },
+   "secondary": {},
+   "process": {
+    "base": {
+     "cost_usd": 0.156253865,
+     "duration_sec": 18.62875,
+     "output_tokens": 1324.05,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.185853935,
+     "duration_sec": 21.03435,
+     "output_tokens": 1538.4,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.23281075,
+     "duration_sec": 20.14175,
+     "output_tokens": 1531.3,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.265032915,
+     "duration_sec": 18.4254,
+     "output_tokens": 1342.1,
+     "parsed": 1.0
+    }
+   }
+  },
+  "math500": {
+   "name": "MATH-500",
+   "area": "수학",
+   "metric": "정확도",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.0,
+    "ha": 0.0,
+    "interaction": 0.0
+   },
+   "secondary": {},
+   "process": {
+    "base": {
+     "cost_usd": 0.08399999,
+     "duration_sec": 7.2835,
+     "output_tokens": 367.8,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.1119956,
+     "duration_sec": 7.09795,
+     "output_tokens": 302.95,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.15563226,
+     "duration_sec": 8.12555,
+     "output_tokens": 377.25,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.1773026,
+     "duration_sec": 8.3299,
+     "output_tokens": 411.2,
+     "parsed": 1.0
+    }
+   }
+  },
+  "gsm8k": {
+   "name": "GSM8K",
+   "area": "초등 수학 서술형",
+   "metric": "정확도",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 0.9,
+     "ci": [
+      0.75,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.05,
+     "ci": [
+      0.0,
+      0.15
+     ]
+    },
+    "ha": {
+     "mean": 0.05,
+     "ci": [
+      0.0,
+      0.15
+     ]
+    },
+    "global_ha": {
+     "mean": 0.05,
+     "ci": [
+      0.0,
+      0.15
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.02499999999999991,
+    "ha": 0.02499999999999991,
+    "interaction": -0.04999999999999993
+   },
+   "secondary": {},
+   "process": {
+    "base": {
+     "cost_usd": 0.07914325999999999,
+     "duration_sec": 5.5188,
+     "output_tokens": 142.65,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.10820500000000001,
+     "duration_sec": 5.74035,
+     "output_tokens": 131.5,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.1515814,
+     "duration_sec": 6.2381,
+     "output_tokens": 206.7,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.1725722,
+     "duration_sec": 6.32045,
+     "output_tokens": 208.2,
+     "parsed": 1.0
+    }
+   }
+  },
+  "bbh": {
+   "name": "BIG-Bench Hard",
+   "area": "다단계 추론",
+   "metric": "정확 일치",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.0,
+    "ha": 0.0,
+    "interaction": 0.0
+   },
+   "secondary": {},
+   "process": {
+    "base": {
+     "cost_usd": 0.08008571,
+     "duration_sec": 6.2184,
+     "output_tokens": 177.2,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.1095986,
+     "duration_sec": 7.70315,
+     "output_tokens": 176,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.1530551,
+     "duration_sec": 6.8285,
+     "output_tokens": 234.6,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.1744278,
+     "duration_sec": 7.22165,
+     "output_tokens": 253.3,
+     "parsed": 1.0
+    }
+   }
+  },
+  "humaneval": {
+   "name": "HumanEval",
+   "area": "코드 생성",
+   "metric": "pass@1",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.0,
+    "ha": 0.0,
+    "interaction": 0.0
+   },
+   "secondary": {},
+   "process": {
+    "base": {
+     "cost_usd": 0.12018282,
+     "duration_sec": 14.7692,
+     "output_tokens": 806.65,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.15059525,
+     "duration_sec": 15.16315,
+     "output_tokens": 810.25,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.19573168000000002,
+     "duration_sec": 16.55705,
+     "output_tokens": 968.3,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.21930578,
+     "duration_sec": 16.78985,
+     "output_tokens": 973.55,
+     "parsed": 1.0
+    }
+   }
+  },
+  "mbpp": {
+   "name": "MBPP",
+   "area": "코드 생성",
+   "metric": "pass@1",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.0,
+    "ha": 0.0,
+    "interaction": 0.0
+   },
+   "secondary": {},
+   "process": {
+    "base": {
+     "cost_usd": 0.1012093,
+     "duration_sec": 12.3249,
+     "output_tokens": 609.8,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.1306185,
+     "duration_sec": 11.503449999999999,
+     "output_tokens": 614.1,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.17581696,
+     "duration_sec": 14.567499999999999,
+     "output_tokens": 709.2,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.20251593,
+     "duration_sec": 13.18175,
+     "output_tokens": 772.05,
+     "parsed": 1.0
+    }
+   }
+  },
+  "ifeval": {
+   "name": "IFEval",
+   "area": "지시 이행",
+   "metric": "프롬프트 strict 정확도",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 0.9,
+     "ci": [
+      0.75,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 0.95,
+     "ci": [
+      0.85,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 0.85,
+     "ci": [
+      0.7,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.85,
+     "ci": [
+      0.7,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.05,
+     "ci": [
+      0.0,
+      0.15
+     ]
+    },
+    "ha": {
+     "mean": -0.05,
+     "ci": [
+      -0.2,
+      0.1
+     ]
+    },
+    "global_ha": {
+     "mean": -0.05,
+     "ci": [
+      -0.25,
+      0.15
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.02499999999999991,
+    "ha": -0.07500000000000007,
+    "interaction": -0.04999999999999993
+   },
+   "secondary": {
+    "prompt_loose": {
+     "base": 0.9,
+     "global": 0.95,
+     "ha": 0.9,
+     "global_ha": 0.95
+    },
+    "inst_strict": {
+     "base": 0.925,
+     "global": 0.975,
+     "ha": 0.875,
+     "global_ha": 0.85
+    }
+   },
+   "process": {
+    "base": {
+     "cost_usd": 0.09657228,
+     "duration_sec": 16.29175,
+     "output_tokens": 980.5,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.1260112,
+     "duration_sec": 16.28395,
+     "output_tokens": 983.7,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.17640083,
+     "duration_sec": 20.22375,
+     "output_tokens": 1421.05,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.1947764,
+     "duration_sec": 18.99745,
+     "output_tokens": 1290.35,
+     "parsed": 1.0
+    }
+   }
+  },
+  "truthfulqa": {
+   "name": "TruthfulQA MC1",
+   "area": "사실성·환각",
+   "metric": "정확도",
+   "n": 19,
+   "score": {
+    "base": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.0,
+    "ha": 0.0,
+    "interaction": 0.0
+   },
+   "secondary": {},
+   "process": {
+    "base": {
+     "cost_usd": 0.07972384210526316,
+     "duration_sec": 6.753947368421053,
+     "output_tokens": 163.10526315789474,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.10899266315789474,
+     "duration_sec": 5.817947368421052,
+     "output_tokens": 160.8421052631579,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.15264436842105264,
+     "duration_sec": 6.619315789473684,
+     "output_tokens": 251.1578947368421,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.17383476842105264,
+     "duration_sec": 9.142684210526316,
+     "output_tokens": 251.57894736842104,
+     "parsed": 1.0
+    }
+   }
+  },
+  "scifact": {
+   "name": "SciFact (BEIR)",
+   "area": "검색",
+   "metric": "Recall@5",
+   "n": 20,
+   "score": {
+    "base": {
+     "mean": 0.93,
+     "ci": [
+      0.81,
+      1.0
+     ]
+    },
+    "global": {
+     "mean": 0.93,
+     "ci": [
+      0.82,
+      1.0
+     ]
+    },
+    "ha": {
+     "mean": 0.88,
+     "ci": [
+      0.73,
+      1.0
+     ]
+    },
+    "global_ha": {
+     "mean": 0.88,
+     "ci": [
+      0.73,
+      1.0
+     ]
+    }
+   },
+   "diff_vs_base": {
+    "global": {
+     "mean": 0.0,
+     "ci": [
+      -0.15,
+      0.15
+     ]
+    },
+    "ha": {
+     "mean": -0.05,
+     "ci": [
+      -0.15,
+      0.0
+     ]
+    },
+    "global_ha": {
+     "mean": -0.05,
+     "ci": [
+      -0.15,
+      0.0
+     ]
+    }
+   },
+   "effects": {
+    "global": 0.0,
+    "ha": -0.050000000000000044,
+    "interaction": 0.0
+   },
+   "secondary": {
+    "recall@10": {
+     "base": 0.98,
+     "global": 0.98,
+     "ha": 0.98,
+     "global_ha": 0.98
+    },
+    "ndcg@10": {
+     "base": 0.877140248222841,
+     "global": 0.8725057501017273,
+     "ha": 0.9162393281986457,
+     "global_ha": 0.8852159956302842
+    },
+    "mrr@10": {
+     "base": 0.8530555555555556,
+     "global": 0.8446428571428571,
+     "ha": 0.9111111111111111,
+     "global_ha": 0.8638888888888889
+    }
+   },
+   "process": {
+    "base": {
+     "cost_usd": 0.210322075,
+     "duration_sec": 32.3909,
+     "output_tokens": 1648.4,
+     "parsed": 1.0
+    },
+    "global": {
+     "cost_usd": 0.245259265,
+     "duration_sec": 31.9148,
+     "output_tokens": 1699.45,
+     "parsed": 1.0
+    },
+    "ha": {
+     "cost_usd": 0.30579475,
+     "duration_sec": 33.461,
+     "output_tokens": 1861.4,
+     "parsed": 1.0
+    },
+    "global_ha": {
+     "cost_usd": 0.32614926,
+     "duration_sec": 33.8769,
+     "output_tokens": 1926.9,
+     "parsed": 1.0
+    }
+   }
+  }
+ },
+ "composite": {
+  "base": 0.963,
+  "global": 0.973,
+  "ha": 0.958,
+  "global_ha": 0.958
+ },
+ "process_mean": {
+  "base": {
+   "cost_usd": 0.10919033721052632,
+   "duration_sec": 12.738419736842106,
+   "output_tokens": 653.6805263157895,
+   "parsed": 1.0
+  },
+  "global": {
+   "cost_usd": 0.13905712131578948,
+   "duration_sec": 12.978639736842105,
+   "output_tokens": 674.5642105263158,
+   "parsed": 1.0
+  },
+  "ha": {
+   "cost_usd": 0.18576993184210527,
+   "duration_sec": 14.078416578947369,
+   "output_tokens": 797.7807894736842,
+   "parsed": 1.0
+  },
+  "global_ha": {
+   "cost_usd": 0.20855868534210525,
+   "duration_sec": 14.100293421052632,
+   "output_tokens": 786.6178947368421,
+   "parsed": 1.0
+  }
+ }
+}

@@ -86,52 +86,67 @@ def fmt(a, pct=False):
     return s
 
 
+CONDS = ["base", "global", "ha", "global_ha"]
+LABEL = {"base": "미적용", "global": "전역만", "ha": "/ha만", "global_ha": "전역+/ha"}
+
+
+def effects(m):
+    """2x2 main effects and interaction from per-condition means."""
+    if any(m.get(c) is None for c in CONDS):
+        return None
+    g = (m["global"] + m["global_ha"]) / 2 - (m["base"] + m["ha"]) / 2
+    h = (m["ha"] + m["global_ha"]) / 2 - (m["base"] + m["global"]) / 2
+    x = (m["global_ha"] - m["ha"]) - (m["global"] - m["base"])
+    return {"global": g, "ha": h, "interaction": x}
+
+
+def dfmt(v, pct):
+    if v is None:
+        return "-"
+    return f"{v*100:+.0f}%p" if pct else f"{v:+.2f}"
+
+
 def main():
     runs = sys.argv[1]
     rows = load(runs)
-    conds = ["baseline", "wrxp"]
-    summary = {"kpis": [], "process": {}, "per_task": {}}
-    print("## 부서별 객관 지표 (평균, 각 조건 n=3)\n")
-    print("| 부서 | 과제 | 지표 | baseline | wrxp | 차이 |")
-    print("|---|---|---|---:|---:|---:|")
+    conds = [c for c in CONDS if any(r["cond"] == c for r in rows)]
+    summary = {"conds": conds, "kpis": [], "process": {}, "per_task": {}}
+    head = " | ".join(LABEL[c] for c in conds)
+    print("## 부서별 객관 지표 (조건마다 과제당 3회 평균)\n")
+    print(f"| 부서 | 과제 | 지표 | {head} | 전역 효과 | /ha 효과 |")
+    print("|---|---|---|" + "---:|" * (len(conds) + 2))
     for task, key, label, kind in KPIS:
         vals = {c: agg([r.get(key) for r in rows if r["task"] == task and r["cond"] == c]) for c in conds}
-        pct = kind == "rate" or (key == "score")
-        b, w = vals["baseline"], vals["wrxp"]
-        diff = "-" if not (b and w) else (f"{(w['mean']-b['mean'])*100:+.0f}%p" if pct else f"{w['mean']-b['mean']:+.2f}")
+        pct = kind == "rate" or key in ("score", "cleanup_recall")
+        e = effects({c: (vals[c] or {}).get("mean") for c in conds})
         dept, name = DEPT[task]
-        print(f"| {dept} | {name} | {label} | {fmt(b, pct)} | {fmt(w, pct)} | {diff} |")
-        summary["kpis"].append({"task": task, "dept": dept, "key": key, "label": label, "baseline": b, "wrxp": w})
-    print("\n## 과제별 주 점수와 비용\n")
-    print("| 과제 | 점수 baseline | 점수 wrxp | 비용 baseline | 비용 wrxp | 시간 baseline | 시간 wrxp |")
-    print("|---|---:|---:|---:|---:|---:|---:|")
+        cells = " | ".join(fmt(vals[c], pct) for c in conds)
+        print(f"| {dept} | {name} | {label} | {cells} | {dfmt(e and e['global'], pct)} | {dfmt(e and e['ha'], pct)} |")
+        summary["kpis"].append({"task": task, "dept": dept, "key": key, "label": label, "pct": pct,
+                                **{c: vals[c] for c in conds}, "effects": e})
+    print("\n## 과제별 주 점수\n")
+    print(f"| 과제 | {head} |")
+    print("|---|" + "---:|" * len(conds))
     for task in DEPT:
         t = {c: [r for r in rows if r["task"] == task and r["cond"] == c] for c in conds}
         sc = {c: agg([r.get("score") for r in t[c]]) for c in conds}
         co = {c: agg([r["process"]["cost_usd"] for r in t[c]]) for c in conds}
         du = {c: agg([r["process"]["duration_sec"] for r in t[c]]) for c in conds}
         summary["per_task"][task] = {"score": sc, "cost": co, "duration": du}
-        print(f"| {DEPT[task][1]} | {fmt(sc['baseline'], True)} | {fmt(sc['wrxp'], True)} | "
-              f"${fmt(co['baseline'])} | ${fmt(co['wrxp'])} | {fmt(du['baseline'])} | {fmt(du['wrxp'])} |")
+        print(f"| {DEPT[task][1]} | " + " | ".join(fmt(sc[c], True) for c in conds) + " |")
     print("\n## 공통 실행 지표 (전체 과제 평균)\n")
-    print("| 지표 | baseline | wrxp | 배율 |")
-    print("|---|---:|---:|---:|")
+    print(f"| 지표 | {head} | 전역 효과 | /ha 효과 |")
+    print("|---|" + "---:|" * (len(conds) + 2))
     for key, label in PROC:
         v = {c: agg([r["process"].get(key) for r in rows if r["cond"] == c]) for c in conds}
-        summary["process"][key] = v
         pct = key == "reply_korean"
-        ratio = "-" if not (v["baseline"] and v["wrxp"] and v["baseline"]["mean"]) else f"×{v['wrxp']['mean']/v['baseline']['mean']:.2f}"
-        print(f"| {label} | {fmt(v['baseline'], pct)} | {fmt(v['wrxp'], pct)} | {ratio} |")
+        e = effects({c: (v[c] or {}).get("mean") for c in conds})
+        summary["process"][key] = {**v, "effects": e}
+        print(f"| {label} | " + " | ".join(fmt(v[c], pct) for c in conds) + f" | {dfmt(e and e['global'], pct)} | {dfmt(e and e['ha'], pct)} |")
     overall = {c: st.mean([summary["per_task"][t]["score"][c]["mean"] for t in DEPT
-                           if summary["per_task"][t]["score"][c]]) for c in conds}
+                           if summary["per_task"][t]["score"].get(c)]) for c in conds}
     summary["overall_score"] = overall
-    wins = sum(1 for t in DEPT if summary["per_task"][t]["score"]["wrxp"] and summary["per_task"][t]["score"]["baseline"]
-               and summary["per_task"][t]["score"]["wrxp"]["mean"] > summary["per_task"][t]["score"]["baseline"]["mean"] + 1e-9)
-    losses = sum(1 for t in DEPT if summary["per_task"][t]["score"]["wrxp"] and summary["per_task"][t]["score"]["baseline"]
-                 and summary["per_task"][t]["score"]["wrxp"]["mean"] < summary["per_task"][t]["score"]["baseline"]["mean"] - 1e-9)
-    summary["wins_losses_ties"] = [wins, losses, len(DEPT) - wins - losses]
-    print(f"\n전체 주 점수 평균: baseline {overall['baseline']*100:.1f}% / wrxp {overall['wrxp']*100:.1f}% "
-          f"(과제별 승 {wins} · 패 {losses} · 동률 {len(DEPT)-wins-losses})")
+    print("\n전체 주 점수 평균: " + " / ".join(f"{LABEL[c]} {overall[c]*100:.1f}%" for c in conds))
     Path(runs, "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1))
     Path(runs, "rows.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1))
 

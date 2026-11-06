@@ -1,0 +1,1 @@
+장바구니에 쿠폰 기능을 넣어 주세요. 정률(%) 쿠폰과 정액 쿠폰 둘 다 필요하고, 최소 주문 금액이나 최대 할인 금액 같은 조건이 붙을 수 있어요. `store/coupon.py`에 `apply_coupon(cart, coupon)`을 만들어서 배송비까지 포함한 최종 결제 금액(정수)을 돌려주게 해 주세요. 쿠폰은 `{"type": "percent" 또는 "fixed", "value": 숫자, "min_order": 선택, "max_discount": 선택}` 모양입니다.

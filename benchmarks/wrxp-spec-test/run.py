@@ -106,7 +106,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--tasks", default=",".join(sorted(p.name for p in TASKS.iterdir() if p.is_dir())))
     ap.add_argument("--benches", default=",".join(sorted(p.stem for p in ITEMS.glob("*.jsonl"))) if ITEMS.exists() else "")
-    ap.add_argument("--conds", default=",".join(C.CONDS))
+    ap.add_argument("--conds", default="base,global,ha,global_ha")
     ap.add_argument("--reps", type=int, default=3)
     ap.add_argument("--parallel", type=int, default=8)
     ap.add_argument("--timeout", type=int, default=1500)

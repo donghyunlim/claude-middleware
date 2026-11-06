@@ -6,6 +6,8 @@
 | global    | yes                         | yes           | -             |
 | ha        | no                          | yes           | /wrxp:ha      |
 | global_ha | yes                         | yes           | /wrxp:ha      |
+| global_haq  | yes                       | yes           | /wrxp:haq     |  (hard suite)
+| global_haqq | yes                       | yes           | /wrxp:haqq    |  (hard suite)
 
 Every condition runs with its own CLAUDE_CONFIG_DIR so that only the setup
 output differs. "global" loads the plugin because the setup rules route to
@@ -22,10 +24,13 @@ PLUGIN = HERE.parent.parent / "wrxp"
 SETUP = PLUGIN / "skills/setup/scripts/setup_global.py"
 
 CONDS = {
-    "base": {"global": False, "plugin": False, "ha": False},
-    "global": {"global": True, "plugin": True, "ha": False},
-    "ha": {"global": False, "plugin": True, "ha": True},
-    "global_ha": {"global": True, "plugin": True, "ha": True},
+    "base": {"global": False, "plugin": False, "prefix": ""},
+    "global": {"global": True, "plugin": True, "prefix": ""},
+    "ha": {"global": False, "plugin": True, "prefix": "/wrxp:ha"},
+    "global_ha": {"global": True, "plugin": True, "prefix": "/wrxp:ha"},
+    # hard suite only: question tiers on top of the global block
+    "global_haq": {"global": True, "plugin": True, "prefix": "/wrxp:haq"},
+    "global_haqq": {"global": True, "plugin": True, "prefix": "/wrxp:haqq"},
 }
 STRIP_ENV = ["CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD", "CLAUDE_ADDITIONAL_DIRECTORIES"]
 
@@ -43,17 +48,20 @@ def config_dir(out: Path, cond: str) -> Path:
     return d
 
 
-def command(cond: str, allowed: str):
+def command(cond: str, allowed: str, resume: str = None):
     c = CONDS[cond]
     cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose",
            "--permission-mode", "acceptEdits", "--allowedTools", allowed]
+    if resume:
+        cmd += ["--resume", resume]
     if c["plugin"]:
         cmd += ["--plugin-dir", str(PLUGIN)]
     return cmd
 
 
 def prompt_for(cond: str, prompt: str) -> str:
-    return ("/wrxp:ha " + prompt) if CONDS[cond]["ha"] else prompt
+    pre = CONDS[cond]["prefix"]
+    return f"{pre} {prompt}" if pre else prompt
 
 
 def env_for(out: Path, cond: str):

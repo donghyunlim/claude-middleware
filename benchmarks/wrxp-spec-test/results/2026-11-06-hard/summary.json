@@ -1,0 +1,219 @@
+{
+ "conds": [
+  "base",
+  "global",
+  "global_ha",
+  "global_haq",
+  "global_haqq"
+ ],
+ "overall": {
+  "delivery": {
+   "base": 0.6244444444444445,
+   "global": 0.5977777777777777,
+   "global_ha": 0.6659259259259259,
+   "global_haq": 0.9288888888888889,
+   "global_haqq": 0.9
+  },
+  "final": {
+   "base": 0.9733333333333334,
+   "global": 0.9933333333333333,
+   "global_ha": 0.9733333333333334,
+   "global_haq": 0.9733333333333334,
+   "global_haqq": 0.9666666666666667
+  },
+  "user_turns": {
+   "base": 1.4666666666666666,
+   "global": 1.3333333333333333,
+   "global_ha": 1.1333333333333333,
+   "global_haq": 0.9333333333333333,
+   "global_haqq": 1.2
+  },
+  "revisions_requested": {
+   "base": 1.2666666666666666,
+   "global": 1.0666666666666667,
+   "global_ha": 1.1333333333333333,
+   "global_haq": 0.13333333333333333,
+   "global_haqq": 0.2
+  },
+  "questions_answered": {
+   "base": 0.2,
+   "global": 0.26666666666666666,
+   "global_ha": 0,
+   "global_haq": 0.8,
+   "global_haqq": 1
+  },
+  "user_chars": {
+   "base": 404.4,
+   "global": 383.46666666666664,
+   "global_ha": 335.2,
+   "global_haq": 293.8,
+   "global_haqq": 313.53333333333336
+  },
+  "total_cost": {
+   "base": 1.00741036,
+   "global": 1.0161932533333333,
+   "global_ha": 1.0761752333333334,
+   "global_haq": 0.9694078266666667,
+   "global_haqq": 1.1265786533333333
+  },
+  "wall_sec": {
+   "base": 137.03977241516114,
+   "global": 128.49050532976787,
+   "global_ha": 141.1870312531789,
+   "global_haq": 116.08398871421814,
+   "global_haqq": 122.394025293986
+  }
+ },
+ "per_task": {
+  "export": {
+   "delivery": {
+    "base": 0.2222222222222222,
+    "global": 0.2222222222222222,
+    "global_ha": 0.2962962962962963,
+    "global_haq": 1.0,
+    "global_haqq": 1.0
+   },
+   "final": {
+    "base": 1.0,
+    "global": 1.0,
+    "global_ha": 1.0,
+    "global_haq": 1.0,
+    "global_haqq": 1.0
+   },
+   "user_turns": {
+    "base": 1.3333333333333333,
+    "global": 1,
+    "global_ha": 1,
+    "global_haq": 1,
+    "global_haqq": 1
+   },
+   "total_cost": {
+    "base": 0.9214160666666666,
+    "global": 0.835569,
+    "global_ha": 0.9283158666666667,
+    "global_haq": 0.9426050666666667,
+    "global_haqq": 0.9216943333333333
+   }
+  },
+  "coupon": {
+   "delivery": {
+    "base": 0.5666666666666667,
+    "global": 0.5666666666666667,
+    "global_ha": 0.6333333333333333,
+    "global_haq": 1.0,
+    "global_haqq": 1.0
+   },
+   "final": {
+    "base": 1.0,
+    "global": 1.0,
+    "global_ha": 1.0,
+    "global_haq": 1.0,
+    "global_haqq": 1.0
+   },
+   "user_turns": {
+    "base": 1.6666666666666667,
+    "global": 1.6666666666666667,
+    "global_ha": 1.3333333333333333,
+    "global_haq": 1,
+    "global_haqq": 1.6666666666666667
+   },
+   "total_cost": {
+    "base": 0.9493469333333334,
+    "global": 1.0285068,
+    "global_ha": 0.9659562,
+    "global_haq": 0.8948411333333334,
+    "global_haqq": 1.1167592666666666
+   }
+  },
+  "churn": {
+   "delivery": {
+    "base": 1.0,
+    "global": 1.0,
+    "global_ha": 1.0,
+    "global_haq": 1.0,
+    "global_haqq": 1.0
+   },
+   "final": {
+    "base": 1.0,
+    "global": 1.0,
+    "global_ha": 1.0,
+    "global_haq": 1.0,
+    "global_haqq": 1.0
+   },
+   "user_turns": {
+    "base": 1,
+    "global": 1.3333333333333333,
+    "global_ha": 1,
+    "global_haq": 1,
+    "global_haqq": 1
+   },
+   "total_cost": {
+    "base": 0.6186942,
+    "global": 0.8327504666666666,
+    "global_ha": 0.9004400666666668,
+    "global_haq": 1.0095114,
+    "global_haqq": 1.087112
+   }
+  },
+  "inventory": {
+   "delivery": {
+    "base": 0.6666666666666666,
+    "global": 0.6666666666666666,
+    "global_ha": 0.6666666666666666,
+    "global_haq": 0.7777777777777778,
+    "global_haqq": 0.6666666666666666
+   },
+   "final": {
+    "base": 1.0,
+    "global": 1.0,
+    "global_ha": 1.0,
+    "global_haq": 1.0,
+    "global_haqq": 1.0
+   },
+   "user_turns": {
+    "base": 1.3333333333333333,
+    "global": 1,
+    "global_ha": 1,
+    "global_haq": 0.6666666666666666,
+    "global_haqq": 1.3333333333333333
+   },
+   "total_cost": {
+    "base": 1.0483509333333334,
+    "global": 0.8653773333333333,
+    "global_ha": 1.1825622333333334,
+    "global_haq": 0.9707344,
+    "global_haqq": 1.4832364
+   }
+  },
+  "roadmap": {
+   "delivery": {
+    "base": 0.6666666666666666,
+    "global": 0.5333333333333333,
+    "global_ha": 0.7333333333333334,
+    "global_haq": 0.8666666666666667,
+    "global_haqq": 0.8333333333333334
+   },
+   "final": {
+    "base": 0.8666666666666667,
+    "global": 0.9666666666666667,
+    "global_ha": 0.8666666666666667,
+    "global_haq": 0.8666666666666667,
+    "global_haqq": 0.8333333333333334
+   },
+   "user_turns": {
+    "base": 2,
+    "global": 1.6666666666666667,
+    "global_ha": 1.3333333333333333,
+    "global_haq": 1,
+    "global_haqq": 1
+   },
+   "total_cost": {
+    "base": 1.4992436666666666,
+    "global": 1.5187626666666665,
+    "global_ha": 1.4036018,
+    "global_haq": 1.0293471333333333,
+    "global_haqq": 1.0240912666666668
+   }
+  }
+ }
+}

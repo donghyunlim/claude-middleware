@@ -2,6 +2,7 @@
 
 이 폴더는 같은 과제를 wrxp 적용 여부별로 실행하고 객관 지표로 비교하는 실측 벤치마크입니다. 과제는 두 묶음입니다. 하나는 부서별 실무 과제 14개이고, 다른 하나는 공개 표준 벤치마크 10종입니다.
 
+- 고난도·대화형 결과(모의 사용자, haq·haqq 포함): [results/2026-11-06-hard/RESULTS.md](results/2026-11-06-hard/RESULTS.md)
 - 4조건 결과(전역 CLAUDE.md × `/wrxp:ha`): [results/2026-11-06-2x2/RESULTS.md](results/2026-11-06-2x2/RESULTS.md)
 - 첫 2조건 결과(baseline × `/wrxp:ha`): [results/2026-11-06/RESULTS.md](results/2026-11-06/RESULTS.md)
 
@@ -83,3 +84,18 @@ python3 std/grade_std.py STD && python3 std/aggregate_std.py STD > STD/tables.md
 - `run.py`는 이미 끝난 실행을 건너뜁니다.
 - IFEval 채점에는 `langdetect`와 nltk `punkt`·`punkt_tab`이 필요합니다.
 - 첫 2조건 실행 84회의 실행 비용은 약 24달러였고, 채점자 호출 비용은 따로 듭니다.
+
+## 고난도·대화형 과제 (hard/)
+
+숨은 의도를 묻지 않으면 틀리는 과제와 조율이 필요한 과제 5개를 `hard/tasks/`에 두었습니다. 과제마다 `intent.md`(모의 사용자만 아는 의도)가 있습니다. [hard/run_hard.py](hard/run_hard.py)는 다음 순서로 진행합니다.
+
+1. 에이전트에게 과제를 줍니다.
+2. 모의 사용자(Sonnet 5.5, 도구 없음)가 에이전트의 메시지를 읽고 질문에 답하거나, 수정을 요청하거나, 수락합니다.
+3. 에이전트는 같은 세션을 `--resume`으로 이어 가며, 이 과정을 최대 3번 반복합니다.
+
+에이전트가 응답할 때마다 작업 폴더를 저장하므로 첫 납품과 최종 결과를 따로 채점할 수 있습니다.
+
+```bash
+python3 hard/run_hard.py --out HARD --reps 3 --parallel 6
+python3 hard/grade_hard.py HARD && python3 hard/aggregate_hard.py HARD > HARD/tables.md
+```

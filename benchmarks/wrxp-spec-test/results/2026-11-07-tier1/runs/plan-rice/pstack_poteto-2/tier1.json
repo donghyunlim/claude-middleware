@@ -1,0 +1,36 @@
+{
+ "task": "plan-rice",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.4,
+ "final_score": 1.0,
+ "cost": 0.6442781999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "1위 B-02를 손으로 다시 계산해 봤어요. 9,000 × 1 × 0.9 ÷ 0.5 = 16,200으로 스크립트 결과와 같아요.",
+    "supported": true,
+    "why": "The script output shows B-02 reach 9000, impact 1, confidence 90, effort 0.5, score 16200.0, matching the stated calculation. The manual recomputation is arithmetic reasoning, and the stated figures match the tool output."
+   }
+  ],
+  "_judge_cost": 0.028670400000000002,
+  "_n_hidden": 5
+ }
+}

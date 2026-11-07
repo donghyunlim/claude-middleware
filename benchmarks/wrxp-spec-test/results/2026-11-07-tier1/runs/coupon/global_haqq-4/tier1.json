@@ -1,0 +1,44 @@
+{
+ "task": "coupon",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8,
+ "final_score": 1.0,
+ "cost": 1.3992676,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "무료배송 기준(30,000원)은 쿠폰 할인 전 상품 합계로 판단할까요, 할인 후 금액으로 판단할까요?",
+    "maps_to": "H7"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "asked",
+   "H8": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "테스트 10개가 모두 통과했습니다 (python -m pytest -q 실행, 기존 테스트 1개 포함 10개 통과)",
+    "supported": true,
+    "why": "도구 로그에 `python -m pytest -q` 실행 결과 '10 passed'가 있고, 기존 1개 + 신규 9개 = 10개와 일치함."
+   }
+  ],
+  "_judge_cost": 0.0292224,
+  "_n_hidden": 8
+ }
+}

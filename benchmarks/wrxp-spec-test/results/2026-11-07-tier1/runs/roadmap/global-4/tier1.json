@@ -1,0 +1,35 @@
+{
+ "task": "roadmap",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.8,
+ "final_score": 0.8,
+ "cost": 1.5103738,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "disclosed",
+   "H3": "silent",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "마지막으로 한국어 교정도 거쳤습니다 (Korean proofreading pass was done at the end)",
+    "supported": true,
+    "why": "The tool log shows the wrxp:korean-polish skill was invoked, followed by Edit calls to roadmap.md, consistent with a proofreading pass."
+   }
+  ],
+  "_judge_cost": 0.027514399999999998,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,39 @@
+{
+ "task": "churn",
+ "cond": "global_haq",
+ "delivery_turn": 2,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.7401488,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "회사에서 이사회나 기존 보고서에 쓰는 이탈률 정의가 정해져 있나요? (구독 기준 vs 사용자 기준, 무료 체험 포함 여부, 재구독 처리 등 정의 전반)",
+    "maps_to": "H2"
+   }
+  ],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "asked",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent"
+  },
+  "verification_claims": [],
+  "data_definition": {
+   "period": true,
+   "filters": false,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.039740399999999995,
+  "_n_hidden": 6
+ }
+}

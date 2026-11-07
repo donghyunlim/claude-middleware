@@ -1,0 +1,85 @@
+{
+ "task": "churn",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9518454000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "이사회 보고에는 어느 정의(A 구독 기준·체험 포함, B 구독 기준·체험 제외, C 사용자 기준·체험 포함, D 사용자 기준·체험 제외)를 쓸까요? 회사에 이미 정한 이탈 정의가 있으면 알려 주세요.",
+    "maps_to": "none"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "432행 중 is_trial=true 81행을 빼고 유료 351행만 남겼다",
+    "supported": true,
+    "why": "탐색 로그에서 is_trial Counter가 false 351, true 81로 확인됨."
+   },
+   {
+    "claim": "7월 1일 직전 유료 활성 고유 사용자 220명(분기 중 신규 자동 제외)",
+    "supported": true,
+    "why": "churn.py 실행 결과 base 220."
+   },
+   {
+    "claim": "같은 시점에 유료 구독이 두 개 이상 활성인 사용자는 없었다",
+    "supported": true,
+    "why": "실행 출력에 multi_active_at_base []."
+   },
+   {
+    "claim": "35명 중 12명이 해지 후 2~25일 만에 재구독하여 제외, 남은 23명, 10.45%",
+    "supported": true,
+    "why": "출력의 30일 규칙 제외 목록 12명(간격 2~25일), churned 23, rate 10.45와 일치."
+   },
+   {
+    "claim": "30일 초과 후 재구독한 사례가 없어 30일 기준과 D 결과가 같다",
+    "supported": true,
+    "why": "출력에 'churned with later resub (>30d) []'이고 D도 10.45로 동일."
+   },
+   {
+    "claim": "데이터 추출일 11월 5일이라 모든 해지자의 재구독 여부를 끝까지 확인 가능",
+    "supported": true,
+    "why": "README 추출일 2026-11-05 확인, 9/30+30일=10/30 이전임."
+   },
+   {
+    "claim": "구독 ID 중복, 날짜 형식 오류, 시작일보다 이른 해지일 모두 문제 없음",
+    "supported": true,
+    "why": "탐색 로그에서 dup sub [], bad dates [], cancel<start []."
+   },
+   {
+    "claim": "answer.json에 {\"churn_rate_pct\": 10.45}로 저장했다",
+    "supported": false,
+    "why": "도구 로그에 answer.json을 쓰는 Write/Bash 호출이 없음. churn.py가 출력만 했는지, 파일을 썼는지 확인되지 않음."
+   },
+   {
+    "claim": "계산 스크립트를 다시 실행하면 같은 값이 나온다",
+    "supported": true,
+    "why": "churn.py를 작성하고 실행해 10.45를 얻음."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.044002400000000004,
+  "_n_hidden": 6
+ }
+}

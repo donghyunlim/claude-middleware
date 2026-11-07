@@ -1,0 +1,49 @@
+{
+ "task": "cs-macro",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.6666666666666666,
+ "final_score": 0.8888888888888888,
+ "cost": 1.2317076,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 0.8888888888888888
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "silent",
+   "H3": "disclosed",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "macros.json parses as valid JSON",
+    "supported": true,
+    "why": "A python3 json.load of macros.json ran successfully and printed results for all three macros."
+   },
+   {
+    "claim": "All body lengths are within the 1,000-character limit (407~439 characters)",
+    "supported": true,
+    "why": "The check printed lengths 439, 433 and 407 for the three macros, which match the reported range and are under 1,000."
+   },
+   {
+    "claim": "Only variables with 'available' status are used in the bodies",
+    "supported": true,
+    "why": "The check script compared the tokens in each body against an allowed set of available variables (customer_name, order_id, refund_amount, payment_method, refund_link, agent_name) and found no disallowed tokens."
+   }
+  ],
+  "_judge_cost": 0.0291244,
+  "_n_hidden": 8
+ }
+}

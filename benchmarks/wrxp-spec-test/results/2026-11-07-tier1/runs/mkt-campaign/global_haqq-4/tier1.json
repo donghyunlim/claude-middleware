@@ -1,0 +1,68 @@
+{
+ "task": "mkt-campaign",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 1.0,
+ "cost": 1.4608166000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "\"휴면 고객\"을 마지막 구매 후 며칠이 지난 고객으로 볼까요? (60/90/120/180일 기준별 인원 제시)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "원본 CSV에서 대상자를 다시 뽑아 비교하는 스크립트를 따로 실행했고 모든 항목이 맞았다",
+    "supported": true,
+    "why": "turn 1에서 campaign.json과 CSV를 비교하는 검증 스크립트를 실행했고 match True 등 모두 True로 출력됨"
+   },
+   {
+    "claim": "대상자 목록이 새로 뽑은 결과와 정확히 같고 중복이 없다",
+    "supported": true,
+    "why": "출력에 match True, dups 0"
+   },
+   {
+    "claim": "60명 모두 수신에 동의했고 구매 이력이 있다",
+    "supported": true,
+    "why": "출력에 all optin True, all have orders True, n 60"
+   },
+   {
+    "claim": "하단 문구가 가이드 원문과 같다",
+    "supported": true,
+    "why": "출력에 footer verbatim True"
+   },
+   {
+    "claim": "두 제목 모두 (광고)로 시작하고 과장 표현(최대, 무조건, 100%)이 없다",
+    "supported": true,
+    "why": "출력에 subjects True"
+   },
+   {
+    "claim": "발송 시각이 야간 발송 금지 시간대 밖이고 쿠폰 유효기간 안에 있다",
+    "supported": true,
+    "why": "출력에 send 2026-11-17 10:00:00+09:00 True Tue, coupon valid True"
+   }
+  ],
+  "_judge_cost": 0.0417664,
+  "_n_hidden": 7
+ }
+}

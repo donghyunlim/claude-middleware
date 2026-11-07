@@ -1,0 +1,64 @@
+{
+ "task": "data-cohort",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.9265779999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "W1~W4 are fully observed for every cohort, no truncated values",
+    "supported": true,
+    "why": "Events run through KST 11/1 and the last cohort (9/21) needs W4 ending 10/25, so the data covers it; the agent saw max timestamps of 2026-11-01 KST in the log."
+   },
+   {
+    "claim": "Using login-only as the criterion lowers every cell by 8-10 percentage points (e.g. 08-03 W1 0.846 -> 0.750)",
+    "supported": false,
+    "why": "The login-only run was printed and the 08-03 W1 0.7500 matches. The log is truncated, but the first rows show drops of about 7-11pp (e.g. 08-10 W1 0.8380 -> 0.7535 is 8.5pp, 08-31 W2 0.7863 -> 0.7328 is 5.4pp), so 'every cell 8-10pp' is not supported."
+   },
+   {
+    "claim": "Data starts at KST 8/3 Monday 00:00 and ends at KST 11/1 24:00, so KST is correct",
+    "supported": true,
+    "why": "The log shows the first signup at 2026-08-03 00:01 KST and the last event at 2026-11-01 23:56 KST."
+   },
+   {
+    "claim": "KST signups fall only in 8/3~9/27, so the cohorts split into exactly 8 weeks",
+    "supported": true,
+    "why": "The signup min/max in the log are 2026-08-03 00:01 KST and 2026-09-27 23:41 KST."
+   },
+   {
+    "claim": "97 test accounts excluded (test_ prefix and @ourapp.kr), 1,300 -> 1,203",
+    "supported": true,
+    "why": "The log shows 'excluded 97' and 'sum size 1203', with 1,300 users in total."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0384884,
+  "_n_hidden": 7
+ }
+}

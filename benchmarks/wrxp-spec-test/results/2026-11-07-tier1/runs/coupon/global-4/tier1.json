@@ -1,0 +1,39 @@
+{
+ "task": "coupon",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 1.1534452,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "python -m pytest -q 실행 결과 기존 테스트를 포함해 16개가 모두 통과했다",
+    "supported": true,
+    "why": "The final pytest run in the tool log output '16 passed in 0.02s', which includes the existing test_cart test plus the new coupon tests."
+   }
+  ],
+  "_judge_cost": 0.0225604,
+  "_n_hidden": 8
+ }
+}

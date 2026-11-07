@@ -1,0 +1,36 @@
+{
+ "task": "hr-onboarding",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.2,
+ "final_score": 1.0,
+ "cost": 0.7560419999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "검증 스크립트로 확인한 결과, 날짜순 정렬, 주말·휴무일 제외, type 값 모두 문제없습니다.",
+    "supported": true,
+    "why": "The tool log shows a python3 script run that loads onboarding.json and the holidays CSV and checks the allowed types, with output beginning 'security_training ok'. The visible output is truncated, but it is consistent with the claimed checks."
+   }
+  ],
+  "_judge_cost": 0.0274604,
+  "_n_hidden": 6
+ }
+}

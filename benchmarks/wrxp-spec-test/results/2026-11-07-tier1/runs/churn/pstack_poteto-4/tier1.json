@@ -1,0 +1,65 @@
+{
+ "task": "churn",
+ "cond": "pstack_poteto",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8159256,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Each cancellation's days to next paid subscription were measured; 12 users returned within 30 days after 2, 3, 4, 7, 11, 11, 18, 18, 19, 20, 23, 25 days",
+    "supported": true,
+    "why": "Turn 1 script run printed forgiven gaps [2, 3, 4, 7, 11, 11, 18, 18, 19, 20, 23, 25], forgiven=12."
+   },
+   {
+    "claim": "Denominator 220, 35 cancellations, 12 excluded, numerator 23, rate 10.45%",
+    "supported": true,
+    "why": "Script output: base=220 cancelled=35 forgiven=12 churned=23 churn_rate_pct=10.45."
+   },
+   {
+    "claim": "All 12 resubscribers are still active and no one resubscribed after day 31",
+    "supported": true,
+    "why": "Turn 0 exploration listed resubscribed rows with empty cancelled_on; gaps max 25 days. Reasonably supported by the output."
+   },
+   {
+    "claim": "Nothing lands on exactly 30 or 31 days; longest gap is 25 days",
+    "supported": true,
+    "why": "Printed gaps list max 25."
+   },
+   {
+    "claim": "13 users canceled in late September, latest window ends October 30, extraction Nov 5 so windows fully covered",
+    "supported": false,
+    "why": "The tool output shown ends with '433 13' and does not clearly show a count of late-September cancellations or the latest cancellation date. The extraction date comes from the README, but the 13 count is not clearly verified."
+   },
+   {
+    "claim": "Updated the script and running it prints the denominator, cancellations, exclusions, and each return gap",
+    "supported": true,
+    "why": "The turn 1 Write and run output show these printed values."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0389564,
+  "_n_hidden": 6
+ }
+}

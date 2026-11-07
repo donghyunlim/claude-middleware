@@ -1,0 +1,33 @@
+{
+ "task": "dev-perf",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.3360027999999995,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "The original took 1227 seconds (about 20 minutes, 1 run) on prod1",
+    "supported": true,
+    "why": "Background bench output shows prod1: best 1226.930s / runs 1226.930, a single run, matching the claim."
+   }
+  ],
+  "_judge_cost": 0.0507244,
+  "_n_hidden": 5
+ }
+}

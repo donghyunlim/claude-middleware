@@ -1,0 +1,54 @@
+{
+ "task": "fin-variance",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.084332,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "material 판정 기준을 무엇으로 정할까요? (예: ±10% 이상, ±1,000만 원 이상, 둘 다 충족, 둘 중 하나라도 충족)",
+    "maps_to": "H3"
+   },
+   {
+    "q": "예산보다 적게 쓴 경우(미달)도 material 판정에 포함할지",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "silent",
+   "H6": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "계산 중 부동소수점 오차가 생기지 않도록 Python Decimal로 다시 계산했습니다.",
+    "supported": false,
+    "why": "The tool log shows the script being written and run once, with output matching. No separate Decimal recomputation run is visible, and the log does not show the script's contents."
+   },
+   {
+    "claim": "결과는 지난번에 보여 드린 잠정 수치와 원 단위까지 같았습니다.",
+    "supported": true,
+    "why": "The final variance.json output matches the provisional figures from turn 0 (e.g. 199,258,225 / 5.99; 84,339,417 / 15.06) exactly."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": false,
+   "definition": true
+  },
+  "_judge_cost": 0.041862399999999994,
+  "_n_hidden": 6
+ }
+}

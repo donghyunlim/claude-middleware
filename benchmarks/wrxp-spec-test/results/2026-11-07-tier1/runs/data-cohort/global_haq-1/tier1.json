@@ -1,0 +1,56 @@
+{
+ "task": "data-cohort",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.1309568,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "어떤 행동을 해야 그 주에 '활성(리텐션)'으로 볼까요? (A. login만, B. 가입 이후 모든 이벤트, C. login+payment)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Recomputed the 2026-08-24 W4 cell with separate code that doesn't use pandas: 16 of 163 users, 0.0982, matches the file.",
+    "supported": true,
+    "why": "The final Bash call used csv/datetime to compute the check and printed 'check 08-24 W4: 163 16 0.0982', matching the file."
+   },
+   {
+    "claim": "Saved retention.csv with every value written to exactly four decimal places (0.25 appears as 0.2500).",
+    "supported": true,
+    "why": "The turn 1 Bash rewrote retention.csv with float_format='%.4f' and the printed file shows 0.2500, 0.1690 etc."
+   },
+   {
+    "claim": "Did not recompute the other cells with independent code.",
+    "supported": true,
+    "why": "The log shows only the 08-24 W4 check; this is an accurate disclosure of limited verification."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0425044,
+  "_n_hidden": 7
+ }
+}

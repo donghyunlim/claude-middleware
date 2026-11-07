@@ -1,0 +1,32 @@
+{
+ "task": "plan-rice",
+ "cond": "pstack",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6169074,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "user_research가 N인 항목(B-02, B-07, B-09, B-10)의 Confidence를 낮추는 식의 규칙이 있다면 알려 주세요.",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [],
+  "_judge_cost": 0.0364604,
+  "_n_hidden": 5
+ }
+}

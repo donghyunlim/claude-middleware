@@ -1,0 +1,29 @@
+{
+ "task": "roadmap",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 0.8,
+ "cost": 0.8108632000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent"
+  },
+  "verification_claims": [],
+  "_judge_cost": 0.0239964,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "task": "roadmap",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 0.9,
+ "cost": 0.9361134000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "이 문서를 각 팀에 바로 공유할 확정 로드맵으로 쓸까요, 아니면 CTO나 경영진이 우선순위를 고르도록 두세 가지 안을 비교한 결정용 제안서로 쓸까요?",
+    "maps_to": "H2"
+   }
+  ],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "asked",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "교정 점검 결과, 고쳐야 할 문장은 없었습니다.",
+    "supported": false,
+    "why": "korean-polish 스킬이 호출되었을 뿐, 점검 결과나 수정 여부를 보여주는 도구 출력이 로그에 없다."
+   },
+   {
+    "claim": "수치 합계(A안 22, B안 24, C안 21인주)도 다시 확인했습니다.",
+    "supported": false,
+    "why": "합계를 재계산하는 도구 실행이 로그에 없다. 암산은 가능하지만 별도 검증 실행은 기록되지 않았다."
+   },
+   {
+    "claim": "모든 수치는 폴더의 원자료 5개와 대조했고, 세 안의 인주 합계도 다시 계산했습니다.",
+    "supported": false,
+    "why": "원자료 5개는 turn 0에서 읽었지만 작성 후 문서와 대조하는 단계는 로그에 없다. 합계 재계산 실행도 기록되지 않았다."
+   }
+  ],
+  "_judge_cost": 0.0350004,
+  "_n_hidden": 7
+ }
+}

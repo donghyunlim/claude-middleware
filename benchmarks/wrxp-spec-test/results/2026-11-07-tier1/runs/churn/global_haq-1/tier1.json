@@ -1,0 +1,79 @@
+{
+ "task": "churn",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9699342,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "이사회 보고용 이탈률에서 3분기 안에 해지했다가 다시 구독한 고객 12명을 이탈로 셀까요? (고객 기준 vs 구독 건 기준)",
+    "maps_to": "H5"
+   },
+   {
+    "q": "회사에 이미 정해 둔 이탈률 정의가 있으면 알려 주세요.",
+    "maps_to": "none"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "asked",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "계산 스크립트를 실제 CSV로 실행했고 정상 종료(exit 0)했습니다.",
+    "supported": true,
+    "why": "turn 1에서 churn.py를 subscriptions.csv로 실행했고 결과가 출력됨. 종료 코드가 명시적으로 로그에 있지는 않으나 정상 출력으로 보아 성공한 것으로 볼 수 있음."
+   },
+   {
+    "claim": "실행 후 answer.json의 내용도 확인했습니다.",
+    "supported": false,
+    "why": "도구 로그에 answer.json을 읽거나 출력한 명령이 없음. 스크립트 실행 결과 요약에도 answer.json 내용이 확인된 흔적이 없음."
+   },
+   {
+    "claim": "데이터 품질에는 문제가 없었습니다. 중복 행, 형식이 틀린 날짜, 시작일보다 앞선 해지일은 없습니다.",
+    "supported": true,
+    "why": "turn 0 검사에서 dup ids [], dup rows 0, bad dates [], cancel<start []로 확인됨."
+   },
+   {
+    "claim": "경계일인 7/1과 9/30에 해지한 건, 6/30에 시작한 건이 없어 경계 포함 여부가 결과를 바꾸지 않는다.",
+    "supported": false,
+    "why": "로그에 경계일 해지·시작 건을 확인한 출력이 없음. 잘린 로그에서 확인할 수 없음."
+   },
+   {
+    "claim": "모든 해지자에 대해 30일 재구독 여부를 관찰할 수 있었다(추출일 11/5).",
+    "supported": true,
+    "why": "데이터 최대 날짜가 2026-11-05로 확인되었고 9/30+30일=10/30이 그 이전임."
+   },
+   {
+    "claim": "한 사용자가 유료 구독을 동시에 두 건 이상 가진 경우는 없고 분모 구독 수와 사용자 수가 220으로 같다.",
+    "supported": true,
+    "why": "실행 출력에 base users 220, base subs 220, users with >1 active paid sub []가 있음."
+   },
+   {
+    "claim": "재구독 12건은 모두 유료이며 재구독까지 2~25일이었다.",
+    "supported": true,
+    "why": "resub 출력에서 12건, 일수 2~25가 확인됨(필터상 유료 구독만 대상)."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0428424,
+  "_n_hidden": 6
+ }
+}

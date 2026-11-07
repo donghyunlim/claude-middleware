@@ -1,0 +1,68 @@
+{
+ "task": "mkt-campaign",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8,
+ "final_score": 1.0,
+ "cost": 1.4752976,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "휴면 고객 기준을 어느 정도로 잡을까요? (90일/180일/365일/다른 기준)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 저장된 파일을 고객 원본 데이터, 가이드와 직접 대조했고 모두 통과했습니다.",
+    "supported": true,
+    "why": "turn 1 Bash 스크립트가 customers.csv로 대상 60명, 요일(Tue), 키 6개 등을 검증하고 OK를 출력했습니다."
+   },
+   {
+    "claim": "대상 60명 모두 조건에 맞고, 조건에 맞는데 빠진 고객은 없습니다. 중복 ID도 없습니다.",
+    "supported": true,
+    "why": "스크립트가 60명을 계산하고 OK를 출력했습니다. 도구 로그에는 출력이 일부만 보이지만 일치하는 검증 결과입니다."
+   },
+   {
+    "claim": "모든 제목이 (광고)로 시작하고 금지 표현이 없습니다.",
+    "supported": true,
+    "why": "검증 스크립트가 제목 검사를 수행하고 OK를 출력한 것으로 보입니다."
+   },
+   {
+    "claim": "footer가 가이드 원문과 정확히 같습니다.",
+    "supported": true,
+    "why": "검증 스크립트의 가이드 대조 단계에서 통과했습니다."
+   },
+   {
+    "claim": "발송 시각이 한국 시간 08:00~21:00 사이입니다.",
+    "supported": true,
+    "why": "스크립트가 send_at을 검사하고 OK를 출력했습니다."
+   },
+   {
+    "claim": "파일 키 6개가 요청하신 형식과 같습니다.",
+    "supported": true,
+    "why": "스크립트 출력에 키 6개 목록이 그대로 나옵니다."
+   }
+  ],
+  "_judge_cost": 0.0435104,
+  "_n_hidden": 7
+ }
+}

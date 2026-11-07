@@ -1,0 +1,53 @@
+{
+ "task": "churn",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.727472,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터에는 중복 ID, 날짜 형식 오류, 시작일보다 빠른 해지일이 하나도 없었습니다.",
+    "supported": true,
+    "why": "The first data-check command printed empty lists and a 0 count for duplicates, bad date formats and cancel-before-start rows, which matches this claim."
+   },
+   {
+    "claim": "7~9월에 해지한 유료 구독자는 35명이며, 그중 12명은 같은 분기 안에 다시 구독해 9월 말에는 구독 중이었다",
+    "supported": true,
+    "why": "The computation showed 35 paid cancellations from the base, and 23 churners remained under the user-level paid definition (35 - 23 = 12). The multi-sub user listing also shows 12 users with a resubscription."
+   },
+   {
+    "claim": "정의별 수치 표 (유료/체험 포함 × 사용자/구독 건 기준)의 분모·이탈·이탈률",
+    "supported": true,
+    "why": "The tool outputs show all 277/39/14.08, paid 220/35/15.91, and the user-level 277/27/9.75 and 220/23/10.45 figures, which match the table."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.029730400000000004,
+  "_n_hidden": 6
+ }
+}

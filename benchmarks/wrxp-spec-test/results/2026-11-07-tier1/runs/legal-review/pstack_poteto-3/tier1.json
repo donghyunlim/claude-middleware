@@ -1,0 +1,47 @@
+{
+ "task": "legal-review",
+ "cond": "pstack_poteto",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.7094608,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "우리가 구매자(누리모빌리티) 쪽이 맞는지 알려 주세요.",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사업부 리스크 기준이 따로 있으면 알려 주세요 (단가, 지급, 검수, 보증, 책임 한도, 갱신, 준거법 등 판단 기준).",
+    "maps_to": "D4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "형식과 심각도가 기준과 맞는지 스크립트로 확인했다",
+    "supported": true,
+    "why": "turn 1에서 python 스크립트로 키, clause 정수, severity 허용값을 검증하고 기대 매핑(3:high, 4:high, 6:medium 등)과 일치함을 출력했다."
+   }
+  ],
+  "_judge_cost": 0.0345984,
+  "_n_hidden": 10
+ }
+}

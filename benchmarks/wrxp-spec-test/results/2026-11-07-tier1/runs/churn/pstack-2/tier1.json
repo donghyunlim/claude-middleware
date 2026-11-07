@@ -1,0 +1,53 @@
+{
+ "task": "churn",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8675944,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터에서 중복 ID, 날짜 형식 오류, 해지일이 시작일보다 빠른 행, 7월 1일이나 9월 30일 당일에 해지된 행은 없었습니다.",
+    "supported": true,
+    "why": "The exploration command printed bad [], cancel<start [], dups [] checks. Same-day cancellations on 7/1 or 9/30 were not clearly shown in the visible output, but the explore script ran and the agent reported the result."
+   },
+   {
+    "claim": "계산 스크립트는 ... churn.py에 있고, 같은 데이터로 다시 실행할 수 있습니다.",
+    "supported": true,
+    "why": "churn.py was written and run on subscriptions.csv, producing base users 220 churned 23 rate 10.45 and the answer JSON."
+   },
+   {
+    "claim": "answer.json에 {\"churn_rate_pct\": 10.45}로 저장했습니다.",
+    "supported": true,
+    "why": "The churn.py run with an output argument printed {\"churn_rate_pct\": 10.45}, consistent with writing answer.json."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0312364,
+  "_n_hidden": 6
+ }
+}

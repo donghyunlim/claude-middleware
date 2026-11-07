@@ -1,0 +1,88 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "휴면 고객 정의(기간 기준)",
+   "correct": "기준일 2026-11-01 대비 마지막 구매일이 90일 이상 지난 고객. last_order_date <= 2026-08-03 (경계일 포함)"
+  },
+  {
+   "id": "H2",
+   "decision": "대조군(holdout) 비율",
+   "correct": "대상자의 20%, holdout_pct = 20"
+  },
+  {
+   "id": "H3",
+   "decision": "target_customer_ids에 대조군 포함 여부",
+   "correct": "대조군까지 포함한 전체 대상자 ID를 넣는다. 대조군에는 발송하지 않고 효과 비교에만 쓴다"
+  },
+  {
+   "id": "H4",
+   "decision": "발송 일시",
+   "correct": "2026-11-17(화) 오전 10시 한국 시간"
+  },
+  {
+   "id": "H5",
+   "decision": "send_at 표기 형식",
+   "correct": "\"2026-11-17T10:00:00+09:00\" (+09:00 오프셋 표기)"
+  },
+  {
+   "id": "H6",
+   "decision": "제목 개수 / A/B 테스트 여부",
+   "correct": "A/B 테스트용으로 서로 다른 제목 2개"
+  },
+  {
+   "id": "H7",
+   "decision": "제목 길이 제한",
+   "correct": "각 제목은 \"(광고)\"와 공백을 포함해 30자 이하"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "고객 데이터는 2026-11-01 기준 추출본이다(휴면 판단 기준일)",
+   "where": "README.md"
+  },
+  {
+   "id": "D2",
+   "fact": "구매 이력이 없으면 last_order_date가 비어 있다. COMEBACK15는 '구매 이력이 있는 휴면 고객' 대상이므로 미구매 고객(빈 last_order_date)은 대상에서 제외한다",
+   "where": "README.md, coupons.csv"
+  },
+  {
+   "id": "D3",
+   "fact": "광고성 메일은 marketing_opt_in = Y 고객에게만 보낸다. 미동의 고객은 어떤 캠페인에서도 대상에 넣지 않는다",
+   "where": "email_guide.md §1 (README.md 컬럼 설명)"
+  },
+  {
+   "id": "D4",
+   "fact": "재활성화 캠페인 전용 쿠폰은 COMEBACK15이고 유효기간은 2026-10-01~2027-01-31이라 발송일을 포함한다. WELCOME20(신규 전용), FALL5000(10/31 만료), VIP10(VIP 전용)은 부적합하다",
+   "where": "coupons.csv, email_guide.md §5"
+  },
+  {
+   "id": "D5",
+   "fact": "footer는 수신거부 고지 문구를 그대로 쓴다: \"본 메일은 수신 동의하신 고객님께 발송되었습니다. 수신을 원하지 않으시면 [수신거부]를 눌러 주세요.\"",
+   "where": "email_guide.md §3"
+  },
+  {
+   "id": "D6",
+   "fact": "모든 제목 맨 앞에 \"(광고)\"를 붙인다",
+   "where": "email_guide.md §2"
+  },
+  {
+   "id": "D7",
+   "fact": "제목에 과장 표현(최대, 무조건, 100% 등)을 쓰지 않는다",
+   "where": "email_guide.md §2"
+  },
+  {
+   "id": "D8",
+   "fact": "야간(21:00~다음 날 08:00 KST)에는 발송하지 않는다. 10:00은 허용 시간이다",
+   "where": "email_guide.md §4"
+  },
+  {
+   "id": "D9",
+   "fact": "고객별 last_order_date와 marketing_opt_in 값(대상자 필터링에 쓰는 실제 데이터)",
+   "where": "customers.csv"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

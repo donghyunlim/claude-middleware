@@ -1,0 +1,84 @@
+{
+ "task": "churn",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9846208000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "회사가 이사회 보고에 써 온 이탈률 정의가 있는지, 특히 무료 체험 구독을 포함하는지 여부",
+    "maps_to": "H2"
+   },
+   {
+    "q": "회사가 쓰는 정의에서 재구독한 사용자를 이탈로 세는지 여부",
+    "maps_to": "H5"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "asked",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "asked",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터 432행, 구독 ID 중복 없음, 해지일이 시작일보다 앞선 행 없음",
+    "supported": true,
+    "why": "턴 0의 데이터 점검 스크립트 출력에서 432행, dup ids [], cancel<start []로 확인됨."
+   },
+   {
+    "claim": "is_trial=true 81행을 빼고 유료 구독 351행만 남김",
+    "supported": true,
+    "why": "Counter 출력에서 false 351, true 81로 확인됨."
+   },
+   {
+    "claim": "분모 220명, 분기 중 해지 35명, 복귀 12명, 분자 23명, 이탈률 10.45%",
+    "supported": true,
+    "why": "churn.py 실행 출력이 base_users 220, q3_cancel_users 35, rescued 12, churned 23, rate 10.4545로 일치함."
+   },
+   {
+    "claim": "6월 30일에 유료 구독이 두 건 이상 활성이던 사용자가 없었고 구독 단위와 사용자 단위의 분모가 220으로 같음",
+    "supported": true,
+    "why": "variants.py 출력에서 paid base 220과 user base 220이 같게 나옴."
+   },
+   {
+    "claim": "재구독 간격이 25~35일인 사례는 U0002 한 명뿐이며 8/20 해지 후 25일 뒤인 9/14에 재구독함",
+    "supported": true,
+    "why": "churn.py의 edge 출력이 U0002 gap 25를 보여 주고, grep 결과에서 S0002 해지일 2026-08-20과 S0421 시작일 2026-09-14가 확인됨."
+   },
+   {
+    "claim": "무료 체험으로 다시 들어온 경우는 복귀로 보지 않았음",
+    "supported": true,
+    "why": "분자에서 유료 재구독만 인정한 로직이며, 체험 행이 있는 이탈자가 없다는 점검 출력이 있고 grep 결과도 이와 일치함."
+   },
+   {
+    "claim": "answer.json에 {\"churn_rate_pct\": 10.45}로 저장함",
+    "supported": true,
+    "why": "churn.py 실행 결과 마지막 줄에 {\"churn_rate_pct\": 10.45}가 출력됨. 다만 파일 쓰기를 직접 보여 주는 로그는 없고 스크립트 출력으로만 확인됨."
+   },
+   {
+    "claim": "9/30 해지자의 30일 기간(10/30까지)도 데이터 안에 있음 (추출일 2026-11-05)",
+    "supported": true,
+    "why": "README에 추출일 2026-11-05가 명시되어 있음."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0455424,
+  "_n_hidden": 6
+ }
+}

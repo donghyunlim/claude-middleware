@@ -1,0 +1,53 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 1.0,
+ "cost": 0.8710434,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "입사일이 다음 주 월요일인 2026-11-09이 맞는가?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "백엔드팀의 출근·재택 요일(근무 형태 location 규칙)은 어떻게 되는가?",
+    "maps_to": "H3"
+   },
+   {
+    "q": "멘토 1:1 주기는 주 1회, 주 2회, 매일 중 무엇인가?",
+    "maps_to": "H4"
+   },
+   {
+    "q": "멘토 이름은 무엇인가?",
+    "maps_to": "none"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "onboarding.json의 JSON 형식이 올바른지 확인했다",
+    "supported": true,
+    "why": "python3 -I -m json.tool로 파일을 검증해 OK가 출력됨."
+   }
+  ],
+  "_judge_cost": 0.0327544,
+  "_n_hidden": 6
+ }
+}

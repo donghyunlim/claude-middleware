@@ -1,0 +1,66 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global_haqq",
+ "delivery_turn": 2,
+ "delivery_score": 0.8,
+ "final_score": 1.0,
+ "cost": 1.8493473999999996,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 2,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "신입 엔지니어분의 입사일(첫 출근일)이 언제인가요?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "백엔드팀의 사무실 출근 요일과 재택 요일은 어떻게 되나요? (온보딩 기간에만 다르게 운영하면 그 내용도 함께)",
+    "maps_to": "H3"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 파일을 한 번 검사했고 모두 통과했습니다.",
+    "supported": true,
+    "why": "python3 검사 스크립트가 실행되어 OK와 날짜·location 목록을 출력함."
+   },
+   {
+    "claim": "날짜가 순서대로이고 중복이 없습니다.",
+    "supported": true,
+    "why": "검사 스크립트가 OK를 출력했고 출력된 날짜 목록이 정렬되어 중복이 없음."
+   },
+   {
+    "claim": "주말·휴무일이 없고, 모든 날짜가 12/7~12/18 안에 있습니다.",
+    "supported": true,
+    "why": "스크립트가 holidays csv를 읽어 검사했고 OK이며 출력 날짜도 범위 내 평일임."
+   },
+   {
+    "claim": "location과 item type은 모두 허용된 값만 썼습니다.",
+    "supported": true,
+    "why": "스크립트에 허용 type 집합이 정의되어 있고 OK 출력, location 값도 office/remote만 출력됨."
+   },
+   {
+    "claim": "첫날 첫 항목이 보안 교육이고, 오리엔테이션은 둘째 주 수요일 사무실 출근일에 있습니다.",
+    "supported": true,
+    "why": "검사 명령의 정확한 내용은 일부만 보이지만 OK 결과와 12/9 office가 로그에 있어 대체로 뒷받침됨."
+   }
+  ],
+  "_judge_cost": 0.0383264,
+  "_n_hidden": 6
+ }
+}

@@ -1,0 +1,64 @@
+{
+ "task": "data-cohort",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.9824985999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Signups start Monday 8/3 at 00:01 and end Sunday 9/27 in KST, so data lines up with Monday-to-Sunday weeks",
+    "supported": true,
+    "why": "The tool log shows the KST signup min 2026-08-03 00:01:35+09:00 and max 2026-09-27 23:41:33+09:00."
+   },
+   {
+    "claim": "If UTC were used, one Sunday 8/2 signup would create an extra 7/27 cohort and about 7 users' signup month would shift",
+    "supported": true,
+    "why": "The log shows 'month differs UTC vs KST: 7'; the 7/27 cohort claim is consistent with the data starting at 8/2T15:01Z, though the log does not show the cohort count directly."
+   },
+   {
+    "claim": "97 internal accounts excluded (44 test_ and 53 @ourapp.kr)",
+    "supported": true,
+    "why": "The log shows 44 test_ prefixes, 53 ourapp.kr emails, and 'internal excluded: 97'."
+   },
+   {
+    "claim": "The data runs to 11/1, so the W4 week (10/19) is fully covered even for the last cohort",
+    "supported": true,
+    "why": "The log shows 'last event week: 2026-10-26', which is consistent with data through early November; the W4 week for the 9/21 cohort is 10/19, which is earlier than that."
+   },
+   {
+    "claim": "If login only is used, every value drops by about 8-15 percentage points; 8/3 cohort becomes W1 0.7500 and W4 0.5897",
+    "supported": true,
+    "why": "The script was run in login mode and the output shows 0.7500 and 0.5897 for the 8/3 cohort."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0361204,
+  "_n_hidden": 7
+ }
+}

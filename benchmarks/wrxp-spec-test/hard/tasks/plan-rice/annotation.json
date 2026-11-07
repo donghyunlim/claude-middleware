@@ -1,0 +1,73 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "user_research=N 항목의 Confidence 처리",
+   "correct": "user_research가 N이면 작성자가 적은 값과 무관하게 Confidence를 최대 50%(0.5)로 제한한다. 50% 미만이면 그대로 둔다. 예: B-02 90→0.5, B-07 70→0.5, B-09 60→0.5, B-10은 40→0.4 유지."
+  },
+  {
+   "id": "H2",
+   "decision": "Effort 단위와 계산식",
+   "correct": "인월(person-month) 단위로, team_size × 기간(개월)이다. 기간만 쓰지 않고 인원을 곱한다. 예: B-04 = 3명 × 0.5개월 = 1.5, B-09 = 3 × 2 = 6."
+  },
+  {
+   "id": "H3",
+   "decision": "Reach를 맞출 기준 기간",
+   "correct": "분기(3개월) 기준으로 맞춘다. 월이면 ×3, 분기면 그대로, 연이면 ÷4. 예: B-02 3000/월 → 9000, B-03 40000/연 → 10000."
+  },
+  {
+   "id": "H4",
+   "decision": "동점 처리 규칙",
+   "correct": "점수가 같으면 Effort가 작은 항목을 앞에 두고, 그래도 같으면 id 오름차순으로 둔다. B-04와 B-05가 모두 7200점이므로 Effort가 1인 B-05가 Effort 1.5인 B-04보다 앞에 온다(id 순서와 반대)."
+  },
+  {
+   "id": "H5",
+   "decision": "Confidence 값 변환",
+   "correct": "confidence_pct를 소수로 바꿔 곱한다(80 → 0.8). 퍼센트 숫자를 그대로 곱하지 않는다."
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "기간 환산 기준은 1개월 = 4주 = 20영업일, 1주 = 5영업일이다. 따라서 2주 = 0.5개월, 10일 = 0.5개월, 3주 = 0.75개월, 1주 = 0.25개월.",
+   "where": "README.md (duration 열 설명)"
+  },
+  {
+   "id": "D2",
+   "fact": "reach_period는 작성자마다 월/분기/연으로 다르게 적혀 있어 정규화가 필요하다.",
+   "where": "README.md, backlog.csv"
+  },
+  {
+   "id": "D3",
+   "fact": "Impact는 3/2/1/0.5/0.25 척도 값이 이미 들어 있으므로 그대로 쓴다.",
+   "where": "README.md, backlog.csv"
+  },
+  {
+   "id": "D4",
+   "fact": "로드맵 대상 기간은 다음 분기(2027년 1분기)다. 이것이 Reach를 분기 기준으로 맞추는 근거다.",
+   "where": "PROMPT, README.md 제목"
+  },
+  {
+   "id": "D5",
+   "fact": "score = Reach × Impact × Confidence ÷ Effort이고, 출력 예시 123.4로 보아 소수 첫째 자리면 충분하다.",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D6",
+   "fact": "출력은 ranked.json에 12개 모든 항목을 점수 높은 순으로 [{\"id\",\"score\"}] 배열로 저장한다.",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D7",
+   "fact": "user_research 열(Y/N)은 각 항목에 리서치 근거가 있는지를 나타낸다. N인 항목은 B-02, B-07, B-09, B-10이다.",
+   "where": "README.md, backlog.csv"
+  },
+  {
+   "id": "D8",
+   "fact": "정답 순서와 점수: B-03 10000, B-01 9600, B-02 9000, B-11 8000, B-05 7200, B-04 7200, B-12 6400, B-06 5000, B-10 4000, B-07 2000, B-09 1250, B-08 112.5",
+   "where": "backlog.csv에 위 규칙을 적용해 도출"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

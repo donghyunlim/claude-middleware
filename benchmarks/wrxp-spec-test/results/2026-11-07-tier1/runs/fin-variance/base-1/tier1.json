@@ -1,0 +1,45 @@
+{
+ "task": "fin-variance",
+ "cond": "base",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.7803962,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "variance.json을 새 material 기준으로 다시 계산해 저장했다",
+    "supported": true,
+    "why": "Turn 1 edited calc.py and re-ran it, producing JSON output with updated material values (인사팀 false)."
+   },
+   {
+    "claim": "차이율 10%는 반올림 전 값으로 판정했고 경계에 걸린 부서가 없어 결과에 영향이 없다",
+    "supported": true,
+    "why": "Departments' variance_pct values (5.99, 15.06, -16.05, 18.13, 2.53) are far from 10 in the tool output, so none sit at the boundary; the unrounded-value claim is consistent with the script edit."
+   }
+  ],
+  "data_definition": {
+   "period": false,
+   "filters": false,
+   "unit": false,
+   "definition": true
+  },
+  "_judge_cost": 0.0426784,
+  "_n_hidden": 6
+ }
+}

@@ -1,0 +1,65 @@
+{
+ "task": "data-cohort",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9771216,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "리텐션으로 볼 활동을 어떤 이벤트로 할지 (login 또는 payment, payment_failed 포함 여부)",
+    "maps_to": "H1"
+   },
+   {
+    "q": "W1을 가입 다음 달력 주로 볼지, 가입 시각 후 7~13일차(개인 가입일 기준)로 볼지",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "pandas와 순수 Python 두 가지 방식으로 따로 계산했고 코호트 크기와 주별 결제 사용자 수가 모두 같았으며 다른 곳은 08-17 W1 반올림 한 칸뿐이었다",
+    "supported": true,
+    "why": "turn 1에서 pandas 스크립트와 순수 Python(csv, Decimal) 스크립트를 각각 실행했고, 출력 비교에서 'match False'이며 08-17 W1만 0.1812 vs 0.1813으로 다름."
+   },
+   {
+    "claim": "가입 주보다 앞선 결제는 0건이었다",
+    "supported": true,
+    "why": "pandas 실행 출력에 'payments before signup week 0'이 있음."
+   },
+   {
+    "claim": "이벤트 데이터는 2026-11-01(일) KST 23:56까지 있어 마지막 코호트 W4까지 데이터 범위 안에 있다",
+    "supported": true,
+    "why": "turn 0 출력에서 event_ts 최댓값이 2026-11-01 14:56:11 UTC(KST 23:56)로 확인됨."
+   },
+   {
+    "claim": "테스트 계정 97명(test_ 접두사 및 @ourapp.kr)을 제외했다",
+    "supported": true,
+    "why": "turn 1 출력에 'test users 97'이 있고, turn 0에서 test_ 44명, ourapp.kr 53명이 확인됨."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.040692400000000004,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,65 @@
+{
+ "task": "churn",
+ "cond": "global",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.7326506,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터 432행에서 중복 ID, 날짜 형식 오류, 해지일이 시작일보다 앞선 행은 발견되지 않았다 (turn 0 message; not in delivery)",
+    "supported": true,
+    "why": "This is not in the delivery message, but the turn 0 tool log does show a check for bad dates, cancel<start and duplicates returning empty lists."
+   },
+   {
+    "claim": "해지일부터 다음 유료 구독 시작일까지 2~25일 걸렸으므로 모두 30일 안에 다시 구독했고, 다시 시작한 구독도 모두 유료임을 확인",
+    "supported": true,
+    "why": "The turn 1 log shows the 12 'saved' users with gaps of 2 to 25 days, and the resubscriptions were computed over paid rows."
+   },
+   {
+    "claim": "나머지 23명은 해지 후 다시 구독한 기록이 전혀 없음",
+    "supported": true,
+    "why": "The turn 1 log shows the 23 churned users with None for the resubscription gap."
+   },
+   {
+    "claim": "7월 1일에 시작한 구독은 없어서 분모 해석과 무관하게 같음 (started on 7/1: 0)",
+    "supported": true,
+    "why": "The turn 1 output prints 'started on 7/1: 0' and base 220."
+   },
+   {
+    "claim": "3분기에 두 번 이상 해지한 사용자도 없고, 두 기준이 갈리는 두 경우가 모두 없음",
+    "supported": true,
+    "why": "The log output is truncated, so the full check is not visible, but the computation was run and the result 23 matches the earlier 9/30-based count of 23, which is consistent with the claim."
+   },
+   {
+    "claim": "3분기 마지막 해지는 9/20이고 데이터가 11/5 추출본이어서 30일 확인 기간을 끝까지 확인함",
+    "supported": true,
+    "why": "The README gives the extraction date 2026-11-05, and the latest cancellation date of 9/20 is derived from the data run, so a 30-day window ending 10/20 is covered."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.039944400000000005,
+  "_n_hidden": 6
+ }
+}

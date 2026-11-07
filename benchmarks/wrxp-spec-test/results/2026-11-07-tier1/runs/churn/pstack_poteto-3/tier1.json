@@ -1,0 +1,63 @@
+{
+ "task": "churn",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.725359,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터에는 날짜 형식 오류, 해지일이 시작일보다 앞선 행, 중복 구독 ID가 없습니다 (data checks for bad dates, cancel<start, duplicate IDs)",
+    "supported": true,
+    "why": "Tool log shows 'bad dates []', 'cancel<start []', 'dup ids []' from the validation script."
+   },
+   {
+    "claim": "구독 기준 35건에서 재구독 12건을 빼면 고객 기준 23명과 정확히 맞습니다",
+    "supported": true,
+    "why": "Script output shows 35/220 by subscription and 23/220 by user; 35-12=23, and 12 duplicate users were identified in the log."
+   },
+   {
+    "claim": "무료 체험 포함 시 27÷277=9.75%, 구독 건수 기준 35÷220=15.91% 등 대안 값 계산",
+    "supported": true,
+    "why": "Script output printed 27/277 = 9.75% and 35/220 = 15.91%."
+   },
+   {
+    "claim": "3분기에 해지한 유료 구독은 35건이고 12건은 같은 고객이 2~49일 뒤 같은 플랜으로 재가입, 분기 말에도 구독 중",
+    "supported": false,
+    "why": "The 35 count is supported, but the log shows no explicit 2-49 day gap computation or same-plan check in the visible output; the listing is truncated. Also the agent counted re-subscription of any length, whereas the 49-day gap exceeds 30 days."
+   },
+   {
+    "claim": "분기 중 새로 가입하고 분기 안에 해지한 5건",
+    "supported": true,
+    "why": "Script output shows 'Q3 cancels of subs started in Q3 5'."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0307464,
+  "_n_hidden": 6
+ }
+}

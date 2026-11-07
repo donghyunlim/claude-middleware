@@ -2,6 +2,7 @@
 
 이 폴더는 같은 과제를 wrxp 적용 여부별로 실행하고 객관 지표로 비교하는 실측 벤치마크입니다. 과제는 두 묶음입니다. 하나는 부서별 실무 과제 14개이고, 다른 하나는 공개 표준 벤치마크 10종입니다.
 
+- **상호작용 지표 재분석(질문 정밀도, 가정 공개, 보고 충실도, 성공당 비용 등): [results/2026-11-07-tier1/RESULTS.md](results/2026-11-07-tier1/RESULTS.md)**
 - **wrxp vs pstack 확장 실측(부서 시나리오 15개, τ²-bench, SWE-bench Verified, Terminal-Bench 2): [results/2026-11-07-full/RESULTS.md](results/2026-11-07-full/RESULTS.md)**
 - 고난도·대화형 결과(모의 사용자, haq·haqq 포함): [results/2026-11-06-hard/RESULTS.md](results/2026-11-06-hard/RESULTS.md)
 - 4조건 결과(전역 CLAUDE.md × `/wrxp:ha`): [results/2026-11-06-2x2/RESULTS.md](results/2026-11-06-2x2/RESULTS.md)
@@ -107,3 +108,12 @@ python3 hard/grade_hard.py HARD && python3 hard/aggregate_hard.py HARD > HARD/ta
 - **τ²-bench:** τ²-bench 저장소를 받아 `pip install -e .`로 설치합니다. 이때 `audioop-lts`와 `mcp<2`도 함께 설치해야 합니다. 실행은 `python3 tau2/run_tau2.py --out TAU2`, 집계는 `python3 tau2/aggregate_tau2.py TAU2`입니다. 도메인 도구는 [tau2/tau2_mcp.py](tau2/tau2_mcp.py)가 MCP로 노출하고, 채점은 τ²-bench의 DB 평가기를 그대로 씁니다.
 - **SWE-bench Verified:** 순서는 `swebench/prepare_instances.py` → `validate.py` → `run_swe.py --out SWE`이고, 집계는 `python3 aggregate_resolve.py SWE "SWE-bench Verified"`입니다. Docker와 `pip install swebench`가 필요합니다.
 - **Terminal-Bench 2:** 순서는 `tbench/make_tasks.py` → `python3 tbench/tb_env.py kit` → `validate.py` → `run_tb2.py --out TB2`이고, 집계는 `python3 aggregate_resolve.py TB2 "Terminal-Bench 2"`입니다. Docker가 필요합니다.
+
+## 상호작용 지표 (기존 기록 재분석)
+
+```bash
+python3 hard/annotate_tasks.py          # 과제별 숨은 결정·발견 가능 사실 초안(이후 사람 검토)
+python3 hard/metrics_tier1.py HARD      # 실행별 판정과 자동 지표
+python3 hard/oversharing_check.py HARD  # 모의 사용자 답변의 출처 분류
+python3 hard/aggregate_tier1.py HARD > HARD/tier1_tables.md
+```

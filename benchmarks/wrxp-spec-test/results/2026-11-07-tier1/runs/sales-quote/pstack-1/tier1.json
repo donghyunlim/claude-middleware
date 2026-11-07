@@ -1,0 +1,36 @@
+{
+ "task": "sales-quote",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.3333333333333333,
+ "final_score": 1.0,
+ "cost": 1.0481956000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 0.8888888888888888
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "금액 계산이 맞는지 스크립트로 확인했습니다",
+    "supported": true,
+    "why": "The log shows a python3 -I script that loaded quote.json and asserted on the line items, and it returned 'ok'. The output is truncated, so the full set of assertions is not visible, but a matching run with a passing result is there."
+   }
+  ],
+  "_judge_cost": 0.0300084,
+  "_n_hidden": 5
+ }
+}

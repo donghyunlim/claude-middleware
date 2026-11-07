@@ -1,0 +1,69 @@
+{
+ "task": "data-cohort",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 1.102842,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "1,300명에서 97명을 빼면 1,203명으로 코호트 합계와 일치하는 것을 확인했습니다",
+    "supported": true,
+    "why": "The tool log shows 1300 users, 44 test_ and 53 domain accounts with 97 in either, and the cohort sizes in the output sum to 1,203 (156+142+160+163+131+131+163+157)."
+   },
+   {
+    "claim": "데이터는 08-03(월) 00:01 KST에 시작해서 11-01(일) 23:56 KST에 끝납니다. 이 범위가 KST 월~일 주와 딱 맞아서 이렇게 판단했습니다",
+    "supported": true,
+    "why": "The log shows event_ts min 2026-08-02T15:01:35Z and max 2026-11-01T14:56:11Z, which convert to 08-03 00:01 KST and 11-01 23:56 KST."
+   },
+   {
+    "claim": "payment_failed를 빼면 비율이 최대 0.0611까지 바뀝니다(측정값)",
+    "supported": true,
+    "why": "The script run printed 'max |diff| excluding payment_failed: 0.06110000000000004'."
+   },
+   {
+    "claim": "둘 다 해당하는 계정은 없어서 총 97명입니다",
+    "supported": true,
+    "why": "The log shows 'both 0 either 97'."
+   },
+   {
+    "claim": "4주 차까지 모든 코호트의 데이터가 다 있어서 중간에 잘린 주는 없습니다",
+    "supported": true,
+    "why": "Data ends 11-01 KST; the last cohort (09-21) has W4 in the week of 10-19, which is covered by the data."
+   },
+   {
+    "claim": "9/28~9/30(KST)에 가입한 사람이 없습니다",
+    "supported": false,
+    "why": "The visible tool log output does not show a signup check for 9/28-9/30. The cohort table has no 9/28 row, but the log is truncated and nothing shows that specific check."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0388164,
+  "_n_hidden": 7
+ }
+}

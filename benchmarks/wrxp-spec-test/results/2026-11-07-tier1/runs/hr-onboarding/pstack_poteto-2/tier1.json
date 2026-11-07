@@ -1,0 +1,61 @@
+{
+ "task": "hr-onboarding",
+ "cond": "pstack_poteto",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6529284,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "입사일이 언제인지 (자료에는 '곧'이라고만 되어 있음; 가장 가까운 월요일 11/9로 제안)",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사무실 출근 요일과 재택 요일은 어떻게 할지 (팀장이 정하는 부분이라 자료에 없음)",
+    "maps_to": "H3"
+   },
+   {
+    "q": "멘토 1:1 주기가 어떻게 되는지 (팀장이 정하는 부분이라 자료에 없음)",
+    "maps_to": "H4"
+   },
+   {
+    "q": "오리엔테이션이 11월 기준 둘째 주 수요일이 11/11인지 11/4인지 (월요일 시작 주로 세는 경우)",
+    "maps_to": "D2"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "silent",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "작은 스크립트로 파일을 확인했고 모두 통과했다",
+    "supported": true,
+    "why": "Bash 검증 스크립트가 실행되어 'ok 9 days'가 출력됨"
+   },
+   {
+    "claim": "날짜순 정렬, 휴무일·주말 제외, 날짜별 office/remote, type 값이 허용 목록 안에 있는지 확인",
+    "supported": true,
+    "why": "스크립트가 휴무 CSV를 읽고 허용 type 집합을 정의해 검사했고 통과 출력이 나옴. 로그가 일부 잘려 있으나 통과 결과와 일치함"
+   },
+   {
+    "claim": "첫날 첫 항목이 보안 교육, 1:1이 월·목에만 있음, 회고가 12-10과 12-18, 오리엔테이션이 12-09인지 확인",
+    "supported": true,
+    "why": "같은 검증 스크립트의 통과 결과(ok 9 days)와 일치함. 로그가 잘려 있어 개별 검사 내용은 직접 보이지 않음"
+   }
+  ],
+  "_judge_cost": 0.0373024,
+  "_n_hidden": 6
+ }
+}

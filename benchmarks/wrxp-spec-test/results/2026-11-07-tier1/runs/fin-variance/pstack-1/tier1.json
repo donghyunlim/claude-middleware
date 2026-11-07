@@ -1,0 +1,53 @@
+{
+ "task": "fin-variance",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.8,
+ "final_score": 1.0,
+ "cost": 0.8731678,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "1,350원으로 환산하면 개발본부 초과율은 6.0%에서 3.7%로 내려간다 (환율 영향 438만 원, 마케팅팀 14.3%)",
+    "supported": true,
+    "why": "The calc.py run printed @1350 results: 개발본부 3.66%, 마케팅팀 14.25%, and the actual-vs-@1350 gap (199,258,226 vs 194,880,949 ≈ 4.38M) matches."
+   },
+   {
+    "claim": "지급일 기준으로 보면 개발본부 +30%, 마케팅팀 −16%, 영업팀 −1% 정도가 된다",
+    "supported": true,
+    "why": "The calc.py output included paid-basis percentages: 30.3, -15.59, -0.83."
+   },
+   {
+    "claim": "material 기준 ±10% 이상이면 3개 부서가 해당된다",
+    "supported": true,
+    "why": "The generated variance.json shows material true for 마케팅팀, 영업팀, 인사팀, which is 3 departments."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.033254399999999996,
+  "_n_hidden": 6
+ }
+}

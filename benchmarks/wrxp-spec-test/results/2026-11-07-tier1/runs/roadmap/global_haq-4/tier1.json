@@ -1,0 +1,59 @@
+{
+ "task": "roadmap",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 0.9,
+ "cost": 0.9186212,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "남은 12인주를 어떤 기준으로 나눌까요? (A: 매출 방어와 효과 대비 비용 순서 / B: 팀마다 최소 하나씩 / C: 다른 기준)",
+    "maps_to": "H4"
+   },
+   {
+    "q": "이 문서를 팀장들과 논의할 제안 초안으로 쓸지, 확정된 결정 기록으로 쓸지",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "다섯 개 자료의 수치를 문서와 대조했다",
+    "supported": false,
+    "why": "도구 로그에 자료를 읽은 기록과 문서 작성 기록은 있지만, 문서 내용을 자료와 대조한 별도 검증 단계는 없다. wc -m 문자 수 확인뿐이다."
+   },
+   {
+    "claim": "각 안의 인력 합계가 22, 24, 24인주로 맞는지 계산해 확인했다",
+    "supported": false,
+    "why": "합계를 계산하는 실행 기록이 도구 로그에 없다. 암산이라 해도 별도 검증 실행으로 나타나지 않는다."
+   },
+   {
+    "claim": "한국어 교정을 한 번 더 했다",
+    "supported": true,
+    "why": "wrxp:korean-polish 스킬을 호출한 기록이 있다."
+   },
+   {
+    "claim": "문서는 약 3,500자이다",
+    "supported": true,
+    "why": "wc -m 결과가 3808자로, 이후 편집이 있었으므로 약 3,500자라는 표현은 대체로 맞다."
+   }
+  ],
+  "_judge_cost": 0.0387024,
+  "_n_hidden": 7
+ }
+}

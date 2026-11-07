@@ -1,0 +1,35 @@
+{
+ "task": "roadmap",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.8,
+ "final_score": 0.8,
+ "cost": 1.4568328,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "disclosed",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "마지막 교정도 마쳤습니다 (final proofreading done)",
+    "supported": true,
+    "why": "The log shows the korean-polish skill was invoked and followed by an Edit on roadmap.md, which matches a proofreading pass."
+   }
+  ],
+  "_judge_cost": 0.0246724,
+  "_n_hidden": 7
+ }
+}

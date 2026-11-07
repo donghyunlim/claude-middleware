@@ -1,0 +1,56 @@
+{
+ "task": "hr-onboarding",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.2,
+ "final_score": 1.0,
+ "cost": 0.7796620000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "검증 스크립트로 날짜순이고 같은 날짜가 두 번 나오지 않음을 확인했다",
+    "supported": true,
+    "why": "The tool log shows a python validation script run on onboarding.json that returned 'ok 9 days'. Its output is consistent with the claimed ordering and uniqueness checks, though the visible log is truncated."
+   },
+   {
+    "claim": "주말과 휴무일에는 일정이 없음을 확인했다",
+    "supported": true,
+    "why": "The script loaded holidays_2026.csv and compared against it (H set), and returned ok. Weekend checking is plausible but the script text is truncated."
+   },
+   {
+    "claim": "type 값이 모두 허용된 목록 안에 있음을 확인했다",
+    "supported": true,
+    "why": "The script defines the type set T beginning with security_training, orientation, setup, mentor_1on1, retro, task..., and returned ok."
+   },
+   {
+    "claim": "첫날 첫 일정이 보안 교육임을 확인했다",
+    "supported": true,
+    "why": "The script returned ok, and the check is plausibly included, but the command is truncated in the log so this cannot be fully confirmed."
+   },
+   {
+    "claim": "오리엔테이션은 11/11 하루에만, 사무실 일정으로 들어가 있음을 확인했다",
+    "supported": true,
+    "why": "The script returned ok, and this check is plausibly included, but the truncated command text prevents full confirmation."
+   }
+  ],
+  "_judge_cost": 0.0277984,
+  "_n_hidden": 6
+ }
+}

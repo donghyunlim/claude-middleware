@@ -1,0 +1,47 @@
+{
+ "task": "legal-review",
+ "cond": "global",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.5466744,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "우리 회사가 공급자와 구매자 중 어느 쪽인지",
+    "maps_to": "H1"
+   },
+   {
+    "q": "해당 사업부에 따로 정해 둔 리스크 기준이 있다면 그 내용 (단가, 지급 조건, 검수, 보증, 책임 한도, 갱신, 준거법 등)",
+    "maps_to": "D4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent",
+   "H8": "silent",
+   "H9": "silent",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "파일이 JSON으로 정상적으로 읽히는 것도 확인했습니다.",
+    "supported": true,
+    "why": "turn 1에서 python3으로 review.json을 json.load로 읽고 clause/severity 목록을 출력했으며 정상 결과가 나왔습니다."
+   }
+  ],
+  "_judge_cost": 0.0341464,
+  "_n_hidden": 10
+ }
+}

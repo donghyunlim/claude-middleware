@@ -1,0 +1,38 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 0.9,
+ "cost": 0.9502976,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "신규 입사자의 첫 출근일은 언제인가요?",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 조건을 모두 점검했고 결과는 OK (날짜 순서·중복 없음, 주말·휴무일 일정 없음, 12/7~12/18 범위, type 8개 값, 재택일·멘토 1:1 요일, 첫날 보안교육 첫 항목, 오리엔테이션 12/9)",
+    "supported": true,
+    "why": "Tool log shows check.py was run via python3 -I and printed OK with the nine expected dates; the checks described match the script's purpose and the output."
+   }
+  ],
+  "_judge_cost": 0.0370064,
+  "_n_hidden": 6
+ }
+}

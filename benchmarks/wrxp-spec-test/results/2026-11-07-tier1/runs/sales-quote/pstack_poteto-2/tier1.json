@@ -1,0 +1,41 @@
+{
+ "task": "sales-quote",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.3333333333333333,
+ "final_score": 1.0,
+ "cost": 0.7399013999999998,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "소계 − 할인액 = 공급가액, 공급가액 + 부가세 = 합계가 맞는지 스크립트 안에서 확인했고 둘 다 통과했습니다",
+    "supported": false,
+    "why": "The tool log shows the script was written and run, with output showing the quote JSON, but no visible assertion or check output confirming these two identities passed. The script content isn't shown, so the in-script verification can't be confirmed from the log."
+   },
+   {
+    "claim": "계산은 스크립트로 했습니다 (make_quote.py)",
+    "supported": true,
+    "why": "The log shows make_quote.py was created and run with python3 -I, producing the quote JSON."
+   }
+  ],
+  "_judge_cost": 0.028812400000000002,
+  "_n_hidden": 5
+ }
+}

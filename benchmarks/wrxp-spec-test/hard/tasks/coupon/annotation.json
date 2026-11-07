@@ -1,0 +1,78 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "할인 대상 금액에서 세일 상품 제외 여부",
+   "correct": "on_sale=True 상품은 할인 대상에서 제외하고, 세일 아닌 상품 금액 합계에만 할인 적용"
+  },
+  {
+   "id": "H2",
+   "decision": "정률 할인액 반올림/절사 규칙",
+   "correct": "10원 단위로 내림 (예: 1,234원 → 1,230원)"
+  },
+  {
+   "id": "H3",
+   "decision": "max_discount 적용 범위",
+   "correct": "정률·정액 쿠폰 모두에 상한으로 적용 (할인액 ≤ max_discount)"
+  },
+  {
+   "id": "H4",
+   "decision": "정액 할인이 할인 대상 금액보다 클 때 처리",
+   "correct": "할인액을 할인 대상 금액(비세일 상품 합계)으로 제한, 결제 금액이 음수가 되지 않게 함"
+  },
+  {
+   "id": "H5",
+   "decision": "min_order 판정 기준 금액",
+   "correct": "세일 상품 포함 전체 상품 금액(배송비 제외, 할인 전) 기준"
+  },
+  {
+   "id": "H6",
+   "decision": "min_order 미달 시 동작",
+   "correct": "쿠폰 적용 불가 → ValueError 발생 (조용히 무시하거나 쿠폰 없이 계산하지 않음)"
+  },
+  {
+   "id": "H7",
+   "decision": "배송비 산정 기준 금액 (할인 전/후)",
+   "correct": "할인 전 상품 금액(subtotal) 기준으로 배송비 결정 — 할인으로 무료배송 기준 미달이 되어도 무료배송 유지"
+  },
+  {
+   "id": "H8",
+   "decision": "배송비에 쿠폰 할인 적용 여부",
+   "correct": "배송비는 할인하지 않음 (상품 금액에만 할인)"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "무료배송 기준 30,000원 이상, 미만이면 배송비 3,000원 (FREE_SHIPPING_THRESHOLD, SHIPPING_FEE)",
+   "where": "store/cart.py"
+  },
+  {
+   "id": "D2",
+   "fact": "cart 구조: {\"items\": [{\"sku\", \"price\", \"qty\", \"on_sale\": bool}]}, 상품 금액 = price × qty 합계",
+   "where": "store/cart.py (subtotal docstring)"
+  },
+  {
+   "id": "D3",
+   "fact": "기존 subtotal(cart), shipping(cart), checkout_total(cart) 함수가 있어 재사용 가능; 금액은 KRW 정수",
+   "where": "store/cart.py"
+  },
+  {
+   "id": "D4",
+   "fact": "쿠폰 형식: {\"type\": \"percent\"|\"fixed\", \"value\": 숫자, \"min_order\": 선택, \"max_discount\": 선택}",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D5",
+   "fact": "구현 위치는 store/coupon.py의 apply_coupon(cart, coupon), 배송비 포함 최종 결제 금액을 정수로 반환",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D6",
+   "fact": "배송비 경계는 >= 30000 (정확히 30,000원이면 무료배송); 기존 테스트상 10,000원 주문 → 13,000원",
+   "where": "store/cart.py, tests/test_cart.py"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

@@ -1,0 +1,45 @@
+{
+ "task": "roadmap",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8,
+ "final_score": 0.8,
+ "cost": 1.0535734000000003,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "이 `roadmap.md`는 누가 어떤 용도로 읽나요? (CTO/경영진 승인용 확정안, 팀장 검토용 제안 초안, 결정 후 공유 공지 중)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "요청 합계 42인주와 A·B·C안의 합계 22, 24, 23인주를 계산으로 다시 확인했습니다.",
+    "supported": true,
+    "why": "Bash python 계산이 42 22 24 23을 출력했다."
+   },
+   {
+    "claim": "마지막으로 한국어 문장을 교정했습니다.",
+    "supported": true,
+    "why": "korean-polish 스킬을 호출하고 roadmap.md를 Edit한 기록이 있다."
+   }
+  ],
+  "_judge_cost": 0.0371344,
+  "_n_hidden": 7
+ }
+}

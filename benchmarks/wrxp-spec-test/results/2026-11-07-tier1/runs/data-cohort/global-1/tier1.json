@@ -1,0 +1,69 @@
+{
+ "task": "data-cohort",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.8974812,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "KST로 바꾸면 데이터가 8/3(월) 00:01부터 11/1(일) 23:56까지로 주 경계에 정확히 맞는다",
+    "supported": true,
+    "why": "Profiling showed min 2026-08-02T15:01:35Z and max 2026-11-01T14:56:11Z, which convert to KST 8/3 00:01 and 11/1 23:56."
+   },
+   {
+    "claim": "UTC로 보면 월별 가입자 수가 몇 명 달라진다",
+    "supported": true,
+    "why": "Profile output compared UTC month counts (Aug 719, Sep 581) with KST counts (Aug 712, Sep 588)."
+   },
+   {
+    "claim": "테스트 계정 97개를 제외했고 남은 사용자는 1,203명이다",
+    "supported": true,
+    "why": "Script output printed 'excluded 97 kept 1203'; the profile showed 44 test_ and 53 ourapp.kr accounts."
+   },
+   {
+    "claim": "로그인만으로 세면 W1 약 0.73~0.80, W4 약 0.59~0.72로 낮아진다",
+    "supported": true,
+    "why": "The login-only run printed W1 0.7252-0.8025 and W4 0.5897-0.7176."
+   },
+   {
+    "claim": "모든 코호트의 W4까지 데이터가 다 있어 빈 값이 없다",
+    "supported": true,
+    "why": "Data runs to 11/1, and the last cohort of 9/21 has its W4 week of 10/19-10/25 within range; the output has no blanks."
+   },
+   {
+    "claim": "9월 마지막 가입이 9/27(일) KST이어서 9/28 주 가입자가 없다",
+    "supported": true,
+    "why": "Script output printed the last signup as 2026-09-27 23:41:33+09:00."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0393284,
+  "_n_hidden": 7
+ }
+}

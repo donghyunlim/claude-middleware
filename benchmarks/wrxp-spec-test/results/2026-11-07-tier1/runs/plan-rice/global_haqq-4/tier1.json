@@ -1,0 +1,48 @@
+{
+ "task": "plan-rice",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8081590000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "user_research 열(리서치 근거 여부)을 Confidence에 반영할까요? 반영한다면 규칙(예: N이면 최대 50%)은 무엇인가요?",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트가 출력한 항목별 중간값(Reach, C, Effort)을 위 표와 대조했습니다.",
+    "supported": true,
+    "why": "The turn 1 script printed per-item Reach, Impact, Confidence, Effort and score, and the table values match that output."
+   },
+   {
+    "claim": "저장된 ranked.json을 다시 읽어 12개 항목이 모두 들어 있고 형식이 [{\"id\", \"score\"}]인지도 확인했습니다.",
+    "supported": false,
+    "why": "The tool log shows the script printing the JSON list (apparently via json.dumps), but no separate step that re-reads the saved file and checks the 12 entries or the format. The output is truncated, so a re-read cannot be confirmed."
+   },
+   {
+    "claim": "모든 점수가 반올림 없이 정확히 나누어떨어져서, 반올림 때문에 순위가 바뀌는 경우는 없습니다.",
+    "supported": true,
+    "why": "The printed scores (10000.0, 9600.0, 9000.0, 8000.0, 7200.0, 112.5, ...) are all whole numbers or exact halves, so the claim is consistent with the output."
+   }
+  ],
+  "_judge_cost": 0.0400464,
+  "_n_hidden": 5
+ }
+}

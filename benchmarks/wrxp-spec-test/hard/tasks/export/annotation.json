@@ -1,0 +1,103 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "행 단위",
+   "correct": "한 행 = 주문 하나 (상품별로 행을 나누지 않음)"
+  },
+  {
+   "id": "H2",
+   "decision": "열 구성·순서·헤더 이름",
+   "correct": "정확히 주문번호, 주문일시, 고객명, 상품수, 결제금액, 상태 (이 순서, 한글 헤더)"
+  },
+  {
+   "id": "H3",
+   "decision": "상품수 계산 방식",
+   "correct": "그 주문 items의 qty 합계 (품목 종류 수가 아님)"
+  },
+  {
+   "id": "H4",
+   "decision": "주문일시 표시 형식",
+   "correct": "KST로 변환한 \"YYYY-MM-DD HH:MM\" (초·타임존 표기 없음)"
+  },
+  {
+   "id": "H5",
+   "decision": "결제금액 표기 형식",
+   "correct": "숫자만 (쉼표·'원' 표시 없음), 예: 50900"
+  },
+  {
+   "id": "H6",
+   "decision": "취소 주문 포함 여부",
+   "correct": "status가 cancelled인 주문은 제외"
+  },
+  {
+   "id": "H7",
+   "decision": "환불 주문 포함 여부",
+   "correct": "refunded 주문은 포함하고 상태는 '환불'로 표기"
+  },
+  {
+   "id": "H8",
+   "decision": "정렬 순서",
+   "correct": "주문일시 오래된 순(오름차순)"
+  },
+  {
+   "id": "H9",
+   "decision": "고객 이메일 포함 여부",
+   "correct": "개인정보라 넣지 않음"
+  },
+  {
+   "id": "H10",
+   "decision": "파일 인코딩",
+   "correct": "엑셀에서 한글이 깨지지 않도록 UTF-8 BOM(utf-8-sig)"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "created_at은 UTC ISO-8601(…Z)로 저장되고, 보고서에는 한국 시간(KST, UTC+9)으로 보여 줘야 함",
+   "where": "README.md, data/orders.json"
+  },
+  {
+   "id": "D2",
+   "fact": "상태 한글 표기 매핑 STATUS_LABEL (paid→결제완료, shipped→배송중, refunded→환불, cancelled→취소)이 이미 있음",
+   "where": "shop/orders.py"
+  },
+  {
+   "id": "D3",
+   "fact": "주문 결제금액은 order_total(order) = sum(qty*unit_price)로 계산 가능",
+   "where": "shop/orders.py"
+  },
+  {
+   "id": "D4",
+   "fact": "주문 구조: id, created_at, status, customer{name,email}, items[{sku,name,qty,unit_price}]; 고객명은 customer.name",
+   "where": "data/orders.json"
+  },
+  {
+   "id": "D5",
+   "fact": "데이터 파일의 주문은 날짜순으로 정렬되어 있지 않음(예: 0012가 0005보다 앞에 있음) → 직접 정렬 필요",
+   "where": "data/orders.json"
+  },
+  {
+   "id": "D6",
+   "fact": "주문 로드는 shop.orders.load_orders() 사용",
+   "where": "README.md, shop/orders.py"
+  },
+  {
+   "id": "D7",
+   "fact": "CLI는 argparse 서브커맨드 구조(현재 'list')이며, 여기에 export 서브커맨드를 추가하는 패턴을 따르면 됨",
+   "where": "shop/cli.py"
+  },
+  {
+   "id": "D8",
+   "fact": "함수 위치·시그니처: shop/export.py의 export_orders(orders, path)",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D9",
+   "fact": "테스트는 python3 -m pytest -q로 실행 (tests/ 디렉터리)",
+   "where": "README.md, tests/test_orders.py"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

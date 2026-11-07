@@ -1,0 +1,58 @@
+{
+ "task": "export",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9371286000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "CSV를 주문 1건당 1행으로 만들까요, 상품 1개당 1행으로 만들까요?",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "silent",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "python3 -m pytest -q를 실행해 3개가 모두 통과했습니다(exit 0)",
+    "supported": true,
+    "why": "Tool log shows '3 passed' and exit=0."
+   },
+   {
+    "claim": "python3 -m shop.cli export를 실제 data/orders.json으로 실행했고 12건 중 취소 4건이 빠져 8건이 저장됐다",
+    "supported": true,
+    "why": "CLI run exited 0 and printed '8건 저장'. The 12 total orders and 4 cancelled are consistent with the data (ORD ids up to 0012, 8 rows output, so 4 excluded)."
+   },
+   {
+    "claim": "주문일시 순서와 KST 변환이 실제 출력에서 맞았다",
+    "supported": true,
+    "why": "Output CSV shows ascending dates, and e.g. 2026-10-25T12:24Z became 2026-10-25 21:24."
+   },
+   {
+    "claim": "새 테스트가 열 이름/순서, 취소 제외·환불 포함, UTC→KST 날짜 넘김, 상품수·결제금액·정렬, BOM, 이메일 제외를 확인한다",
+    "supported": false,
+    "why": "The test file was written, but its contents are not shown in the log. Only the pass count (3 tests) is visible, so the specific coverage claimed cannot be confirmed."
+   }
+  ],
+  "_judge_cost": 0.0387124,
+  "_n_hidden": 10
+ }
+}

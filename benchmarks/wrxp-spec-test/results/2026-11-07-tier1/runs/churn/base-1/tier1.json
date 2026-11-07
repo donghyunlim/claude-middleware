@@ -1,0 +1,63 @@
+{
+ "task": "churn",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6177016000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터에 날짜 오류, 중복 ID, 해지일이 시작일보다 빠른 경우는 없었습니다.",
+    "supported": true,
+    "why": "Tool log shows dup sid 0, dup rows 0, cancel<start 0, cancel==start 0, and date range 2025-06-01 to 2026-11-05 checked."
+   },
+   {
+    "claim": "3분기에 해지한 사용자 중 12명이 같은 분기 안에 같은 요금제로 다시 가입했습니다(해지 후 2~48일 뒤).",
+    "supported": false,
+    "why": "Log shows 12 duplicate user_ids and some resubscription rows, but the output is truncated; the 'same plan', 'within the same quarter' and '2~48 days' figures are not visible in the log."
+   },
+   {
+    "claim": "체험 구독 중 해지된 건들이 시작 후 평균 155일 동안 유지됐습니다.",
+    "supported": true,
+    "why": "Log shows describe output with count 18 and mean 155.388889 days for trial cancellations."
+   },
+   {
+    "claim": "기준별 비교표의 분모/이탈 수치 (220/23=10.45%, 277/27=9.75%).",
+    "supported": true,
+    "why": "Log shows paid users active 6/30 220, lost 23, 10.4545; all users 277, lost 27, 9.7473."
+   },
+   {
+    "claim": "구독 건수 기준 비교 수치 (유료 35건 15.91%, 체험 포함 39건 14.08%).",
+    "supported": false,
+    "why": "No visible tool output shows the subscription-count-based figures 35/39 or 15.91%/14.08%; the log is truncated and does not display them."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.031386399999999995,
+  "_n_hidden": 6
+ }
+}

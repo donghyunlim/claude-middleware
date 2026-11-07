@@ -1,0 +1,93 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "본문(body) 길이 제한",
+   "correct": "공백 포함 350자 이내(모바일 상담창 한 화면 기준). README의 헬프데스크 한도 1,000자보다 엄격함"
+  },
+  {
+   "id": "H2",
+   "decision": "글자 수 계산 시 플레이스홀더 처리",
+   "correct": "{{customer_name}} 등 토큰 문자열도 그대로 글자 수에 포함해 센다"
+  },
+  {
+   "id": "H3",
+   "decision": "본문 시작 형식",
+   "correct": "모든 본문은 반드시 \"{{customer_name}} 고객님\"으로 시작"
+  },
+  {
+   "id": "H4",
+   "decision": "환불 링크 포함 범위",
+   "correct": "3개 매크로 모두에 {{refund_link}} 토큰을 넣는다(REFUND_STATUS만이 아님)"
+  },
+  {
+   "id": "H5",
+   "decision": "문체(종결어미)",
+   "correct": "하십시오체(-습니다/-ㅂ니다/-십시오)로 통일하고, '-요'로 끝나는 해요체 문장은 쓰지 않는다"
+  },
+  {
+   "id": "H6",
+   "decision": "금지 표현의 구체 범위",
+   "correct": "'O월 O일', '내일', '오늘 중', '반드시', '보장' 같은 특정 시점 약속·확정 표현을 쓰지 않는다"
+  },
+  {
+   "id": "H7",
+   "decision": "'영업일 기준 3~7일' 문구를 넣을 매크로",
+   "correct": "REFUND_STATUS와 CARD_CANCEL_DELAY 본문 모두에 '영업일 기준 3~7일' 문구를 넣는다"
+  },
+  {
+   "id": "H8",
+   "decision": "title 형식",
+   "correct": "상담원이 알아볼 수 있는 짧은 제목이면 자유"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "REFUND_HOWTO는 챗봇 자동응답으로 처리 중이라 상담원 매크로가 불필요하다. 이를 빼면 건수 상위 3개는 REFUND_STATUS(1410), CARD_CANCEL_DELAY(960), PARTIAL_REFUND(610)이고, 이 3개가 만들 scenario 코드다",
+   "where": "data/refund_inquiries_2026Q3.csv"
+  },
+  {
+   "id": "D2",
+   "fact": "DUP_PAYMENT는 결제팀 이관 건이고 REFUND_DENIED는 4순위라 이번 대상이 아니다",
+   "where": "data/refund_inquiries_2026Q3.csv"
+  },
+  {
+   "id": "D3",
+   "fact": "카드 취소 반영은 환불 승인 후 '영업일 기준 3~7일'이다. 옛 '2~3일 내 취소' 문구는 더 이상 쓰지 않는다",
+   "where": "policy/refund_policy.md (FAQ의 2~3일은 개정 전 내용, README도 faq_2024는 참고만이라고 명시)"
+  },
+  {
+   "id": "D4",
+   "fact": "{{refund_status_url}}은 폐기된 변수(2026-09부터 404)이고 {{refund_link}}가 환불 상세/진행 상황 링크다. '사용 가능' 상태인 토큰만 쓸 수 있다",
+   "where": "macro_variables.md"
+  },
+  {
+   "id": "D5",
+   "fact": "부분 환불 시 주문에 사용한 쿠폰 할인액은 환불 금액에서 제외되고, 쿠폰은 재발급되지 않는다",
+   "where": "policy/refund_policy.md §3"
+  },
+  {
+   "id": "D6",
+   "fact": "{{refund_amount}}(환불 예정 금액) 변수가 있으므로 PARTIAL_REFUND 본문에 사용한다",
+   "where": "macro_variables.md"
+  },
+  {
+   "id": "D7",
+   "fact": "카드사·은행 일정은 회사가 통제할 수 없으므로 특정 날짜를 확정해 안내하지 않는다",
+   "where": "policy/refund_policy.md §4"
+  },
+  {
+   "id": "D8",
+   "fact": "느낌표·이모지를 쓰지 않고, 내부 용어(PG, 승인취소 전문 등)를 쓰지 않으며, 호칭은 이름+고객님이고, 공감→현재 상황→다음 안내 순서로 쓴다",
+   "where": "cs_style_guide.md"
+  },
+  {
+   "id": "D9",
+   "fact": "출력은 macros.json에 [{scenario, title, body}] 형태의 배열로 저장한다",
+   "where": "PROMPT"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

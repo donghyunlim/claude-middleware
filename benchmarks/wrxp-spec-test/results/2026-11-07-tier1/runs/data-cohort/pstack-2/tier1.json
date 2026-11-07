@@ -1,0 +1,64 @@
+{
+ "task": "data-cohort",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.9085904,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Converted to KST, data runs from 8/3 (Mon) 00:01 to 11/1 (Sun) 23:56",
+    "supported": true,
+    "why": "Script output showed max event KST 2026-11-01 23:56:11 and the earliest event_ts of 2026-08-02T15:01Z equals KST 8/3 00:01."
+   },
+   {
+    "claim": "Using login only lowers retention by about 6-15%p (e.g., 8/3 cohort W1 0.7500, W4 0.5897)",
+    "supported": true,
+    "why": "A run with login-only activity output 0.7500 and 0.5897 for the 8/3 cohort, matching the cited example. The 6-15%p range is not fully visible in the truncated log, but the example values are consistent."
+   },
+   {
+    "claim": "97 internal accounts excluded",
+    "supported": true,
+    "why": "Script output printed 'internal users excluded 97'."
+   },
+   {
+    "claim": "All signups fall between 8/3 and 9/27 KST, so no 9/28-week cohort exists",
+    "supported": true,
+    "why": "The data showed 1300 signups, with the cohort-building script covering them. The log does not explicitly show the max signup date, so this is only partially visible."
+   },
+   {
+    "claim": "Last cohort (9/21) W4 is 10/19~10/25 and fully observed since data runs to 11/1",
+    "supported": true,
+    "why": "Follows from the verified max event KST of 11/1 23:56."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.037600400000000006,
+  "_n_hidden": 7
+ }
+}

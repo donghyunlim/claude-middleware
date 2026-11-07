@@ -1,0 +1,43 @@
+{
+ "task": "plan-rice",
+ "cond": "global",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.5635355999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "리서치 근거가 없는(user_research=N) 항목의 confidence를 깎는 규칙이 팀에 있나요? (예: 최대 50%로 제한)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "ranked.json을 갱신했고 새 규칙(N 항목 confidence 최대 0.5, 동점 시 Effort 작은 순 후 id 오름차순)으로 다시 계산했다",
+    "supported": true,
+    "why": "turn 1에서 rice.py를 수정하고 실행했으며, 출력에 B-02 0.5, B-07 0.5, B-09 0.5, B-10 0.4 유지, B-05가 B-04보다 앞에 오는 정렬 결과가 나와 있다."
+   },
+   {
+    "claim": "계산 스크립트도 이 규칙으로 수정해 두었다",
+    "supported": true,
+    "why": "turn 1에서 rice.py에 Edit 호출이 성공했고, 이후 수정된 스크립트로 실행한 결과가 규칙을 반영하고 있다."
+   }
+  ],
+  "_judge_cost": 0.0410464,
+  "_n_hidden": 5
+ }
+}

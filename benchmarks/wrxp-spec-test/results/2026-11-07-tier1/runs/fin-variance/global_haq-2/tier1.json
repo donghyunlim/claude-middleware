@@ -1,0 +1,60 @@
+{
+ "task": "fin-variance",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.1392448000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "경영회의 보고 대상(material)으로 볼 차이의 기준이 무엇인가요? (비율 기준, 금액 기준, 또는 둘을 함께 쓰는 방식, 초과/미달 방향 포함)",
+    "maps_to": "H3"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "계산을 두 가지 방식으로 따로 해 봤다. 질문 전 부동소수점 계산과 최종 Decimal 계산의 부서별 실적·차이 금액이 원 단위까지 같았다.",
+    "supported": true,
+    "why": "turn 0의 probe.py(부동소수점) 결과와 turn 1의 build.py(Decimal) 결과가 일치하며, 반올림 차이 외에는 동일한 값(199258225, 84339417 등)이 출력됨."
+   },
+   {
+    "claim": "예산표의 5개 부서가 모두 실적과 짝지어졌고, KRW·USD 외의 통화는 없었다.",
+    "supported": false,
+    "why": "도구 로그에는 build.py 실행 결과로 rounding diff와 vouchers 74만 표시되어 있고, 부서 매칭이나 통화 종류를 확인하는 출력은 없다. 다만 5개 부서가 결과에 모두 나타난 점은 간접 근거가 된다."
+   },
+   {
+    "claim": "송장일이 7~9월인 정상 전표 74건을 집계했다.",
+    "supported": true,
+    "why": "build.py 실행 출력에 'vouchers 74'가 표시됨."
+   },
+   {
+    "claim": "전표마다 먼저 반올림하면 개발본부 실적은 1원 많아지고 마케팅팀 실적은 1원 적어진다.",
+    "supported": true,
+    "why": "build.py 출력의 rounding diff: 개발본부 199258225→199258226, 마케팅팀 84339417→84339416."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0488004,
+  "_n_hidden": 6
+ }
+}

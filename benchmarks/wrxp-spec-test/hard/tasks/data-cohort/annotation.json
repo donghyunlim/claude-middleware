@@ -1,0 +1,88 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "리텐션 기준 이벤트 (어떤 활동을 '잔존'으로 볼지)",
+   "correct": "로그인이 아니라 결제 성공(event_type == \"payment\") 기준. login이나 기타 활동은 세지 않음"
+  },
+  {
+   "id": "H2",
+   "decision": "주(week) 판정 타임존",
+   "correct": "KST(UTC+9) 기준. UTC인 event_ts를 KST로 변환한 뒤 주를 정함"
+  },
+  {
+   "id": "H3",
+   "decision": "주 시작 요일",
+   "correct": "월요일 00:00 시작, 일요일 23:59:59 종료(KST). cohort_week는 그 월요일 날짜"
+  },
+  {
+   "id": "H4",
+   "decision": "Wk 기간 정의 (달력 주 vs 개인 가입일 기준 7일 단위)",
+   "correct": "코호트 주로부터 k주 뒤의 달력 주(월~일, KST). 사용자 개인 가입 시각 기준 7일 롤링 윈도가 아님"
+  },
+  {
+   "id": "H5",
+   "decision": "'8~9월 가입자' 코호트 범위",
+   "correct": "2026-08-03 주부터 2026-09-21 주까지 8개 코호트(KST 월요일 기준)"
+  },
+  {
+   "id": "H6",
+   "decision": "Wk 분자 집계 단위",
+   "correct": "해당 주에 payment가 1건 이상 있는 코호트 사용자 수(distinct user). 같은 주 여러 번 결제해도 1명"
+  },
+  {
+   "id": "H7",
+   "decision": "W0(가입 주) 포함 여부 / Wk 인덱싱",
+   "correct": "W1 = 코호트 주 다음 달력 주. 가입 주(W0)는 출력하지 않음"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "event_ts는 UTC ISO-8601(Z) 시각",
+   "where": "DATA_DICTIONARY.md (data/events.csv 표)"
+  },
+  {
+   "id": "D2",
+   "fact": "payment = 결제 성공, payment_failed = 결제 시도 실패(매출 아님). 결제 기준 리텐션이면 payment_failed는 세지 않음",
+   "where": "DATA_DICTIONARY.md (event_type 설명)"
+  },
+  {
+   "id": "D3",
+   "fact": "user_id가 test_로 시작하거나 email이 @ourapp.kr인 내부 테스트 계정은 모든 지표에서 제외. 따라서 cohort_size와 분자 모두 제외 후 값",
+   "where": "DATA_DICTIONARY.md (주의 사항)"
+  },
+  {
+   "id": "D4",
+   "fact": "가입 시각은 event_type = signup 이벤트 시각이며 사용자당 1건. 코호트는 이 시각으로 정함",
+   "where": "DATA_DICTIONARY.md (주의 사항)"
+  },
+  {
+   "id": "D5",
+   "fact": "email은 users.csv에만 있으므로 테스트 계정을 제외하려면 events와 users를 user_id로 조인해야 함",
+   "where": "DATA_DICTIONARY.md / data/users.csv"
+  },
+  {
+   "id": "D6",
+   "fact": "테스트 계정 실제 존재. 예: u100000·u100017(@ourapp.kr), test_0012(test_ 접두)",
+   "where": "data/users.csv"
+  },
+  {
+   "id": "D7",
+   "fact": "events는 2026-08-02T15:01Z(=KST 8/3 00:01 월요일)부터 시작함. KST로 변환하지 않으면 첫 가입자들이 7/27 주로 잘못 분류됨",
+   "where": "data/events.csv"
+  },
+  {
+   "id": "D8",
+   "fact": "출력 형식은 retention.csv 파일이며 컬럼은 cohort_week,cohort_size,W1,W2,W3,W4. cohort_week는 YYYY-MM-DD, W값은 0~1 비율에 소수 넷째 자리 반올림, 코호트 오래된 순 정렬",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D9",
+   "fact": "W1~W4만 산출",
+   "where": "PROMPT"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

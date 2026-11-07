@@ -1,0 +1,50 @@
+{
+ "task": "legal-review",
+ "cond": "base",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9714164000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "어느 쪽 회사 입장(한빛정밀 공급자 vs 누리모빌리티 구매자)에서 검토하는지",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사업부에서 따로 정한 리스크 기준(최소 보증기간, 책임 한도 등 받아들일 수 있는 수치)이 있는지",
+    "maps_to": "D4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "JSON 문법 검사도 통과했어요",
+    "supported": true,
+    "why": "turn 1에서 python3 -m json.tool을 review.json에 실행해 ok가 출력됨."
+   }
+  ],
+  "_judge_cost": 0.0334304,
+  "_n_hidden": 10
+ }
+}

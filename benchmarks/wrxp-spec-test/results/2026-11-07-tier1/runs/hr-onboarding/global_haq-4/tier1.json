@@ -1,0 +1,62 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 1.0,
+ "cost": 1.5415276,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "신입 엔지니어의 입사일(첫 출근일)은 언제인가요?",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 파일을 한 번 검사했고 모두 통과했습니다.",
+    "supported": true,
+    "why": "python3 검사 스크립트를 실행했고 출력 마지막이 OK였습니다."
+   },
+   {
+    "claim": "날짜가 날짜순이고 중복이 없습니다.",
+    "supported": true,
+    "why": "검사 스크립트가 날짜 목록을 출력했고 OK로 끝났습니다. 출력된 날짜는 순서대로이며 중복이 없습니다."
+   },
+   {
+    "claim": "모든 날짜가 평일이고, 휴무일이 들어 있지 않습니다.",
+    "supported": true,
+    "why": "출력된 요일이 모두 월~금이고 12-11은 목록에 없습니다. 스크립트가 holidays 파일을 읽어 대조했습니다."
+   },
+   {
+    "claim": "location 값과 item의 type 값이 모두 지정하신 목록 안에 있습니다.",
+    "supported": true,
+    "why": "스크립트에 허용 type 집합이 정의되어 있고 OK로 끝났습니다. location은 office와 remote만 출력되었습니다."
+   },
+   {
+    "claim": "첫 일정이 정보보안 교육입니다.",
+    "supported": true,
+    "why": "12-07의 첫 item이 security_training으로 출력되었습니다."
+   }
+  ],
+  "_judge_cost": 0.0401784,
+  "_n_hidden": 6
+ }
+}

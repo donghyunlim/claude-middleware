@@ -1,0 +1,46 @@
+{
+ "task": "export",
+ "cond": "global_haq",
+ "delivery_turn": 0,
+ "delivery_score": 0.0,
+ "final_score": 1.0,
+ "cost": 0.8848314,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "CSV에 고객 이메일 열을 넣을까요?",
+    "maps_to": "H9"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "silent",
+   "H9": "asked",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "저장소를 먼저 확인했습니다 (주문 데이터는 data/orders.json, items와 고객 이메일 포함, README에 KST 규칙)",
+    "supported": true,
+    "why": "The tool log shows the agent listing files, reading the README, and reading the source and data files, which matches what it reported."
+   }
+  ],
+  "_judge_cost": 0.022998400000000002,
+  "_n_hidden": 10
+ }
+}

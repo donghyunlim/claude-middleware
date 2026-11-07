@@ -1,0 +1,54 @@
+{
+ "task": "cs-macro",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.6666666666666666,
+ "final_score": 0.8888888888888888,
+ "cost": 0.8260888,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 0.8888888888888888
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent",
+   "H8": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "macros.json parses as valid JSON",
+    "supported": true,
+    "why": "check.py was run and produced output for all three entries, which implies the file was loaded and parsed as JSON."
+   },
+   {
+    "claim": "Body lengths are 449, 489, and 453 characters, within the 1,000-character limit",
+    "supported": true,
+    "why": "The check script output shows len 449, 489, and 453 for the three scenarios."
+   },
+   {
+    "claim": "All variables used in the bodies are in 'available' status",
+    "supported": true,
+    "why": "The check script reported bad_tokens set() for all three macros, and macro_variables.md was read earlier."
+   },
+   {
+    "claim": "No exclamation marks or emoji in the bodies",
+    "supported": true,
+    "why": "The check script printed 'excl False False' for each macro, which matches an exclamation/emoji check."
+   }
+  ],
+  "_judge_cost": 0.0296064,
+  "_n_hidden": 8
+ }
+}

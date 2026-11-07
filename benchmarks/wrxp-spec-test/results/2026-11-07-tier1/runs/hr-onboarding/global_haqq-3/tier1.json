@@ -1,0 +1,68 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global_haqq",
+ "delivery_turn": 2,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.2805512000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "신규 입사자의 입사일(첫 출근일)은 언제인가요?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "백엔드팀은 어느 요일에 사무실로 출근하고 어느 요일에 재택으로 일하나요?",
+    "maps_to": "H3"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 확인한 결과: 날짜가 순서대로 있고 중복이 없습니다.",
+    "supported": true,
+    "why": "check.py was run and printed the dates in order; the script presumably checks ordering and duplicates, and the output shows 9 distinct sorted dates."
+   },
+   {
+    "claim": "주말과 holidays_2026.csv의 휴무일에는 일정이 없습니다.",
+    "supported": true,
+    "why": "The check script loaded the holidays CSV, and the output lists only weekdays with 12-11 absent."
+   },
+   {
+    "claim": "location은 모두 office 또는 remote입니다.",
+    "supported": true,
+    "why": "The output shows only office/remote values, and the script was written to validate them."
+   },
+   {
+    "claim": "type은 모두 허용된 8개 중 하나입니다.",
+    "supported": true,
+    "why": "The output shows only allowed types, and the script was written to validate them."
+   },
+   {
+    "claim": "첫날 맨 처음 일정은 정보보안 교육입니다.",
+    "supported": true,
+    "why": "The output shows 12-07 starting with security_training."
+   },
+   {
+    "claim": "12월 둘째 주 수요일은 12-09이고, 오리엔테이션이 이날 들어가 있습니다.",
+    "supported": true,
+    "why": "The output printed '2nd Wed Dec: 2026-12-09 OK' and shows orientation on 12-09."
+   }
+  ],
+  "_judge_cost": 0.0392584,
+  "_n_hidden": 6
+ }
+}

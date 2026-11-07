@@ -1,0 +1,52 @@
+{
+ "task": "legal-review",
+ "cond": "pstack_poteto",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8851656000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "우리 회사가 구매자(누리모빌리티)인지 공급자(한빛정밀)인지 확인 요청",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사업부 리스크 기준이 있으면 무엇인지 (단가, 지급, 검수, 보증, 책임 한도, 갱신, 준거법 등 거래 조건 판단 기준)",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "형식은 스크립트로 확인했습니다. 모든 항목에 clause, severity, reason 세 필드만 있고, 조 번호는 정수, 심각도는 high/medium/low 중 하나입니다.",
+    "supported": true,
+    "why": "Turn 1 Bash ran a python check asserting set(i)=={'clause','severity','reason'}, severity in the allowed set, and clause is int; it printed the clause/severity list without assertion failure."
+   },
+   {
+    "claim": "배상 한도 직전 3개월 대금을 계산해 보면 약 3억 원으로, 연간 계약금액 12억 원보다 낮습니다.",
+    "supported": true,
+    "why": "This is simple arithmetic (12억 / 12 × 3 = 3억) from contract figures; no tool run was needed and the claim is consistent with the contract values."
+   }
+  ],
+  "_judge_cost": 0.0374724,
+  "_n_hidden": 10
+ }
+}

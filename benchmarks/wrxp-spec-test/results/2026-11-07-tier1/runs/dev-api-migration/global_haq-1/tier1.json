@@ -1,0 +1,56 @@
+{
+ "task": "dev-api-migration",
+ "cond": "global_haq",
+ "delivery_turn": 0,
+ "delivery_score": 0.875,
+ "final_score": 0.875,
+ "cost": 0.4284334,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "`python3 -m pytest -q` passed all 3 existing tests (exit 0)",
+    "supported": true,
+    "why": "Tool log shows '3 passed' and exit=0 (though exit=$? after a pipe to tail reflects tail's status, the pass output is shown)."
+   },
+   {
+    "claim": "With 123 customers and month-boundary timestamps (08-31T16:00Z, 09-30T14:59Z), v1 and v2 monthly aggregates matched (including 2026-09: 120)",
+    "supported": true,
+    "why": "Script output shows v1 and v2 both {'2026-07': 2, '2026-08': 1, '2026-09': 120} and 'same: True'."
+   },
+   {
+    "claim": "Calling invoice_header with a nonexistent customer raises KeyError",
+    "supported": true,
+    "why": "Script output printed 'KeyError ok' and 'NOPE'."
+   },
+   {
+    "claim": "renewal_messages skips unknown customers",
+    "supported": true,
+    "why": "Script output shows a single message list for the known customer, consistent with the unknown one being skipped."
+   },
+   {
+    "claim": "`python3 -m app.cli report` prints normal output",
+    "supported": true,
+    "why": "Output '2026-07 2 / 2026-08 1' appears in the final script output, consistent with the CLI report running."
+   },
+   {
+    "claim": "app/ no longer contains v1 references",
+    "supported": true,
+    "why": "Final output printed 'no v1 refs in app/'."
+   }
+  ],
+  "_judge_cost": 0.0331344,
+  "_n_hidden": 3
+ }
+}

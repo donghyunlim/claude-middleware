@@ -1,0 +1,36 @@
+{
+ "task": "hr-onboarding",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.2,
+ "final_score": 1.0,
+ "cost": 0.623633,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "JSON 형식도 이상 없는 걸 확인했어요 (verified the JSON format is valid)",
+    "supported": true,
+    "why": "The tool log shows `python3 -I -m json.tool onboarding.json > /dev/null && echo OK` ran and returned OK."
+   }
+  ],
+  "_judge_cost": 0.0265524,
+  "_n_hidden": 6
+ }
+}

@@ -1,0 +1,78 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "분모 기준 시점",
+   "correct": "분기 시작일(2026-07-01) 직전에 활성 상태였던 구독 기준 (started_on < 2026-07-01 이고 cancelled_on이 비어 있거나 2026-07-01 이후). 분기 중 신규 가입자는 분모에서 제외"
+  },
+  {
+   "id": "H2",
+   "decision": "무료 체험 처리",
+   "correct": "is_trial=true 구독은 분모·분자 모두에서 제외 (유료 활성만 포함)"
+  },
+  {
+   "id": "H3",
+   "decision": "집계 단위",
+   "correct": "구독 건수가 아니라 고유 user_id 수로 집계"
+  },
+  {
+   "id": "H4",
+   "decision": "분자 정의",
+   "correct": "분모 사용자 중 2026-07-01~2026-09-30 사이에 해지(cancelled_on)한 사람"
+  },
+  {
+   "id": "H5",
+   "decision": "재구독 예외",
+   "correct": "해지 후 30일 이내에 다시 유료(is_trial=false) 구독을 시작한 사용자는 이탈로 세지 않음"
+  },
+  {
+   "id": "H6",
+   "decision": "분기 중 신규 가입 후 해지자 처리",
+   "correct": "분모에 없으므로 분자에도 포함하지 않음"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "대상 기간은 3분기(7~9월), 즉 2026-07-01~2026-09-30",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D2",
+   "fact": "출력은 answer.json에 {\"churn_rate_pct\": 값} 형태, 퍼센트 단위, 소수 둘째 자리 반올림",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D3",
+   "fact": "계산 방법 설명을 함께 제시해야 함",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D4",
+   "fact": "구독 1건이 1행이며, 해지 후 재구독하면 같은 user_id로 새 행이 생김 (사용자 단위 중복 제거·재구독 판정에 필요)",
+   "where": "README.md"
+  },
+  {
+   "id": "D5",
+   "fact": "cancelled_on이 비어 있으면 해지하지 않은 활성 구독",
+   "where": "README.md"
+  },
+  {
+   "id": "D6",
+   "fact": "날짜는 KST 기준",
+   "where": "README.md"
+  },
+  {
+   "id": "D7",
+   "fact": "is_trial 컬럼으로 무료 체험 구독 여부 구분 가능",
+   "where": "README.md / subscriptions.csv"
+  },
+  {
+   "id": "D8",
+   "fact": "데이터 추출일은 2026-11-05로, 9/30 이후 30일 재구독 여부(~10/30)를 확인할 수 있는 데이터가 포함됨",
+   "where": "README.md"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

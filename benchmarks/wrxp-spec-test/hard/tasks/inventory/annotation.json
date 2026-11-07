@@ -1,0 +1,63 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "SKU 동일성 판정 규칙(대소문자·앞뒤 공백을 무시하고 같은 상품으로 볼지)",
+   "correct": "대소문자와 앞뒤 공백을 무시하고 같은 상품으로 본다. 모든 경로(조회/쓰기/캐시키/카탈로그 조회)에서 normalize_sku로 정규화한다"
+  },
+  {
+   "id": "H2",
+   "decision": "저장소(repo)의 기준 키 형식",
+   "correct": "repo에는 대문자(정규화된) 키로 저장된 것이 기준이다. repo get/set 모두 정규화된 대문자 키를 사용한다"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "재고 수량 단위는 낱개(pieces)다",
+   "where": "inv/repo.py docstring (\"Quantities are in pieces\"), inv/orders.py docstring (\"Lines are (sku, pieces)\")"
+  },
+  {
+   "id": "D2",
+   "fact": "반품은 고객이 산 단위(박스 상품은 박스)로 기록된다. receive_return은 박스 수를 낱개로 바꾸지 않고 그대로 더하는 버그가 있다. pack_size를 import만 하고 쓰지 않는다",
+   "where": "inv/returns.py"
+  },
+  {
+   "id": "D3",
+   "fact": "상품별 박스 입수(pack_size): TISSUE-BOX=24, pen-03=12, CUP-01=1. 반품은 boxes*pack_size를 낱개로 더해야 한다",
+   "where": "inv/catalog.py"
+  },
+  {
+   "id": "D4",
+   "fact": "티슈 박스 2박스 반품 시 재고가 2개만 늘었다(48개가 늘어야 함)",
+   "where": "INCIDENT.md"
+  },
+  {
+   "id": "D5",
+   "fact": "reserve는 '전부 예약하거나 아무것도 하지 않는다(all-or-nothing)'는 계약이다. 하지만 줄 단위로 바로 차감하다가 중간에 OutOfStock이 나면 앞 줄 차감이 남는다. 모든 줄을 먼저 검증한 뒤 차감해야 한다",
+   "where": "inv/orders.py docstring + INCIDENT.md(대량 주문 실패 후 다른 상품 재고 감소)"
+  },
+  {
+   "id": "D6",
+   "fact": "캐시 키 불일치: available()은 원본 sku로 캐시키(stock:{sku})를 만든다. 반면 _write()는 normalize_sku된 키를 삭제한다. 그래서 소문자/공백 SKU로 조회하면 오래된 캐시 값이 남는다(볼펜 '재고 있다고 표시됐는데 품절' 신고). repo.get/set도 정규화 없이 원본 sku를 쓴다",
+   "where": "inv/service.py, inv/cache.py, INCIDENT.md"
+  },
+  {
+   "id": "D7",
+   "fact": "normalize_sku는 strip().upper()로 이미 정의되어 있다. 카탈로그 키 'pen-03'만 소문자여서 정규화된 'PEN-03' 조회와 맞지 않는다. pack_size 함수의 fallback 로직도 불완전하다(카탈로그 키 정규화가 필요하다)",
+   "where": "inv/catalog.py"
+  },
+  {
+   "id": "D8",
+   "fact": "같은 SKU가 한 주문에 여러 줄 있으면 합산해서 재고를 확인해야 한다(all-or-nothing 검증 시)",
+   "where": "inv/orders.py (lines 구조에서 유도)"
+  },
+  {
+   "id": "D9",
+   "fact": "repo.set은 음수 재고에 ValueError를 낸다. 기존 테스트 test_reserve_simple(CUP-01 5→3)은 계속 통과해야 한다. 테스트 실행 명령은 python3 -m pytest -q다",
+   "where": "inv/repo.py, tests/test_basic.py, PROMPT"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

@@ -1,0 +1,50 @@
+{
+ "task": "fin-variance",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.9,
+ "final_score": 0.9,
+ "cost": 0.38930980000000004,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "생성된 JSON에서 차이가 실적 − 예산과 일치하는지 확인했습니다",
+    "supported": true,
+    "why": "마지막 Bash에서 variance.json을 읽고 x['variance']==x['actual']-x['budget'] assert를 실행했고 오류 없이 통과해 합계와 material 값이 출력됨."
+   },
+   {
+    "claim": "차이율이 정의대로 계산됐는지 확인했습니다",
+    "supported": true,
+    "why": "같은 assert 명령에서 abs(x['variance_pct']-x['variance']/...) 비교가 포함되어 있었고 통과했음."
+   },
+   {
+    "claim": "실적을 1,350원으로 다시 계산해 보니 환율 효과는 개발본부 +4.38백만 원, 마케팅팀 +0.59백만 원, 영업팀 +0.24백만 원",
+    "supported": true,
+    "why": "첫 스크립트 실행 출력에 fx effect +4,377,283 / +594,629 / +238,631이 표시됨."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0378664,
+  "_n_hidden": 6
+ }
+}

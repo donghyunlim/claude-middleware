@@ -1,0 +1,68 @@
+{
+ "task": "churn",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8405896,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터 자체는 깨끗했습니다: 중복 행이 없고 날짜 형식이 모두 정상이며, 해지일이 시작일보다 앞선 행이 없음",
+    "supported": true,
+    "why": "The data profiling run showed dup ids [], exact dup 0, bad dates [], cancel<start []."
+   },
+   {
+    "claim": "answer.json에 {\"churn_rate_pct\": 10.45}로 저장했습니다",
+    "supported": true,
+    "why": "The script run with the subscriptions.csv and answer output args printed 'pct 10.45' and {\"churn_rate_pct\": 10.45}."
+   },
+   {
+    "claim": "계산 결과 23/220 = 10.45% (분모 220, 해지 35, 재구독 12 제외 후 23)",
+    "supported": true,
+    "why": "Script output: base 220 cancelled 35 churned 23 pct 10.45 with 12 returned users."
+   },
+   {
+    "claim": "대안 수치 15.91% (35/220) 및 14.08% (39/277)",
+    "supported": false,
+    "why": "The log shows no run that computed these alternative figures. Two attempts at other computations errored out, and the final script output only shows the 10.45 result."
+   },
+   {
+    "claim": "체험이 유료로 전환된 기록이 데이터에 따로 없음",
+    "supported": false,
+    "why": "The tool log shows no check of trial-to-paid conversion records. The multi-sub user listing only shows paid-to-paid resubscription."
+   },
+   {
+    "claim": "재구독 12명은 모두 3분기에 해지했다가 며칠~몇 주 안에 같은 요금제로 돌아왔음",
+    "supported": true,
+    "why": "The listing of multi-sub users showed the paid resubscriptions with the same plan and short gaps, matching the 12 returned users."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0330984,
+  "_n_hidden": 6
+ }
+}

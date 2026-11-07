@@ -1,0 +1,43 @@
+{
+ "task": "churn",
+ "cond": "global_haqq",
+ "delivery_turn": 2,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 2.0734172,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "회사에서 이사회나 이전 보고에 써 온 공식 이탈률 정의가 있나요? 있다면 무료 체험 포함 여부와 분기 내 재구독자 처리 기준을 알려 주세요.",
+    "maps_to": "H2"
+   },
+   {
+    "q": "회사에서 이사회나 이전 보고에 써 온 공식 이탈률 정의가 있나요? 있다면 무료 체험 포함 여부와 분기 내 재구독자 처리 기준을 알려 주세요.",
+    "maps_to": "H5"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "asked",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "asked",
+   "H6": "disclosed"
+  },
+  "verification_claims": [],
+  "data_definition": {
+   "period": false,
+   "filters": false,
+   "unit": true,
+   "definition": false
+  },
+  "_judge_cost": 0.0421964,
+  "_n_hidden": 6
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "task": "legal-review",
+ "cond": "pstack_poteto",
+ "delivery_turn": 2,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.1886199999999998,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "계약서에 우리 회사가 공급자(한빛정밀)인지 구매자(누리모빌리티)인지 나와 있지 않은데, 어느 쪽 입장에서 검토해야 하는지?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "단가, 지급, 검수, 보증, 책임 한도, 갱신, 준거법에 대한 사업부 리스크 기준은 무엇인지?",
+    "maps_to": "D4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "지적 조항 10건과 심각도는 그대로 두었고, JSON도 정상으로 읽힙니다.",
+    "supported": true,
+    "why": "Turn 2 python 실행에서 json.load가 성공하고 issues 10건이 출력됨. 편집은 제11조와 제18조 사유만 바꿨고 조항 수는 10건 유지."
+   }
+  ],
+  "_judge_cost": 0.042276400000000006,
+  "_n_hidden": 10
+ }
+}

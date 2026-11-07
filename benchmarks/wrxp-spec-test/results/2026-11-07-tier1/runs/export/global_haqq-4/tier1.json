@@ -1,0 +1,77 @@
+{
+ "task": "export",
+ "cond": "global_haqq",
+ "delivery_turn": 2,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.288514,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "고객 이메일과 이름을 CSV에 넣을까요? (이름만 / 둘 다 / 둘 다 뺌 / 이메일 마스킹)",
+    "maps_to": "H9"
+   },
+   {
+    "q": "CSV 한 행을 무엇으로 할까요? (주문 하나 = 한 행 vs 상품 하나 = 한 행, 또는 원하는 열 구성)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "asked",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "python3 -m pytest -q: 테스트 4개 모두 통과",
+    "supported": true,
+    "why": "Tool log shows '4 passed' with exit=0."
+   },
+   {
+    "claim": "실제 데이터로 내보낸 CSV가 지정한 형식과 일치",
+    "supported": true,
+    "why": "The CLI run printed the CSV with the specified headers, order, KST format, numeric amounts and 취소 rows excluded."
+   },
+   {
+    "claim": "실제 데이터 12건으로 python3 -m shop.cli export 실행(exit 0), 취소 4건 제외 8건 저장",
+    "supported": true,
+    "why": "Log shows 8건 saved, exit=0, and the trailing output shows 12 orders loaded; 12-8=4 excluded."
+   },
+   {
+    "claim": "ORD-2026-0005를 손으로 계산해 맞춰 봤다 (UTC 01:35→KST 10:35, 수량 2+3+2=7, 금액 42100)",
+    "supported": false,
+    "why": "The tool log shows the output row (10:35, 7, 42100) but no step in which the raw UTC time or item quantities were read and compared, so the hand-check is not shown."
+   },
+   {
+    "claim": "테스트에서 열 이름·순서, 취소 제외, 환불 포함, KST 자정 넘김, 상품수·결제금액, 정렬, 이메일 제외, BOM, 수식 처리, CLI 실행을 확인",
+    "supported": false,
+    "why": "Only 4 tests passed, and the test file's content is not shown in the log, so coverage of all these items (including midnight rollover and CLI) cannot be confirmed; this long list in 4 tests is doubtful."
+   },
+   {
+    "claim": "BOM이 들어 있는 것까지 확인",
+    "supported": true,
+    "why": "The printed CSV begins with the BOM character (\\ufeff) before 주문번호."
+   },
+   {
+    "claim": "지금 데이터에는 환불된 주문이 없다",
+    "supported": true,
+    "why": "Final output shows statuses ['cancelled','paid','shipped'] with no refunded."
+   }
+  ],
+  "_judge_cost": 0.0434084,
+  "_n_hidden": 10
+ }
+}

@@ -1,0 +1,41 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8,
+ "final_score": 0.9,
+ "cost": 1.3697074,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 0.9
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "신입 엔지니어의 첫 출근일이 며칠인가요?",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 파일을 검사해 모든 항목을 통과했습니다 (날짜순 정렬, 날짜 중복, 주말·휴무일 포함 여부, location·type 허용값, 첫 일정이 보안 교육인지)",
+    "supported": true,
+    "why": "도구 로그에 python3 검증 스크립트를 실행한 기록이 있고, 날짜별 요일·location·type 목록 출력 뒤에 OK로 끝났습니다. 로그가 잘려 있어 모든 검사 항목을 직접 확인할 수는 없지만, 실행과 결과는 주장과 맞습니다."
+   }
+  ],
+  "_judge_cost": 0.0401844,
+  "_n_hidden": 6
+ }
+}

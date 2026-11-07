@@ -1,0 +1,53 @@
+{
+ "task": "churn",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6898470000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터에서 날짜 형식 오류, 해지일이 시작일보다 앞선 행, 중복 구독 ID는 발견되지 않았습니다.",
+    "supported": true,
+    "why": "The tool log shows a check printing 'bad dates []', 'cancel<start []', and 'dup ids []', all empty."
+   },
+   {
+    "claim": "3분기에 해지한 12명이 같은 분기 안에 같은 요금제로 다시 가입했습니다(해지와 재가입 사이는 2일~7주)",
+    "supported": true,
+    "why": "The tool log lists 12 duplicate user_ids with cancel and resubscribe rows on the same plans. The 2-day to 7-week gap is plausible from the visible rows, though the output is truncated."
+   },
+   {
+    "claim": "무료 체험 포함 시 분모가 277명, 구독 건 기준 35/220, 39/277 등 대안 수치",
+    "supported": false,
+    "why": "The visible tool log shows only one computation, with output '220 23 10.45'. The alternative figures 277, 35/220, and 39/277 appear in no logged output. They may come from a truncated command, but the log does not confirm them."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0286824,
+  "_n_hidden": 6
+ }
+}

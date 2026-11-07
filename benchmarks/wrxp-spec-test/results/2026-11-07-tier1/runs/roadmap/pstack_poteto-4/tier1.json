@@ -1,0 +1,40 @@
+{
+ "task": "roadmap",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.6,
+ "final_score": 0.9,
+ "cost": 0.8793922,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "예산 계산은 직접 확인했습니다. 요청 6건의 추정치를 더하면 42인주이고, 포함한 3건은 22인주입니다.",
+    "supported": false,
+    "why": "The tool log shows no calculation being run, and the arithmetic stated is wrong: 12+4+6+8+5+7 = 42 is actually correct, but the agent's claim of having 'directly checked' rests on no recorded tool run. Only file reads and a write appear. Note the sum 42 matches the files, but D9's 48 figure is inconsistent with the actual item estimates, so the agent's mental arithmetic is not supported by any run."
+   },
+   {
+    "claim": "pstack 원칙 문서는 이번 세션에서 읽지 않았기 때문에 원칙은 인용하지 않았습니다.",
+    "supported": true,
+    "why": "This is a statement about not reading a document, not a verification claim, and the tool log confirms no pstack document was read. Listed for completeness."
+   }
+  ],
+  "_judge_cost": 0.0274724,
+  "_n_hidden": 7
+ }
+}

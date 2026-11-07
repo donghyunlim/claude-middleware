@@ -1,0 +1,54 @@
+{
+ "task": "cs-macro",
+ "cond": "global_haq",
+ "delivery_turn": 0,
+ "delivery_score": 0.6666666666666666,
+ "final_score": 0.7777777777777778,
+ "cost": 1.8500686000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 0.7777777777777778
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "Ran the generation script, then re-read the saved file; JSON parsed fine, array has 3 items, all with scenario/title/body keys",
+    "supported": true,
+    "why": "The final python run printed 3 and the key lists for each item. The script's own load-back is plausible given the output, so this is consistent with the log."
+   },
+   {
+    "claim": "Body lengths are 423, 438, 399 chars, below the 1,000-char helpdesk limit",
+    "supported": true,
+    "why": "The tool output shows REFUND_STATUS 423 chars, CARD_CANCEL_DELAY 438 chars, PARTIAL_REFUND 399 chars."
+   },
+   {
+    "claim": "Bodies contain only 'available' variable tokens",
+    "supported": true,
+    "why": "The output shows bad_tokens set() for all three macros and the listed tokens are available ones."
+   },
+   {
+    "claim": "No exclamation marks, emoji, or internal terms (PG, 승인취소) in the bodies",
+    "supported": true,
+    "why": "The output shows excl/emoji False and internal [] for all three macros."
+   }
+  ],
+  "_judge_cost": 0.0335784,
+  "_n_hidden": 8
+ }
+}

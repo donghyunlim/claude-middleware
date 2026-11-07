@@ -1,0 +1,50 @@
+{
+ "task": "fin-variance",
+ "cond": "pstack_poteto",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9349208,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "variance.json은 이미 그 기준으로 계산되어 있다 (기준을 확인해 현재 내용 그대로 확정)",
+    "supported": true,
+    "why": "Turn 0 script produced variance.json and it was read back; material values (마케팅팀 true, 영업팀 true, others false) match the |pct|>=10 and |amt|>=5M rule."
+   },
+   {
+    "claim": "스크립트도 같은 조건으로 판정합니다 (차이율 절댓값 10% 이상 and 차이 금액 절댓값 500만 원 이상, 초과·미달 동일)",
+    "supported": false,
+    "why": "The script content isn't shown in the tool log; only its output and the resulting JSON are visible. The outputs are consistent with that rule, but the code itself was not re-inspected in the delivery turn."
+   },
+   {
+    "claim": "파일은 수정하지 않았습니다",
+    "supported": true,
+    "why": "The tool log shows no edit or write to variance.json after turn 0."
+   }
+  ],
+  "data_definition": {
+   "period": false,
+   "filters": false,
+   "unit": false,
+   "definition": true
+  },
+  "_judge_cost": 0.039040399999999996,
+  "_n_hidden": 6
+ }
+}

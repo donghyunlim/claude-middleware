@@ -1,0 +1,41 @@
+{
+ "task": "sales-quote",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8888888888888888,
+ "final_score": 1.0,
+ "cost": 1.4948592000000003,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "약정 기간을 3년(36개월)으로 견적할까요, 2년(24개월)으로 할까요?",
+    "maps_to": "H2"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "asked",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "`quote.json`을 다시 불러와 각 항목 금액, 소계, 할인액, 천 원 미만 절사, 부가세, 합계를 계산식으로 대조했고 모두 맞았습니다.",
+    "supported": true,
+    "why": "Bash로 python3 스크립트가 quote.json을 로드해 line item 금액, 소계, 합계 등을 assert로 검증했고 'OK 64325800'이 출력됨."
+   }
+  ],
+  "_judge_cost": 0.035446399999999996,
+  "_n_hidden": 5
+ }
+}

@@ -1,0 +1,69 @@
+{
+ "task": "data-cohort",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.7414754000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Data starts at KST 8/3 (Mon) 00:01 and ends 11/1 (Sun) 23:56, so judged as KST-based data",
+    "supported": true,
+    "why": "Tool log shows KST min 2026-08-03 00:01:35 Monday and max 2026-11-01 23:56:11 Sunday."
+   },
+   {
+    "claim": "Splitting by UTC would push 47 signups into the 7/27 week",
+    "supported": true,
+    "why": "Tool output shows UTC-based week counts with 2026-07-27 : 47."
+   },
+   {
+    "claim": "97 test accounts (test_ prefix or @ourapp.kr email) excluded from cohort and numerator",
+    "supported": true,
+    "why": "Tool output printed 'excluded 97' and the computation applied the filter."
+   },
+   {
+    "claim": "Login-only retention is about 6-13%p lower, e.g. 8/3 cohort 0.7500/0.6987/0.7051/0.5897",
+    "supported": true,
+    "why": "Second table in tool output shows login-only values for 8/3 cohort matching those numbers."
+   },
+   {
+    "claim": "Latest cohort (9/21) W4 week (10/19~10/25) fully covered by data, no incomplete cells",
+    "supported": true,
+    "why": "Data max is KST 11/1, which covers 10/19~10/25; the earlier check output is consistent."
+   },
+   {
+    "claim": "No signups on 9/28~9/30 so no truncated cohort at end of September",
+    "supported": true,
+    "why": "Tool output showed the last signup at 2026-09-27 23:41:33 KST."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0344604,
+  "_n_hidden": 7
+ }
+}

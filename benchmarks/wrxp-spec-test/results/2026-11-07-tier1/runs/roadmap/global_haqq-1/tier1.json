@@ -1,0 +1,50 @@
+{
+ "task": "roadmap",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 0.9,
+ "cost": 1.0576568,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "roadmap.md의 용도는 결정 요청안(조합안 2~3개 비교, 권장안 표시)인가, 확정 로드맵(한 안을 일정과 함께 확정)인가?",
+    "maps_to": "H2"
+   }
+  ],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "asked",
+   "H3": "silent",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "인주 합계를 직접 계산했습니다. 요청 총량은 42인주이고, A·B·C안은 각각 22·23·24인주이며, A안 주차별 일정도 24인주와 맞습니다.",
+    "supported": false,
+    "why": "도구 로그에 계산을 실행한 기록이 없습니다. 암산이라면 가능하지만 검증 실행으로 확인되지는 않습니다. 또한 요청 총량 42인주는 SMS를 5인주로, 추천 코드를 7인주로 합산한 값으로 보이는데, 실제 합계는 48인주(12+4+6+8+5+7)이므로 틀렸습니다."
+   },
+   {
+    "claim": "마지막에 한국어 교정을 한 번 했습니다.",
+    "supported": true,
+    "why": "korean-polish 스킬을 호출했고 이후 roadmap.md에 Edit 두 번이 성공했습니다."
+   },
+   {
+    "claim": "파일은 공백과 표 기호를 포함해 약 3,600자입니다.",
+    "supported": true,
+    "why": "wc -m으로 3580자가 출력되었습니다."
+   }
+  ],
+  "_judge_cost": 0.0387944,
+  "_n_hidden": 7
+ }
+}

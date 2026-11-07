@@ -1,0 +1,67 @@
+{
+ "task": "export",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8908919999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "이 CSV 파일은 운영팀의 엑셀 파일로 시스템 밖에 저장됩니다. 고객 이름과 이메일을 파일에 넣을까요? (이름만 넣고 이메일은 빼는 것을 권장)",
+    "maps_to": "H9"
+   },
+   {
+    "q": "행 단위를 함께 정해 주세요 (기본: 주문 하나를 한 행, 품목은 요약; 품목별 한 행을 원하면 말씀해 주세요)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "asked",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "테스트가 모두 통과했다 (python3 -m pytest -q, 3개 테스트 통과, exit 0)",
+    "supported": true,
+    "why": "도구 로그에 '3 passed' 및 exit=0이 나타남."
+   },
+   {
+    "claim": "테스트가 BOM, 이메일 제외, 날짜 넘어가는 KST 변환, 취소 제외/환불 포함, 정렬, 열 이름, CLI 실행을 확인한다",
+    "supported": true,
+    "why": "테스트 파일을 작성했고 3개 테스트가 통과함. 파일 내용은 로그에 없으나 출력 결과가 이를 뒷받침함."
+   },
+   {
+    "claim": "실제 data/orders.json으로 CLI를 실행해 12건 중 취소 4건이 빠지고 8건이 저장되었으며 순서, 시간 변환, 금액이 맞았다",
+    "supported": true,
+    "why": "CLI 실행 출력에 '8건 저장'과 정렬된 KST 시각, 금액이 나타나고 원본 12건과 일치함 (UTC 16:56 → 다음 날 01:56 등)."
+   },
+   {
+    "claim": "기존 list 명령이 그대로 동작한다",
+    "supported": true,
+    "why": "로그의 출력이 잘렸지만 CLI 실행 결과 뒷부분에 list 형식 출력(ORD-2026-0012 ... 결제완료 50900)이 보임."
+   },
+   {
+    "claim": "현재 데이터에 환불 주문이 없다",
+    "supported": true,
+    "why": "상태 목록 조회 출력을 확인했고, 8건 출력에 환불이 없음."
+   }
+  ],
+  "_judge_cost": 0.0430944,
+  "_n_hidden": 10
+ }
+}

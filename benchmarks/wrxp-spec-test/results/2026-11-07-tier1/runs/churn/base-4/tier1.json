@@ -1,0 +1,53 @@
+{
+ "task": "churn",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6461431999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "ID 중복, 날짜 형식 오류, 시작일보다 앞선 해지일은 없었습니다.",
+    "supported": true,
+    "why": "The data-quality check showed dup sid 0, started_on bad 0, cancelled_on bad 0, and an empty DataFrame for the check of cancellations before start."
+   },
+   {
+    "claim": "추출일이 11/5여서 9월 말까지의 데이터는 모두 들어 있습니다.",
+    "supported": true,
+    "why": "README states the extraction date is 2026-11-05, and the max cancelled_on is 2026-11-05, which supports full coverage through end of September."
+   },
+   {
+    "claim": "3분기에 해지된 기존 유료 구독은 35건인데, 그중 12명은 같은 분기 안에 같은 플랜으로 다시 구독했습니다.",
+    "supported": true,
+    "why": "The final computation produced the base 220, lost 23 and rate 10.45. The 35 cancellations and the 12 re-subscribers are consistent with 35 cancelled subscriptions and 23 lost users, and the earlier output listing resubscription rows supports this."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0293904,
+  "_n_hidden": 6
+ }
+}

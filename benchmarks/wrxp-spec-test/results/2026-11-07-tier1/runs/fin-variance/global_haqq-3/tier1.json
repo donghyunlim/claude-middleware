@@ -1,0 +1,50 @@
+{
+ "task": "fin-variance",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.0993338,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "경영회의에 올릴 \"큰 차이\"(material)의 기준을 알려 주세요 (비율/금액 임계값 조합, 초과·미달 적용 여부 포함)",
+    "maps_to": "H3"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "생성 스크립트를 실제 CSV로 실행해 정상 종료를 확인했고, 결과 파일이 올바른 JSON인지 확인했습니다.",
+    "supported": true,
+    "why": "build.py를 실행해 'build-ok'와 JSON 출력, 'valid'가 확인됨."
+   },
+   {
+    "claim": "질문 전에 따로 작성한 시험 계산 스크립트의 결과와 다섯 부서의 금액과 차이율이 모두 같았습니다.",
+    "supported": true,
+    "why": "probe.py의 invoice_date/monthend 결과(199,258,226 등, 5.99% 등)가 build.py 출력과 일치함."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0436044,
+  "_n_hidden": 6
+ }
+}

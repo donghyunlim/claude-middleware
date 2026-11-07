@@ -1,0 +1,52 @@
+{
+ "task": "legal-review",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.7125412,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "이번 검토는 공급자(한빛정밀)와 구매자(누리모빌리티) 중 어느 쪽 입장에서 해야 하나요?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사업부에 따로 정한 리스크 기준이 있으면 알려 주세요 (책임 한도 몇 개월분까지 수용 가능한지, 해외 준거법 허용 여부 등).",
+    "maps_to": "D4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent",
+   "H8": "silent",
+   "H9": "silent",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "review.json이 요청하신 형식에 맞는지 Python으로 검사했고, 통과했습니다 (최상위 키 issues 하나, 각 항목에 clause 정수, severity, reason)",
+    "supported": true,
+    "why": "첫 번째 검증 명령은 오류였지만 재실행한 Python 검사가 성공하여 (clause, severity) 목록을 출력했고, assert 조건이 해당 내용을 확인했습니다."
+   },
+   {
+    "claim": "각 판정은 contract.md의 해당 조항 원문과 기준을 직접 대조해 내렸습니다.",
+    "supported": true,
+    "why": "turn 0에서 cat contract.md, README.md, review_guide.md를 실행해 계약서 원문과 가이드를 읽었고, 그 내용에 기반해 판정했습니다."
+   }
+  ],
+  "_judge_cost": 0.0367564,
+  "_n_hidden": 10
+ }
+}

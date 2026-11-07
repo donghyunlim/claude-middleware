@@ -1,0 +1,36 @@
+{
+ "task": "plan-rice",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.4,
+ "final_score": 1.0,
+ "cost": 0.5250425999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "12개 항목 모두 RICE 점수를 매겨 ranked.json에 높은 순으로 저장했다",
+    "supported": false,
+    "why": "The tool log shows the write of rice.py and a run that printed the ranked list and a JSON array, but the output is truncated and no step shows ranked.json being written or read back. A file save is not clearly confirmed."
+   }
+  ],
+  "_judge_cost": 0.029402400000000002,
+  "_n_hidden": 5
+ }
+}

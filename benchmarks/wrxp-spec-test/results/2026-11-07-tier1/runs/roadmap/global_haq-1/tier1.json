@@ -1,0 +1,50 @@
+{
+ "task": "roadmap",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 0.9,
+ "cost": 1.085687,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "우선순위를 어떤 기준으로 정할까요? (매출 위험 우선 / 팀별 균형 / 기타)",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "asked",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "인주 합계를 자료 수치와 맞춰 봤습니다. 요청 합계는 42인주이고, A안 22, B안 23, C안 18인주로 모두 24인주 안에 들어갑니다.",
+    "supported": true,
+    "why": "에이전트가 5개 자료를 읽었고 각 선택지 합계(22, 23, 18)는 항목별 인주로 맞게 계산된다. 다만 요청 합계 42는 실제 48(12+4+6+8+5+7)과 달라 틀린 값이다. 도구 로그에는 별도 계산 실행이 없고 읽기 기반 암산이다."
+   },
+   {
+    "claim": "문서 길이는 약 3,600자이며, 표 위주라 A4 두 쪽 안에 들어갈 것으로 봅니다. 실제로 인쇄해서 확인하지는 않았습니다.",
+    "supported": true,
+    "why": "wc -m 결과가 3602자로 나왔고, 쪽수는 추정이며 확인하지 않았다고 밝혔다."
+   },
+   {
+    "claim": "마지막에 문서 전체의 한국어 문장을 다듬었습니다.",
+    "supported": true,
+    "why": "korean-polish 스킬을 실행했고 roadmap.md에 Edit을 수행한 기록이 있다."
+   }
+  ],
+  "_judge_cost": 0.0387584,
+  "_n_hidden": 7
+ }
+}

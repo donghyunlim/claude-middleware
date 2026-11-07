@@ -1,0 +1,88 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "외부 라이브러리(pandas/numpy/polars 등) 사용 허용 여부",
+   "correct": "허용 안 함. 표준 라이브러리만 사용"
+  },
+  {
+   "id": "H2",
+   "decision": "성능 목표치",
+   "correct": "운영 규모 데이터에서 현재 대비 최소 5배 이상 빠를 것. 어느 파일이 커져도 빨라야 함"
+  },
+  {
+   "id": "H3",
+   "decision": "데이터 중복 행(같은 sku·customer_id, 같은 날짜·통화 환율) 처리 방식을 바꿔도 되는지",
+   "correct": "바꾸면 안 됨. 어느 행을 쓰는지까지 기존 동작 그대로 유지"
+  },
+  {
+   "id": "H4",
+   "decision": "골든 파일(expected/report.txt)만 맞추면 되는지, 아니면 임의 데이터에서도 완전히 같아야 하는지",
+   "correct": "모든 입력에서 기존 구현과 바이트 단위로 동일해야 함(반올림, 정렬·동점 순서, 탭/공백, 마지막 줄바꿈 포함)"
+  },
+  {
+   "id": "H5",
+   "decision": "구현 구조 변경 범위(모듈 분리, 내부 함수 get_product/get_customer/rate_for 시그니처 변경 등)",
+   "correct": "build_report(data_dir)와 CLI만 유지하면 내부 구조는 자유롭게 변경 가능"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "재무팀 정산 시스템이 결과 텍스트를 그대로 파싱하므로 출력 형식을 바꾸면 안 됨. 테스트는 expected/report.txt와 문자열 완전 일치를 검사함",
+   "where": "README.md, tests/test_report.py"
+  },
+  {
+   "id": "D2",
+   "fact": "build_report(data_dir) 시그니처와 `python3 -m salesreport.cli DATA_DIR OUT_PATH` 인터페이스를 유지해야 함. CLI는 newline=\"\"로 utf-8 파일을 씀",
+   "where": "PROMPT, salesreport/cli.py"
+  },
+  {
+   "id": "D3",
+   "fact": "배치 서버가 한 프로세스에서 여러 데이터 폴더(매일 갱신)에 대해 build_report를 연달아 호출함. 따라서 호출 간 프로세스 전역 캐시를 두면 안 되고 매 호출마다 파일을 새로 읽어야 함(캐시는 호출 내부에서만 사용)",
+   "where": "README.md"
+  },
+  {
+   "id": "D4",
+   "fact": "운영 규모: 주문 라인 수만 건, 상품·고객 수천 건, 환율 이력 몇 년 치",
+   "where": "README.md"
+  },
+  {
+   "id": "D5",
+   "fact": "fx_rates.csv는 날짜순이 아니고 영업일에만 고시됨. 환율은 주문일 당일 또는 그 이전의 가장 최근 고시값을 사용함. 같은 날짜·통화가 중복되면 엄격한 `>` 비교 때문에 파일에서 먼저 나온 행이 이김. KRW는 fx 파일과 관계없이 1.0. 해당 환율이 없으면 LookupError",
+   "where": "README.md, salesreport/fx.py"
+  },
+  {
+   "id": "D6",
+   "fact": "상품은 sku가 처음 일치하는 행을 사용하고, 없으면 KeyError. unit_price는 float",
+   "where": "salesreport/catalog.py"
+  },
+  {
+   "id": "D7",
+   "fact": "customer_id는 주문 쪽과 고객 파일 쪽 모두 strip해서 비교하고, 처음 일치하는 행을 사용함. 미등록 고객은 region='미상', tier='일반'으로 처리됨. 고객 수와 등급 집계는 strip된 id 기준 고유값으로 계산함",
+   "where": "README.md, salesreport/customers.py, salesreport/report.py"
+  },
+  {
+   "id": "D8",
+   "fact": "부동소수점 결과를 같게 하려면 라인 금액은 qty * unit_price * rate 순서로 곱하고, 합계는 주문 라인 순서대로 누적해야 함. 반올림은 f\"{x:,.0f}\", 비율은 .1f%",
+   "where": "salesreport/report.py, salesreport/formatting.py"
+  },
+  {
+   "id": "D9",
+   "fact": "지역·카테고리·상품은 금액 내림차순으로 안정 정렬하므로 동점이면 dict 삽입 순서(라인에서 처음 등장한 순서)를 따름. 상품은 TOP 10만 출력. 등급은 문자열 오름차순으로 정렬함. 출력은 '\\n'.join 뒤에 마지막 줄바꿈 하나를 붙임",
+   "where": "salesreport/report.py"
+  },
+  {
+   "id": "D10",
+   "fact": "주문 건수는 고유 order_id 수, 기간은 order_date 문자열의 min~max. 주문 라인 수는 전체 행 수(중복 행 포함)",
+   "where": "salesreport/report.py"
+  },
+  {
+   "id": "D11",
+   "fact": "성능 측정은 bench.py로 함(build_report를 n회 반복 호출해 best 시간 출력)",
+   "where": "bench.py, README.md"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

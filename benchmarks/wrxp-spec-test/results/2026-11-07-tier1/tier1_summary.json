@@ -1,0 +1,575 @@
+{
+ "conds": [
+  "base",
+  "global",
+  "global_haq",
+  "global_haqq",
+  "pstack",
+  "pstack_poteto"
+ ],
+ "n_runs": 360,
+ "metrics": {
+  "hidden_recall": {
+   "label": "숨은 결정 재현율(물음+공개)",
+   "unit": "pct",
+   "better": 1,
+   "base": {
+    "value": 0.7490476190476191,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.7052579365079366,
+    "ci_vs_base": [
+     -0.10529761904761906,
+     0.00678571428571429
+    ]
+   },
+   "global_haq": {
+    "value": 0.7453174603174604,
+    "ci_vs_base": [
+     -0.0815079365079365,
+     0.07333333333333335
+    ]
+   },
+   "global_haqq": {
+    "value": 0.8029761904761905,
+    "ci_vs_base": [
+     -0.03670634920634921,
+     0.12996031746031747
+    ]
+   },
+   "pstack": {
+    "value": 0.7557738095238096,
+    "ci_vs_base": [
+     -0.06374999999999999,
+     0.0888095238095238
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.6850793650793651,
+    "ci_vs_base": [
+     -0.16924603174603176,
+     0.028412698412698403
+    ]
+   }
+  },
+  "hidden_asked": {
+   "label": "숨은 결정을 물은 비율",
+   "unit": "pct",
+   "better": 1,
+   "base": {
+    "value": 0.0044444444444444444,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.02722222222222222,
+    "ci_vs_base": [
+     0.0,
+     0.059444444444444446
+    ]
+   },
+   "global_haq": {
+    "value": 0.12468253968253969,
+    "ci_vs_base": [
+     0.07587301587301587,
+     0.1661904761904762
+    ]
+   },
+   "global_haqq": {
+    "value": 0.1584722222222222,
+    "ci_vs_base": [
+     0.09603174603174602,
+     0.21047619047619046
+    ]
+   },
+   "pstack": {
+    "value": 0.02777777777777778,
+    "ci_vs_base": [
+     0.0033333333333333335,
+     0.05
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.02666666666666667,
+    "ci_vs_base": [
+     -0.0027777777777777775,
+     0.058333333333333334
+    ]
+   }
+  },
+  "hidden_silent": {
+   "label": "숨은 결정을 침묵한 비율",
+   "unit": "pct",
+   "better": -1,
+   "base": {
+    "value": 0.2453968253968254,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.28640873015873014,
+    "ci_vs_base": [
+     -0.009940476190476185,
+     0.10323412698412698
+    ]
+   },
+   "global_haq": {
+    "value": 0.2519047619047619,
+    "ci_vs_base": [
+     -0.07134920634920636,
+     0.07952380952380952
+    ]
+   },
+   "global_haqq": {
+    "value": 0.19424603174603175,
+    "ci_vs_base": [
+     -0.12753968253968256,
+     0.033174603174603155
+    ]
+   },
+   "pstack": {
+    "value": 0.23867063492063492,
+    "ci_vs_base": [
+     -0.0876388888888889,
+     0.056746031746031746
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.30936507936507934,
+    "ci_vs_base": [
+     -0.03250000000000001,
+     0.16932539682539682
+    ]
+   }
+  },
+  "disclosure": {
+   "label": "가정 공개율(묻지 않은 결정 중 공개)",
+   "unit": "pct",
+   "better": 1,
+   "base": {
+    "value": 0.7484920634920635,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.7004431216931217,
+    "ci_vs_base": [
+     -0.1084920634920635,
+     0.003293650793650781
+    ]
+   },
+   "global_haq": {
+    "value": 0.7231150793650793,
+    "ci_vs_base": [
+     -0.11368386243386244,
+     0.05480158730158731
+    ]
+   },
+   "global_haqq": {
+    "value": 0.787962962962963,
+    "ci_vs_base": [
+     -0.05700396825396824,
+     0.1203968253968254
+    ]
+   },
+   "pstack": {
+    "value": 0.753829365079365,
+    "ci_vs_base": [
+     -0.0600595238095238,
+     0.08371031746031746
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.681468253968254,
+    "ci_vs_base": [
+     -0.1765079365079365,
+     0.03242063492063492
+    ]
+   }
+  },
+  "q_count": {
+   "label": "납품 전 질문 수",
+   "unit": "num",
+   "better": 0,
+   "base": {
+    "value": 0.06666666666666667,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.21666666666666667,
+    "ci_vs_base": [
+     0.0,
+     0.4
+    ]
+   },
+   "global_haq": {
+    "value": 0.8333333333333334,
+    "ci_vs_base": [
+     0.48333333333333334,
+     1.0166666666666666
+    ]
+   },
+   "global_haqq": {
+    "value": 1.05,
+    "ci_vs_base": [
+     0.6333333333333333,
+     1.3333333333333333
+    ]
+   },
+   "pstack": {
+    "value": 0.21666666666666667,
+    "ci_vs_base": [
+     0.016666666666666666,
+     0.3
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.26666666666666666,
+    "ci_vs_base": [
+     -0.05,
+     0.5333333333333333
+    ]
+   }
+  },
+  "q_precision": {
+   "label": "질문 정밀도(숨은 결정을 짚은 질문)",
+   "unit": "pct",
+   "better": 1,
+   "base": {
+    "value": 0.5,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.675,
+    "ci_vs_base": [
+     0.0,
+     0.0
+    ]
+   },
+   "global_haq": {
+    "value": 0.9772727272727273,
+    "ci_vs_base": null
+   },
+   "global_haqq": {
+    "value": 0.9431818181818182,
+    "ci_vs_base": null
+   },
+   "pstack": {
+    "value": 0.8166666666666667,
+    "ci_vs_base": null
+   },
+   "pstack_poteto": {
+    "value": 0.8333333333333334,
+    "ci_vs_base": null
+   }
+  },
+  "q_waste": {
+   "label": "질문 낭비율(파일에 있는 것을 물음)",
+   "unit": "pct",
+   "better": -1,
+   "base": {
+    "value": 0.5,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.3,
+    "ci_vs_base": [
+     0.0,
+     0.0
+    ]
+   },
+   "global_haq": {
+    "value": 0.011363636363636364,
+    "ci_vs_base": null
+   },
+   "global_haqq": {
+    "value": 0.0,
+    "ci_vs_base": null
+   },
+   "pstack": {
+    "value": 0.05,
+    "ci_vs_base": null
+   },
+   "pstack_poteto": {
+    "value": 0.16666666666666666,
+    "ci_vs_base": null
+   }
+  },
+  "claims": {
+   "label": "검증 주장 수(첫 납품 보고)",
+   "unit": "num",
+   "better": 0,
+   "base": {
+    "value": 2.3,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 2.533333333333333,
+    "ci_vs_base": [
+     -0.03333333333333333,
+     0.48333333333333334
+    ]
+   },
+   "global_haq": {
+    "value": 3.6666666666666665,
+    "ci_vs_base": [
+     0.7666666666666667,
+     1.9
+    ]
+   },
+   "global_haqq": {
+    "value": 3.5833333333333335,
+    "ci_vs_base": [
+     0.55,
+     1.9666666666666666
+    ]
+   },
+   "pstack": {
+    "value": 2.6,
+    "ci_vs_base": [
+     -0.11666666666666667,
+     0.7666666666666667
+    ]
+   },
+   "pstack_poteto": {
+    "value": 3.5,
+    "ci_vs_base": [
+     0.7,
+     1.6666666666666667
+    ]
+   }
+  },
+  "fidelity": {
+   "label": "보고 충실도(도구 기록으로 뒷받침된 주장)",
+   "unit": "pct",
+   "better": 1,
+   "base": {
+    "value": 0.9134126984126985,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.9368055555555556,
+    "ci_vs_base": [
+     -0.039325396825396805,
+     0.10511904761904761
+    ]
+   },
+   "global_haq": {
+    "value": 0.8695767195767196,
+    "ci_vs_base": [
+     -0.153505291005291,
+     0.060357142857142866
+    ]
+   },
+   "global_haqq": {
+    "value": 0.8610824514991182,
+    "ci_vs_base": [
+     -0.12756834215167548,
+     0.008789682539682542
+    ]
+   },
+   "pstack": {
+    "value": 0.8040178571428571,
+    "ci_vs_base": [
+     -0.20625000000000002,
+     -0.01719812925170069
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.7826984126984127,
+    "ci_vs_base": [
+     -0.2390079365079365,
+     -0.04178571428571428
+    ]
+   }
+  },
+  "false_completion": {
+   "label": "완료 보고 후 결함 비율(첫 납품 < 100%)",
+   "unit": "pct",
+   "better": -1,
+   "base": {
+    "value": 0.7666666666666667,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.7333333333333333,
+    "ci_vs_base": [
+     -0.1,
+     0.03333333333333333
+    ]
+   },
+   "global_haq": {
+    "value": 0.5,
+    "ci_vs_base": [
+     -0.48333333333333334,
+     -0.06666666666666667
+    ]
+   },
+   "global_haqq": {
+    "value": 0.4166666666666667,
+    "ci_vs_base": [
+     -0.5666666666666667,
+     -0.13333333333333333
+    ]
+   },
+   "pstack": {
+    "value": 0.75,
+    "ci_vs_base": [
+     -0.11666666666666667,
+     0.08333333333333333
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.7,
+    "ci_vs_base": [
+     -0.2,
+     0.03333333333333333
+    ]
+   }
+  },
+  "one_shot": {
+   "label": "수정 1회 해결률",
+   "unit": "pct",
+   "better": 1,
+   "base": {
+    "value": 0.8846153846153846,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.8541666666666666,
+    "ci_vs_base": [
+     -0.08333333333333333,
+     0.041666666666666664
+    ]
+   },
+   "global_haq": {
+    "value": 0.8645833333333334,
+    "ci_vs_base": [
+     -0.125,
+     0.28125
+    ]
+   },
+   "global_haqq": {
+    "value": 0.7857142857142857,
+    "ci_vs_base": [
+     -0.25,
+     0.2857142857142857
+    ]
+   },
+   "pstack": {
+    "value": 0.8141025641025641,
+    "ci_vs_base": [
+     -0.19230769230769232,
+     0.0
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.8541666666666666,
+    "ci_vs_base": [
+     -0.1590909090909091,
+     0.11363636363636363
+    ]
+   }
+  },
+  "cost_per_success": {
+   "label": "첫 납품 성공 1건당 비용(USD)",
+   "unit": "usd",
+   "better": -1,
+   "base": {
+    "value": 3.2117482857142856,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 3.1880819,
+    "ci_vs_base": null
+   },
+   "global_haq": {
+    "value": 2.273228176666667,
+    "ci_vs_base": null
+   },
+   "global_haqq": {
+    "value": 1.9872566399999998,
+    "ci_vs_base": null
+   },
+   "pstack": {
+    "value": 3.796549826666667,
+    "ci_vs_base": null
+   },
+   "pstack_poteto": {
+    "value": 3.416657016666667,
+    "ci_vs_base": null
+   }
+  },
+  "data_def": {
+   "label": "데이터 답의 정의 명시율(기간·필터·단위·정의)",
+   "unit": "pct",
+   "better": 1,
+   "base": {
+    "value": 0.7916666666666666,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": 0.8541666666666666,
+    "ci_vs_base": [
+     0.0,
+     0.1875
+    ]
+   },
+   "global_haq": {
+    "value": 0.9583333333333334,
+    "ci_vs_base": [
+     -0.0625,
+     0.5625
+    ]
+   },
+   "global_haqq": {
+    "value": 0.9166666666666666,
+    "ci_vs_base": [
+     -0.1875,
+     0.5625
+    ]
+   },
+   "pstack": {
+    "value": 0.9375,
+    "ci_vs_base": [
+     0.0,
+     0.4375
+    ]
+   },
+   "pstack_poteto": {
+    "value": 0.9375,
+    "ci_vs_base": [
+     0.0,
+     0.4375
+    ]
+   }
+  },
+  "cite_valid": {
+   "label": "근거 위치(파일:줄) 유효율",
+   "unit": "pct",
+   "better": 1,
+   "base": {
+    "value": 1.0,
+    "ci_vs_base": null
+   },
+   "global": {
+    "value": null,
+    "ci_vs_base": null
+   },
+   "global_haq": {
+    "value": null,
+    "ci_vs_base": null
+   },
+   "global_haqq": {
+    "value": null,
+    "ci_vs_base": null
+   },
+   "pstack": {
+    "value": null,
+    "ci_vs_base": null
+   },
+   "pstack_poteto": {
+    "value": null,
+    "ci_vs_base": null
+   }
+  }
+ }
+}

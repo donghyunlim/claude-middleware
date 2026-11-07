@@ -1,0 +1,36 @@
+{
+ "task": "plan-rice",
+ "cond": "pstack",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.617943,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "user_research 열을 점수에 어떻게 반영할지(N 항목의 확신을 낮추는 규칙) 기준을 알려 달라",
+    "maps_to": "H1"
+   },
+   {
+    "q": "B-04와 B-05 동점을 어떻게 처리할지 (ID 순서로 임시 처리했다며 결정 요청)",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "asked",
+   "H5": "disclosed"
+  },
+  "verification_claims": [],
+  "_judge_cost": 0.0366944,
+  "_n_hidden": 5
+ }
+}

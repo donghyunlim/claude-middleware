@@ -1,0 +1,46 @@
+{
+ "task": "plan-rice",
+ "cond": "global_haq",
+ "delivery_turn": 0,
+ "delivery_score": 0.0,
+ "final_score": 1.0,
+ "cost": 1.4424744000000003,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "user_research가 N인 항목(B-02, B-07, B-09, B-10)의 Confidence를 낮춰 반영할까요? (그대로 vs 50% 상한 vs 다른 규칙)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "계산 규칙 후보 두 가지를 미리 돌려 보았다 (Confidence 그대로 vs 50% 상한 시나리오 결과 제시)",
+    "supported": true,
+    "why": "probe.py 실행 결과가 두 시나리오의 순위와 점수(B-02 16200 vs 9000, B-03 1위 등)를 보여 주며 메시지의 수치와 일치한다."
+   },
+   {
+    "claim": "README 기준에 따라 1주는 0.25개월, 10일은 0.5개월로 본다 (README를 읽고 기준 적용)",
+    "supported": true,
+    "why": "README.md를 읽었고 1개월=4주=20영업일 기준이 확인된다. 단순 파일 읽기를 넘어 기준을 적용한 것이며 로그와 맞는다."
+   }
+  ],
+  "_judge_cost": 0.0304104,
+  "_n_hidden": 5
+ }
+}

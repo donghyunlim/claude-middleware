@@ -1,0 +1,36 @@
+{
+ "task": "sales-quote",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.3333333333333333,
+ "final_score": 1.0,
+ "cost": 0.7832422000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 0.8888888888888888
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "공급가액 49,032,000원은 천 원 단위로 떨어져서 끝전 절사가 생기지 않았다",
+    "supported": true,
+    "why": "The python run computed supply_amount 49,032,000 from subtotal 60,840,000 less 11,808,000 discount, which is a multiple of 1,000. The output shows no truncation was needed."
+   }
+  ],
+  "_judge_cost": 0.0297584,
+  "_n_hidden": 5
+ }
+}

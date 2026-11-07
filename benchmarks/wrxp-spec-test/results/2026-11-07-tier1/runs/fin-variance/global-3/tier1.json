@@ -1,0 +1,55 @@
+{
+ "task": "fin-variance",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.41330740000000005,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "silent",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Recomputing actuals at budget FX rate (1,350) gives 개발본부 variance +688만 원 (+3.66%), other departments' material judgments unchanged",
+    "supported": true,
+    "why": "The calc.py run output includes a 'budget1350' scenario showing 개발본부 +6,880,949 (3.66%); other departments' material flags remain the same under the ±10%/5M criterion."
+   },
+   {
+    "claim": "Paid-date basis aggregation gives 개발본부 +30% and 재무팀 −30%",
+    "supported": true,
+    "why": "The calc.py run output includes a 'paid' scenario showing 개발본부 30.30% and 재무팀 -29.59%."
+   },
+   {
+    "claim": "Cancelled vouchers excluded: 2 items (E0034 Datadog USD 4,200 and E0069 박람회조직위 12.4M KRW)",
+    "supported": false,
+    "why": "E0034 was visible in the tool output, but E0069 and the total count of cancelled items never appeared in the shown output, which was truncated; the script presumably filtered by status, but the log doesn't confirm the specific count or E0069 details."
+   },
+   {
+    "claim": "Marketing overage largely driven by a single Sep 26 Google Ads USD 15,800 voucher (~21.8M KRW)",
+    "supported": false,
+    "why": "The visible tool output does not show this voucher (the expenses listing was truncated), and no run in the log isolates it, so the claim cannot be confirmed from the log."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0423604,
+  "_n_hidden": 6
+ }
+}

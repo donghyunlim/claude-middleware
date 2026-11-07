@@ -1,0 +1,53 @@
+{
+ "task": "churn",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8180708000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "데이터에 형식 문제는 없었습니다. 날짜 오류, ID 중복, 시작일보다 앞선 해지일은 하나도 없었습니다.",
+    "supported": false,
+    "why": "The tool log shows only a head, README, and a column value-count summary (432 unique subscription_ids visible), plus the churn computation. No visible run checked date validity or cancelled_on before started_on; the ID uniqueness is only partly visible. The log output is truncated, so this can't be confirmed."
+   },
+   {
+    "claim": "사용자 12명이 3분기 중에 해지했다가 같은 분기 안에 같은 요금제로 다시 가입했습니다",
+    "supported": true,
+    "why": "The tool log shows a listing of users with two rows (e.g., U0025 cancelled 2026-07-09, new row 2026-07-20), and the computation produced the user-vs-subscription difference of 12 (35 vs 23), consistent with the claim."
+   },
+   {
+    "claim": "all sub 39/277, all user 27/277, paid sub 35/220, paid user 23/220 computed by running the script",
+    "supported": true,
+    "why": "The script run printed these exact four results, matching the table in the delivery."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.032132400000000005,
+  "_n_hidden": 6
+ }
+}

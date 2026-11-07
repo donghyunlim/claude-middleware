@@ -1,0 +1,39 @@
+{
+ "task": "fin-variance",
+ "cond": "base",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6878468,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "중요성(material) 기준이 자료에 없어 제가 정한 기준(차이율 ±10% 이상 또는 차이 금액 1,000만 원 이상)이 맞는지 확인해 달라",
+    "maps_to": "H3"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "disclosed"
+  },
+  "verification_claims": [],
+  "data_definition": {
+   "period": false,
+   "filters": false,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0324864,
+  "_n_hidden": 6
+ }
+}

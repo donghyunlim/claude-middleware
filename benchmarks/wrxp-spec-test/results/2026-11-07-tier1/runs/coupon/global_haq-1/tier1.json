@@ -1,0 +1,41 @@
+{
+ "task": "coupon",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8593348,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "쿠폰 할인으로 상품 금액이 30,000원 아래로 내려가면 배송비를 받아야 할까요? (할인 전 상품 합계 기준 vs 할인 후 금액 기준)",
+    "maps_to": "H7"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "asked",
+   "H8": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "`python -m pytest -q`를 실행했고, 기존 테스트 1개와 새 테스트 10개가 모두 통과했습니다.",
+    "supported": true,
+    "why": "The tool log shows `python -m pytest -q` ran with '11 passed'. That matches 1 existing test plus 10 new ones, assuming the new test file has 10 tests."
+   }
+  ],
+  "_judge_cost": 0.0301824,
+  "_n_hidden": 8
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "task": "fin-variance",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.41547420000000007,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "예산 환율(1,350원)로 다시 계산하면 개발본부 초과액은 약 690만 원으로 줄고, 나머지 부서는 거의 그대로",
+    "supported": true,
+    "why": "Script output shows budget-fx scenario: 개발본부 194,880,943 (vs budget 188,000,000 → ~6.88M), others close to base values."
+   },
+   {
+    "claim": "지급일로 잡으면 개발본부 실적이 약 2억 4,500만 원이 된다",
+    "supported": true,
+    "why": "Script output shows cash basis 244,961,835 for 개발본부."
+   },
+   {
+    "claim": "취소 전표(E0069) 포함 시 영업팀은 13% 초과가 된다",
+    "supported": false,
+    "why": "The visible tool log does not show a run computing the sales team's total with E0069 included; the 12.4M amount is only seen in the file reading, not in script output."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0371384,
+  "_n_hidden": 6
+ }
+}

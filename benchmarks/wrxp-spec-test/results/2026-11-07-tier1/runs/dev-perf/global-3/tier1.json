@@ -1,0 +1,68 @@
+{
+ "task": "dev-perf",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8979428000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "운영 규모 데이터에서 약 15분 걸리던 작업이 0.16초로 줄었다 (합성 40,000라인: 899.9s → 0.158s)",
+    "supported": true,
+    "why": "원본 실행은 백그라운드로 돌려 결과 파일을 얻었고(big.orig), bench.py로 새 구현 best 0.158s를 측정했다. 원본 시간 899.9s는 로그에 직접 찍히지 않았지만 출력 파일 비교(BIG_IDENTICAL)는 원본 실행이 완료되었음을 뒷받침한다. 합성 데이터이며 본문에서도 그렇게 밝혔다."
+   },
+   {
+    "claim": "출력은 원본과 바이트 단위까지 같다 (합성 중간·운영 규모 데이터)",
+    "supported": true,
+    "why": "cmp big.orig.txt big.new.txt 후 BIG_IDENTICAL, 중간 규모는 MID_IDENTICAL 출력이 있다."
+   },
+   {
+    "claim": "data/ 기준 pytest 1 passed, expected/report.txt와 같음",
+    "supported": true,
+    "why": "pytest 출력이 '1 passed'였다."
+   },
+   {
+    "claim": "data/ 500라인 원본 0.336s → 변경 후 0.002s",
+    "supported": true,
+    "why": "초기 bench에서 원본 0.336s 추정 가능한 출력이 있었고 변경 후 bench.py data 3이 best 0.002s를 출력했다."
+   },
+   {
+    "claim": "합성 중간 규모(3,000라인) 원본 26.8s → 0.054s",
+    "supported": true,
+    "why": "원본 실행 26.765s, 새 구현 0.054s 출력이 로그에 있다."
+   },
+   {
+    "claim": "경계 사례 7가지가 원본과 결과 또는 예외 메시지가 같았다",
+    "supported": true,
+    "why": "edge.py 실행 결과가 SAME 7건과 ALL SAME으로 출력됐다."
+   },
+   {
+    "claim": "CLI로 만든 출력 파일도 expected/report.txt와 같았다",
+    "supported": false,
+    "why": "로그에는 CLI_OK만 있고, 그 출력 파일을 expected/report.txt와 비교한 결과는 보이지 않는다. 큰 합성 데이터에는 expected가 해당하지 않는다."
+   },
+   {
+    "claim": "합성 데이터에 중복 SKU·고객, 공백 ID, 미등록 고객, 같은 날 중복 환율, 날짜순이 아닌 환율 파일을 넣었다",
+    "supported": true,
+    "why": "gen.py를 작성해 실행했고, 이후 원본과 비교한 결과가 동일했다. 다만 생성기 내용 자체는 로그에서 확인할 수 없다."
+   }
+  ],
+  "_judge_cost": 0.0592744,
+  "_n_hidden": 5
+ }
+}

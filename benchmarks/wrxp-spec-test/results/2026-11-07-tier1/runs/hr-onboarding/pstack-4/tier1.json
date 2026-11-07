@@ -1,0 +1,47 @@
+{
+ "task": "hr-onboarding",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.2,
+ "final_score": 1.0,
+ "cost": 0.7704716,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 확인: 모든 날짜가 날짜순이고 평일이며 휴무일이 아님",
+    "supported": true,
+    "why": "A python3 -I validation script was run after writing the file, checking dates against the holidays CSV; the output began with 'security_training 9', consistent with a passing run."
+   },
+   {
+    "claim": "type은 지정하신 8개 중에서만 썼음",
+    "supported": true,
+    "why": "The validation script defined the allowed type set (ok={'security_training','orientation','setup','mentor_1on1','retr...) and ran against the file."
+   },
+   {
+    "claim": "첫날 첫 일정은 보안 교육임",
+    "supported": true,
+    "why": "The script output starts with 'security_training', showing the first item of the first day is security_training."
+   }
+  ],
+  "_judge_cost": 0.0253384,
+  "_n_hidden": 6
+ }
+}

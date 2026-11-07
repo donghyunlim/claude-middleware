@@ -1,0 +1,60 @@
+{
+ "task": "churn",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.0803695999999998,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "이사회 보고나 기존 KPI 문서에서 이미 쓰는 이탈률 정의가 있나요? 있으면 그 정의를 알려 주세요. (없으면 ① 유료만 15.91%로 저장, 재구독자 제외를 원하면 ②)",
+    "maps_to": "none"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "계산 스크립트를 subscriptions.csv에 실제로 실행했다",
+    "supported": true,
+    "why": "churn.py를 subscriptions.csv에 대해 실행한 로그가 있고 재구독자 목록과 간격이 출력됨"
+   },
+   {
+    "claim": "결과를 가를 수 있는 경계 사례를 확인했고, 6/30 해지 유료, 7/1 시작 유료, 무료 체험 재구독 사례가 모두 0건",
+    "supported": false,
+    "why": "로그에는 재구독 간격 출력만 보이고 경계 사례 건수를 출력한 결과가 나타나지 않음. 스크립트 내용이 로그에 없어 확인 불가"
+   },
+   {
+    "claim": "저장한 answer.json을 다시 읽어 JSON 형식이 올바른 것을 확인했다",
+    "supported": true,
+    "why": "python json.load로 answer.json을 읽어 {'churn_rate_pct': 10.45}가 출력됨"
+   },
+   {
+    "claim": "9월 말 해지 사용자의 30일 재구독 기간(10월까지)이 데이터에 모두 들어 있다(추출일 2026-11-05)",
+    "supported": true,
+    "why": "README에서 추출일 2026-11-05를 읽었고 이는 10/30보다 뒤임"
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0427684,
+  "_n_hidden": 6
+ }
+}

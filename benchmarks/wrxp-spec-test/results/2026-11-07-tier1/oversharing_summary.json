@@ -1,0 +1,50 @@
+{
+ "global": {
+  "runs": 11,
+  "asked": 9,
+  "revealed": 39,
+  "revealed_asked": 9,
+  "revealed_mentioned": 21,
+  "revealed_unprompted": 9
+ },
+ "global_haq": {
+  "runs": 40,
+  "asked": 42,
+  "revealed": 244,
+  "revealed_asked": 42,
+  "revealed_mentioned": 127,
+  "revealed_unprompted": 75
+ },
+ "global_haqq": {
+  "runs": 44,
+  "asked": 60,
+  "revealed": 255,
+  "revealed_asked": 60,
+  "revealed_mentioned": 118,
+  "revealed_unprompted": 77
+ },
+ "pstack_poteto": {
+  "runs": 9,
+  "asked": 11,
+  "revealed": 58,
+  "revealed_asked": 11,
+  "revealed_mentioned": 41,
+  "revealed_unprompted": 6
+ },
+ "base": {
+  "runs": 5,
+  "asked": 4,
+  "revealed": 16,
+  "revealed_asked": 4,
+  "revealed_mentioned": 8,
+  "revealed_unprompted": 4
+ },
+ "pstack": {
+  "runs": 7,
+  "asked": 9,
+  "revealed": 23,
+  "revealed_asked": 9,
+  "revealed_mentioned": 13,
+  "revealed_unprompted": 1
+ }
+}

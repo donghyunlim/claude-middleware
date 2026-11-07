@@ -1,0 +1,62 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9194730000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "신입 엔지니어분의 입사일(첫 출근일)이 언제인가요?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사무실·재택 요일은 정해진 것이 있으면 알려 주세요.",
+    "maps_to": "H3"
+   },
+   {
+    "q": "멘토 1:1 주기는 정해진 것이 있으면 알려 주세요.",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 파일을 검사해 JSON 형식이 올바르고, 날짜가 중복 없이 날짜순으로 정렬되어 있음을 확인했다",
+    "supported": true,
+    "why": "Python 검증 스크립트가 json.load로 파일을 읽고 날짜별 출력을 냈으며, 날짜 순서대로 중복 없이 출력됨. 스크립트 전체는 잘렸지만 실행 결과와 일치함."
+   },
+   {
+    "claim": "주말과 휴무일이 포함되지 않았음을 스크립트로 확인했다",
+    "supported": true,
+    "why": "스크립트가 휴무일 CSV를 읽고 요일(Mon, Tue 등)을 출력했으며, 출력된 9개 날짜에 주말과 12-11이 없음."
+   },
+   {
+    "claim": "location이 office나 remote 중 하나이고 item type이 지정된 8개 중 하나임을 확인했다",
+    "supported": true,
+    "why": "스크립트에 허용 type 집합이 정의되어 있고 location 값이 출력에 나타남. 오류 없이 통과한 것으로 보임."
+   },
+   {
+    "claim": "첫날의 첫 항목은 보안 교육임을 확인했다",
+    "supported": true,
+    "why": "출력 마지막 줄에 'first item day1: security_training OK'가 있음."
+   }
+  ],
+  "_judge_cost": 0.0351524,
+  "_n_hidden": 6
+ }
+}

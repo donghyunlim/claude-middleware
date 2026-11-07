@@ -1,0 +1,50 @@
+{
+ "task": "churn",
+ "cond": "global",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6908555999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Max resubscription gap was U0002 with 25 days; no users near the 30-day boundary, so inclusivity of day 30 does not affect the result",
+    "supported": true,
+    "why": "Turn 1 run printed gaps 25-35 near boundary [('U0002','2026-08-20',25)] and the sorted gap list tops out at 25."
+   },
+   {
+    "claim": "Re-subscribers: all 12 returned to paid subscriptions, none via free trial",
+    "supported": false,
+    "why": "The turn 1 output shows 12 resubs counted within 30 days, but it does not show a separate check that none of them were trial subscriptions. The turn 0 output only shows 'trial users with paid too set()', which is not the same check."
+   },
+   {
+    "claim": "Data is an 11/5 extract, so 30 days have elapsed for 9/30 cancellations; latest start date is 9/29 and no re-subscriptions occurred after October",
+    "supported": true,
+    "why": "README states the 11/5 extraction date and the date range check printed a max start of 2026-09-29, so no starts after that date appear in the data."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0339164,
+  "_n_hidden": 6
+ }
+}

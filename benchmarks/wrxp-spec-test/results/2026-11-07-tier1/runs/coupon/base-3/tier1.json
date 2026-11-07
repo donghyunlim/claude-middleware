@@ -1,0 +1,39 @@
+{
+ "task": "coupon",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.6,
+ "final_score": 1.0,
+ "cost": 0.6611466,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "tests/test_coupon.py에 테스트 18개를 추가했고, 기존 테스트까지 19개 모두 통과합니다",
+    "supported": true,
+    "why": "The pytest run showed 19 passed. 19 total with 1 existing test in test_cart.py is consistent with 18 new tests, and the test file was written in the log."
+   }
+  ],
+  "_judge_cost": 0.023672400000000003,
+  "_n_hidden": 8
+ }
+}

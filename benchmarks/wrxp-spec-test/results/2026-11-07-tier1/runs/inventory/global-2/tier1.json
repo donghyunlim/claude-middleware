@@ -1,0 +1,33 @@
+{
+ "task": "inventory",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.6666666666666666,
+ "final_score": 1.0,
+ "cost": 0.8123221999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "python3 -m pytest -q was run and all tests passed (1 existing + 4 new = 5 passed)",
+    "supported": true,
+    "why": "The final Bash call ran python3 -m pytest -q and returned '5 passed in 0.01s'. The initial run showed 1 passed, consistent with 4 tests added."
+   }
+  ],
+  "_judge_cost": 0.0265944,
+  "_n_hidden": 2
+ }
+}

@@ -1,0 +1,63 @@
+{
+ "task": "churn",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6652788,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "432행 모두 날짜 형식이 정상이고, 해지일이 시작일보다 빠른 행은 없다",
+    "supported": true,
+    "why": "Tool log shows 'bad dates []' and 'cancel<start []' over 432 rows."
+   },
+   {
+    "claim": "중복된 구독 ID가 없다",
+    "supported": true,
+    "why": "Tool log shows 'dup ids []'."
+   },
+   {
+    "claim": "7월 1일에 시작하거나 해지한 구독이 없어서 경계일 포함 여부가 결과에 영향이 없다",
+    "supported": true,
+    "why": "Tool log shows 'cancels on 07-01 0' and 'starts on 07-01 0' for both all and paid."
+   },
+   {
+    "claim": "answer.json에 {\"churn_rate_pct\": 10.45}를 저장했다",
+    "supported": true,
+    "why": "printf wrote the file and cat showed the content."
+   },
+   {
+    "claim": "정의별 결과 비교 표(23/220, 35/220, 27/277, 39/277)",
+    "supported": true,
+    "why": "Tool log output shows paid 35/220 15.91 and 23/220 10.45, all 39/277 14.08 and 27/277 9.75."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0286264,
+  "_n_hidden": 6
+ }
+}

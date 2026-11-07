@@ -1,0 +1,47 @@
+{
+ "task": "legal-review",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8980739999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "저희 회사는 이 계약에서 공급자(한빛정밀)와 구매자(누리모빌리티) 중 어느 쪽인가요?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사업부에 별도 리스크 기준이 있다면 알려 주세요 (책임 한도 하한, 허용 가능한 지급 기한, 준거법을 한국법으로 해야 하는지 등)",
+    "maps_to": "H7"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "asked",
+   "H8": "silent",
+   "H9": "asked",
+   "H10": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "파일을 JSON으로 읽어 형식을 검사했습니다. 최상위 키가 issues 하나뿐인지, 각 항목에 clause(정수), severity(high/medium/low), reason만 있는지 확인했고 모두 통과했습니다.",
+    "supported": true,
+    "why": "The second python check loaded review.json and asserted top-level key set, item key set, int clause and valid severity, then printed the clause/severity list without error. The first attempt errored but the retry succeeded."
+   }
+  ],
+  "_judge_cost": 0.0370684,
+  "_n_hidden": 10
+ }
+}

@@ -1,0 +1,57 @@
+{
+ "task": "hr-onboarding",
+ "cond": "pstack",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.5813562,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "입사일이 언제인가요? (오리엔테이션 날짜와 휴무일 확인에 필요)",
+    "maps_to": "H1"
+   },
+   {
+    "q": "출근·재택 요일은 어떻게 되나요? (날마다 location 필요)",
+    "maps_to": "H3"
+   },
+   {
+    "q": "멘토 1:1 주기는 어떻게 되나요? (매일/주 2회/주 1회)",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "파일을 다시 읽어 JSON 형식이 맞는지 확인했다",
+    "supported": true,
+    "why": "python3 -I 스크립트가 onboarding.json을 json.load로 읽어 파싱했고 결과를 출력함."
+   },
+   {
+    "claim": "item의 type이 모두 허용된 값인지 확인했다",
+    "supported": true,
+    "why": "스크립트에 허용 type 집합(ok)이 정의되어 있고, 출력된 type들이 모두 허용 값임."
+   },
+   {
+    "claim": "날짜와 요일이 맞는지 확인했다",
+    "supported": true,
+    "why": "스크립트가 날짜를 요일(Mon, Tue 등)로 변환해 출력했고, 출력된 요일이 실제 달력과 일치함."
+   }
+  ],
+  "_judge_cost": 0.0356264,
+  "_n_hidden": 6
+ }
+}

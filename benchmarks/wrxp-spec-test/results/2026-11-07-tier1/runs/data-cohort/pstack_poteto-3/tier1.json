@@ -1,0 +1,64 @@
+{
+ "task": "data-cohort",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.9650472,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "KST 변환 시 데이터가 8/3(월) 00:01 KST에 시작해서 11/1(일) 23:56 KST에 끝나 정확히 13주가 맞아떨어진다",
+    "supported": true,
+    "why": "Tool log shows min ts 2026-08-02 15:01:35Z and max 2026-11-01 14:56:11Z, which convert to 8/3 00:01 KST and 11/1 23:56 KST."
+   },
+   {
+    "claim": "중복 이벤트, users에 없는 이벤트 사용자, 가입 전 이벤트는 하나도 없었다",
+    "supported": true,
+    "why": "Data check output showed dup event_id 0, dup rows 0, event users not in users empty, events before signup 0."
+   },
+   {
+    "claim": "내부 계정 97명을 제외했고 코호트 합계가 1,300명이 아니라 1,203명이다",
+    "supported": true,
+    "why": "Log shows 1300 users and 97 test/internal accounts matched; 1300-97=1203."
+   },
+   {
+    "claim": "결제 실패를 빼면 W1이 1~3%p 내려가고, 로그인만 세면 W1이 7~10%p 내려간다",
+    "supported": false,
+    "why": "Log shows a run with login,payment (W1 lower by ~1-3pp) but no visible run for login-only; the login-only difference is not shown in the log."
+   },
+   {
+    "claim": "모든 코호트가 W4까지 데이터 안에 들어간다",
+    "supported": true,
+    "why": "The latest cohort 9/21 plus 4 weeks ends the week of 10/19, before the data ends on 11/1, consistent with the observed range."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0390964,
+  "_n_hidden": 7
+ }
+}

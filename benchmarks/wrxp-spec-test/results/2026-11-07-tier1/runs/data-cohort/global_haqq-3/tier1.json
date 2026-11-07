@@ -1,0 +1,56 @@
+{
+ "task": "data-cohort",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.3356963999999996,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "그 주에 '활동했다(잔존)'로 칠 이벤트를 어디까지로 할까요? (login만 / login+payment / login+payment+payment_failed)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "별도 방식으로 다시 계산한 값과 모든 셀이 일치했다 (pandas 없이 표준 csv/datetime으로 재집계, 헤더·코호트 순서·cohort_size·W1~W4 32개 셀 일치, 불일치 0개, exit 0)",
+    "supported": true,
+    "why": "check.py 실행 로그에 header, rows 8, mismatches 0, exit=0이 나옴. 8행×4개 W 셀=32개와 일치."
+   },
+   {
+    "claim": "결제 데이터는 10/26 주까지 있고 마지막 코호트(09-21)의 W4인 10/19 주까지 데이터가 모두 있어 덜 채워진 셀이 없다",
+    "supported": true,
+    "why": "retention.py 출력에 max payment week 2026-10-26, last cohort W4 week 2026-10-19가 나옴."
+   },
+   {
+    "claim": "테스트 계정 97명을 코호트와 결제 집계에서 제외했다",
+    "supported": true,
+    "why": "retention.py 출력에 excluded test users 97이 나오고 probe에서 test 44 + ourapp 53으로 확인됨."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0495264,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,55 @@
+{
+ "task": "fin-variance",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.0756476000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "material(경영회의에 올릴 차이)의 기준을 어떻게 잡을지: 차이율 절댓값 10% 이상, 차이 금액 절댓값 500만 원 이상, 또는 두 조건 모두 만족 등 회사 기준이 있는지",
+    "maps_to": "H3"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "계산 스크립트는 오류 없이 끝났고, 실적이 있는 부서와 예산표의 부서가 정확히 일치했습니다.",
+    "supported": true,
+    "why": "build.py 실행이 성공하여 부서별 결과를 출력했고, 5개 부서가 예산표와 동일하게 나왔습니다."
+   },
+   {
+    "claim": "집계된 전표는 개발본부 29건, 마케팅팀 15건, 영업팀 14건, 인사팀 10건, 재무팀 6건입니다.",
+    "supported": true,
+    "why": "build.py 출력에 부서별 건수 29, 15, 14, 10, 6이 나와 있습니다."
+   },
+   {
+    "claim": "첫 확인 때 다른 방식으로 따로 계산한 값과 다섯 부서 모두 같은 결과가 나왔습니다.",
+    "supported": true,
+    "why": "probe.py가 송장일·월말 환율 기준으로 계산한 값이 build.py 결과와 다섯 부서 모두 일치합니다."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0433884,
+  "_n_hidden": 6
+ }
+}

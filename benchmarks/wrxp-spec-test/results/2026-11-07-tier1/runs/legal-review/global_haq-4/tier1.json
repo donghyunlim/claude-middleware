@@ -1,0 +1,43 @@
+{
+ "task": "legal-review",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.7968998,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "우리 회사는 공급자(주식회사 한빛정밀)와 구매자(주식회사 누리모빌리티) 중 어느 쪽인가요?",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "파일을 JSON으로 읽어 형식을 검사했습니다. 최상위 키가 issues 하나이고, 각 항목의 clause가 정수이며, severity가 high/medium/low 중 하나인지 확인했고 모두 통과했습니다.",
+    "supported": true,
+    "why": "Tool log shows a python3 -I script loading review.json, asserting top-level key set == {'issues'}, item keys, int clause, and severity in allowed values, and it output the clause/severity list without assertion errors."
+   }
+  ],
+  "_judge_cost": 0.0349524,
+  "_n_hidden": 10
+ }
+}

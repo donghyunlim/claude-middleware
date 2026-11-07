@@ -1,0 +1,59 @@
+{
+ "task": "data-cohort",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.8911156,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "KST로 보면 가입이 8/3(월) 00:01부터 9/27(일) 23:41까지 딱 8주에 걸쳐 있다",
+    "supported": true,
+    "why": "Tool log shows KST signup range 2026-08-03 00:01:35 to 2026-09-27 23:41:33."
+   },
+   {
+    "claim": "가장 늦은 코호트의 W4 주(10/19~25)까지 데이터가 다 들어와 있어서 아직 덜 찬 칸은 없다",
+    "supported": true,
+    "why": "Log shows last observed week (KST) 2026-10-26 and event max 2026-11-01 KST, so the 9/21 cohort's W4 week (10/19~25) is fully covered."
+   },
+   {
+    "claim": "test_ 접두 ID와 @ourapp.kr 계정 97명을 제외했다",
+    "supported": true,
+    "why": "Log shows 'excluded 97' (44 test ids + 53 ourapp), and the cohort sizes sum to 1,203 = 1300 - 97."
+   },
+   {
+    "claim": "로그인만으로 정의하면 W1은 0.75~0.80, W4는 0.59~0.72 정도이며 별도 파일로 저장했다",
+    "supported": false,
+    "why": "The log shows login-only output only partially (truncated); the saved login_only.csv write is not visible in the tool log, and the stated ranges cannot be confirmed from what is shown."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0369844,
+  "_n_hidden": 7
+ }
+}

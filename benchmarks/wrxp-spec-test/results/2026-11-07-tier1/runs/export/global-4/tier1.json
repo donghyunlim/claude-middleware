@@ -1,0 +1,46 @@
+{
+ "task": "export",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.2222222222222222,
+ "final_score": 1.0,
+ "cost": 0.8586081999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "테스트는 python3 -m pytest -q로 돌렸고 기존 1개와 새로 추가한 4개를 합쳐 5개가 모두 통과했습니다(exit 0)",
+    "supported": true,
+    "why": "Tool log shows pytest run with '5 passed' and exit=0; one existing test plus the new test file is consistent."
+   },
+   {
+    "claim": "실제 데이터로 내보내 보니 12건이 정상적으로 저장되었습니다",
+    "supported": true,
+    "why": "The CLI export was run on the real data and printed '12건을 ... 저장했습니다' with CSV output shown."
+   }
+  ],
+  "_judge_cost": 0.0324764,
+  "_n_hidden": 10
+ }
+}

@@ -1,0 +1,69 @@
+{
+ "task": "data-cohort",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.6906622,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "KST로 보면 가입이 8/3(월) 00시부터 9/27(일) 23시 사이에 딱 맞게 들어간다",
+    "supported": true,
+    "why": "Tool log shows signup min 2026-08-02T15:01Z (=KST 8/3 00:01) and max 2026-09-27T14:41Z (=KST 9/27 23:41), consistent with the claim."
+   },
+   {
+    "claim": "테스트 계정 97명 제외 (test_ 44명, @ourapp.kr 53명)",
+    "supported": true,
+    "why": "Tool log shows test ids 44, ourapp 53, and 'excluded 97'."
+   },
+   {
+    "claim": "결제 시도(payment_failed)가 로그인과 같은 날 함께 찍힌 경우가 10% 남짓",
+    "supported": true,
+    "why": "Tool log shows a same-day ratio for payment_failed of 0.106 vs login."
+   },
+   {
+    "claim": "기준을 바꾸면 결과가 달라진다: payment_failed 포함 시 셀당 1~6%p 상승, login만 세면 5~9%p 하락, 7일 롤링 시 W1 4~12%p 하락",
+    "supported": false,
+    "why": "The visible log shows a rolling-window variant, but no payment_failed-included run or login-only run is visible, and the specific ranges cannot be verified from the log."
+   },
+   {
+    "claim": "마지막 코호트(9/21)도 W4까지 관측 기간 안에 들어가서 빈 칸이 없다",
+    "supported": true,
+    "why": "Events extend to 2026-11-01, and the 9/21 cohort's W4 week ends 10/25 (KST), within the observed range."
+   },
+   {
+    "claim": "retention.csv를 저장했습니다",
+    "supported": true,
+    "why": "The final script output printed the CSV contents matching the delivered table."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0368404,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "task": "plan-rice",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.4,
+ "final_score": 1.0,
+ "cost": 0.5136092,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "12개 항목 전체를 RICE로 점수 매겨서 ranked.json에 높은 순으로 저장했어요 (script run writing ranked.json)",
+    "supported": true,
+    "why": "The tool log shows the script run against backlog.csv with ranked.json as an argument, and its output printed the 12 scored items in ranked order."
+   }
+  ],
+  "_judge_cost": 0.028680399999999998,
+  "_n_hidden": 5
+ }
+}

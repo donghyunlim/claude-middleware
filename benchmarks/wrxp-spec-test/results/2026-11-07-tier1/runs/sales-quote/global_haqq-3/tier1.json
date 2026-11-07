@@ -1,0 +1,51 @@
+{
+ "task": "sales-quote",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8888888888888888,
+ "final_score": 1.0,
+ "cost": 1.4986040000000003,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "견적서에 넣을 좌석 수를 몇 석으로 할까요? (메일에는 '100명은 넘을 것 같다'로만 되어 있음)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 계산해 파일을 만들었고, JSON이 올바른 형식인지 검사했습니다.",
+    "supported": true,
+    "why": "make_quote.py를 실행해 quote.json을 생성했고 출력 끝에 VALID가 찍혔습니다."
+   },
+   {
+    "claim": "각 행 금액은 수량 × 단가 × 개월 수로 계산했습니다.",
+    "supported": true,
+    "why": "출력 line_items의 금액이 120×13,900×36=60,048,000, 120×2,500×36=10,800,000, 1×1,800,000=1,800,000과 일치합니다."
+   },
+   {
+    "claim": "할인 계산과 천 원 미만 절사, 부가세 원 미만 절사도 정책 문서대로 적용된 것을 출력값으로 확인했습니다.",
+    "supported": true,
+    "why": "출력에 절사 전 58,478,400과 절사 후 58,478,000이 표시되었고 VAT 5,847,800도 출력되어 값이 확인됩니다."
+   }
+  ],
+  "_judge_cost": 0.03658839999999999,
+  "_n_hidden": 5
+ }
+}

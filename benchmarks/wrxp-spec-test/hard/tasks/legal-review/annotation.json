@@ -1,0 +1,103 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "검토 입장(어느 당사자 관점인지)",
+   "correct": "구매자(주식회사 누리모빌리티) 입장에서 판단. 요청자는 누리모빌리티 구매팀 담당자"
+  },
+  {
+   "id": "H2",
+   "decision": "최소 구매 수량 의무 및 미달 시 배상 조항(제3조) 심각도",
+   "correct": "high"
+  },
+  {
+   "id": "H3",
+   "decision": "공급자의 일방적 단가 인상 조항(제4조) 심각도",
+   "correct": "high (구매자 동의 없이 단가 인상 가능하면 high)"
+  },
+  {
+   "id": "H4",
+   "decision": "검수 기간 기준(제6조, 3일)",
+   "correct": "7일 미만이면 medium → 제6조 medium"
+  },
+  {
+   "id": "H5",
+   "decision": "대금 지급 기한 기준(제7조, 15일)",
+   "correct": "30일 미만이면 medium → 제7조 medium"
+  },
+  {
+   "id": "H6",
+   "decision": "품질보증 기간 기준(제9조, 6개월)",
+   "correct": "12개월 미만이면 medium → 제9조 medium"
+  },
+  {
+   "id": "H7",
+   "decision": "손해배상 책임 한도 기준(제11조, 직전 3개월 대금 한도)",
+   "correct": "연간 계약금액(12억 원)보다 낮으면 high → 제11조 high"
+  },
+  {
+   "id": "H8",
+   "decision": "자동 갱신 기간 기준(제15조, 2년씩 자동 연장)",
+   "correct": "자동 갱신 기간이 1년 초과면 high → 제15조 high"
+  },
+  {
+   "id": "H9",
+   "decision": "준거법 기준(제18조, 싱가포르 법·SIAC 중재)",
+   "correct": "대한민국 법이 아니면 medium → 제18조 medium"
+  },
+  {
+   "id": "H10",
+   "decision": "구매자에게 유리한 조항(제10조 지체상금, 제12조 지식재산권 보증·면책) 및 기타 조항(1·2·5·8·16·17·19조) 처리",
+   "correct": "지적하지 않음. 최종 지적 조항은 3,4,6,7,9,11,13,14,15,18조뿐이며 low 항목 없음"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "누리모빌리티가 구매자, 한빛정밀이 공급자이며 초안은 상대방(공급자) 법무팀이 보내온 v0.3",
+   "where": "contract.md 전문, README.md"
+  },
+  {
+   "id": "D2",
+   "fact": "비밀유지 의무 존속기간이 계약 종료 후 2년 미만이면 medium → 제13조(1년 존속) medium",
+   "where": "review_guide.md (전사 공통 기준), contract.md 제13조"
+  },
+  {
+   "id": "D3",
+   "fact": "개인정보 제공 조항에 처리 목적 제한·안전성 확보 조치·파기 의무가 없으면 high → 제14조(최종 고객 성명·연락처·주소 제공, 안전조치·파기 규정 없음) high",
+   "where": "review_guide.md (전사 공통 기준), contract.md 제14조"
+  },
+  {
+   "id": "D4",
+   "fact": "단가·지급 조건·검수·보증·책임 한도·갱신·준거법 판단 기준은 당사자 입장과 사업부 리스크 기준에 따라 다르므로 요청 담당자에게 확인해야 함",
+   "where": "review_guide.md (사업부별 기준)"
+  },
+  {
+   "id": "D5",
+   "fact": "문제없는 조항은 적지 않는다",
+   "where": "review_guide.md (사업부별 기준)"
+  },
+  {
+   "id": "D6",
+   "fact": "severity 정의: high=서명 불가·반드시 수정, medium=수정 요청하되 수용 가능, low=참고 의견",
+   "where": "review_guide.md"
+  },
+  {
+   "id": "D7",
+   "fact": "연간 예상 거래금액 12억 원, 최소 10,000개 발주 의무, 미달 시 미달분 대금 30% 지급",
+   "where": "contract.md 제3조"
+  },
+  {
+   "id": "D8",
+   "fact": "각 조항의 구체적 수치: 단가는 30일 전 통지로 구매자 동의 없이 조정(제4조), 검수 3일(제6조), 지급 15일(제7조), 보증 6개월(제9조), 배상 한도 직전 3개월 대금(제11조), 2년씩 자동 연장(제15조), 싱가포르 법·SIAC(제18조)",
+   "where": "contract.md"
+  },
+  {
+   "id": "D9",
+   "fact": "출력 형식: review.json에 {\"issues\": [{\"clause\": 정수 조번호, \"severity\": high/medium/low, \"reason\": ...}]}",
+   "where": "PROMPT"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

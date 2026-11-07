@@ -1,0 +1,30 @@
+{
+ "task": "sales-quote",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.3333333333333333,
+ "final_score": 1.0,
+ "cost": 1.11603,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 0.8888888888888888
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "silent",
+   "H5": "disclosed"
+  },
+  "verification_claims": [],
+  "_judge_cost": 0.0266284,
+  "_n_hidden": 5
+ }
+}

@@ -1,0 +1,60 @@
+{
+ "task": "churn",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.43119199999999996,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "No duplicate IDs, invalid dates, or cancel dates earlier than start dates were found.",
+    "supported": true,
+    "why": "The data-check command printed 'dup ids []', 'bad dates []', and 'cancel<start []'."
+   },
+   {
+    "claim": "No cancellations occurred on the quarter boundary dates (Jul 1, Sep 30, Oct 1), so boundary placement doesn't change the result.",
+    "supported": true,
+    "why": "The exploration output showed 'cancel on Jul1 []' and 'cancel Sep30/Oct1 []'."
+   },
+   {
+    "claim": "12 customers cancelled and re-subscribed within the quarter, all returning to the same plan within 2-25 days (e.g., U0007 cancelled Aug 14 and rejoined Aug 18).",
+    "supported": true,
+    "why": "The exploration output listed re-subscribing users, including U0007 with 2026-08-14 cancel and 2026-08-18 restart. The 12 count and the 2-25 day range and same-plan claims are plausibly from the truncated output and the script, but cannot be fully confirmed from the visible log."
+   },
+   {
+    "claim": "Re-running `python3 churn_q3.py subscriptions.csv` reproduces the same result.",
+    "supported": true,
+    "why": "The script was run with that command and printed 220 opening users, 23 churned, 10.45%, and answer.json was written."
+   },
+   {
+    "claim": "Alternative definitions yield 15.91% (35/220) and 14.08% (39/277).",
+    "supported": true,
+    "why": "The exploration output showed 'all denom 277 churn 39 14.0794' and 'paid denom 220 churn 35 15.9091'."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0325564,
+  "_n_hidden": 6
+ }
+}

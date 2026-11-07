@@ -1,0 +1,36 @@
+{
+ "task": "plan-rice",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.4,
+ "final_score": 1.0,
+ "cost": 0.5678842,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Computed RICE scores and saved all 12 items to ranked.json in descending score order",
+    "supported": true,
+    "why": "The script was run with output prefix 'ranked' on backlog.csv and printed 12 rows sorted by score plus the JSON; the write of ranked.json is plausibly part of that run, though the log is truncated."
+   }
+  ],
+  "_judge_cost": 0.0283004,
+  "_n_hidden": 5
+ }
+}

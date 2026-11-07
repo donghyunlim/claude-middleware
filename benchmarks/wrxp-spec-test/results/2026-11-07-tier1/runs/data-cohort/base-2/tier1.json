@@ -1,0 +1,64 @@
+{
+ "task": "data-cohort",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.891891,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "중복 이벤트, 가입 전 이벤트, 가입 기록 없는 사용자는 없었습니다.",
+    "supported": true,
+    "why": "profile.py output showed dup event_id 0, dup rows 0, events before signup 0, users w/o signup 0, no signup 0."
+   },
+   {
+    "claim": "테스트 계정 97개를 제외했다 (user_id가 test_로 시작하거나 이메일이 @ourapp.kr인 계정)",
+    "supported": true,
+    "why": "Profile output showed 'test 97' alongside the email ourapp.kr count of 53, and total of 1203 cohort members after exclusion (1300-97)."
+   },
+   {
+    "claim": "payment_failed를 빼면 W4가 0.63~0.75로, login만 세면 W1이 0.73~0.80, W4가 0.59~0.72로 내려간다 (대안 정의로 재계산)",
+    "supported": true,
+    "why": "The agent ran retention.py with a 'login only' variant and a variant with login, payment (no payment_failed), and printed both tables."
+   },
+   {
+    "claim": "데이터가 한국 시간 8/3(월) 0시부터 11/1(일) 자정 직전까지만 있고, 마지막 코호트의 W4(10/26~11/1)까지 데이터가 모두 있다",
+    "supported": true,
+    "why": "Profile showed min ts 2026-08-02 15:01Z and max event KST 2026-11-01 23:56:11."
+   },
+   {
+    "claim": "테스트 계정을 빼면 9/28~30 가입자는 없어서 마지막 코호트는 9/21 주다",
+    "supported": false,
+    "why": "The log excerpt does not show any check of signups in 9/28~30 after test exclusion; the only evidence is the final cohort table, which is truncated and does not confirm this."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0406684,
+  "_n_hidden": 7
+ }
+}

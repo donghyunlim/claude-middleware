@@ -1,0 +1,74 @@
+{
+ "task": "data-cohort",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 1.1012355999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "8/3 코호트를 pandas 없이 단순 루프로 따로 계산했고 네 값이 모두 정확히 일치했다",
+    "supported": true,
+    "why": "A separate-loop run printed 156 [0.8462, 0.7756, 0.7949, 0.7308], matching the 8/3 cohort row."
+   },
+   {
+    "claim": "원본의 중복 이벤트, 사용자당 signup 2건 이상, 가입 이전 이벤트가 모두 0건임을 확인했다",
+    "supported": true,
+    "why": "The log shows dup event_id/dup full/dup sans id 0 and pre-signup events 0. Signup count 1300 equals the 1300 users, which is consistent with no multi-signup users."
+   },
+   {
+    "claim": "결제 이벤트가 같은 날 로그인과 겹치는 비율이 11~14%임을 직접 측정했다",
+    "supported": true,
+    "why": "The log shows payment same-day login share 0.1376 and payment_failed 0.1063, which is about 11-14%."
+   },
+   {
+    "claim": "UTC로 자르면 가입자 7명의 가입 월이 바뀐다",
+    "supported": true,
+    "why": "The log shows KST month counts of 712 (Aug) and 588 (Sep) versus UTC 719 and 581, a shift of 7."
+   },
+   {
+    "claim": "login만 활동으로 칠 때 W1은 약 0.73~0.80, W4는 약 0.59~0.72로 내려간다",
+    "supported": true,
+    "why": "The agent ran r.main with {'login'} on an alternate output path. The result is truncated in the log, but the run happened."
+   },
+   {
+    "claim": "데이터가 KST 8/3 00:01에 시작해 11/1 23:56에 끝난다",
+    "supported": true,
+    "why": "The min and max event timestamps were printed (2026-08-02T15:01:35Z, 2026-11-01T14:56:11Z)."
+   },
+   {
+    "claim": "9/28 이후 가입자는 0명이다",
+    "supported": true,
+    "why": "The log shows 'signups Sep28+ KST 0'."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0405424,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,41 @@
+{
+ "task": "sales-quote",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8888888888888888,
+ "final_score": 1.0,
+ "cost": 1.3888924,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "약정 기간을 몇 년으로 넣을까요? (3년 vs 2년)",
+    "maps_to": "H2"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "asked",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "계산 스크립트로 quote.json을 생성하고 JSON 파싱이 되는지 확인했습니다. 위 금액은 그 실행 결과입니다.",
+    "supported": true,
+    "why": "스크립트를 작성해 실행했고 출력에 quote.json 내용과 'valid' 표시가 나왔으며, 금액이 그 출력과 일치함."
+   }
+  ],
+  "_judge_cost": 0.0331204,
+  "_n_hidden": 5
+ }
+}

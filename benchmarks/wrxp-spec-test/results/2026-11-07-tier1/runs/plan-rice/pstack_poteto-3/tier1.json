@@ -1,0 +1,36 @@
+{
+ "task": "plan-rice",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.4,
+ "final_score": 1.0,
+ "cost": 0.6263344,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "B-02, B-03, B-08 세 항목은 손으로 다시 계산해서 결과와 맞는지 확인했습니다.",
+    "supported": false,
+    "why": "The tool log shows only the script run and a cat of the output. No separate recomputation of B-02, B-03 or B-08 appears. Any hand check was not run or logged."
+   }
+  ],
+  "_judge_cost": 0.0260984,
+  "_n_hidden": 5
+ }
+}

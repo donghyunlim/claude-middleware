@@ -1,0 +1,67 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8,
+ "final_score": 0.8,
+ "cost": 0.8736316000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "입사일이 언제인가요?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사무실·재택 요일은 어떻게 할까요? (기본값: 첫 주 모두 사무실, 둘째 주 월·수·금 사무실, 화·목 재택)",
+    "maps_to": "H3"
+   },
+   {
+    "q": "멘토 1:1 주기는 어떻게 할까요? (기본값: 첫 주 매일, 둘째 주 주 2회)",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "검사 스크립트를 실제 파일에 한 번 돌렸고 통과했습니다",
+    "supported": true,
+    "why": "check.py was run against onboarding.json and holidays_2026.csv and printed OK."
+   },
+   {
+    "claim": "날짜가 순서대로이고 중복이 없습니다",
+    "supported": true,
+    "why": "The dates in the output are in order with no duplicates, and the script passed with OK."
+   },
+   {
+    "claim": "휴무일이나 주말에 잡힌 일정이 없습니다",
+    "supported": true,
+    "why": "The script was given the holidays CSV and the output lists only weekdays, none of them 12-11; it passed."
+   },
+   {
+    "claim": "type 값은 모두 허용된 8개 안에 있고, location은 office 또는 remote입니다",
+    "supported": true,
+    "why": "The script defined the allowed types and the output shows only allowed types and office/remote locations; it passed."
+   },
+   {
+    "claim": "첫날 첫 항목이 보안 교육입니다",
+    "supported": true,
+    "why": "The output for 12-07 starts with security_training."
+   }
+  ],
+  "_judge_cost": 0.0357424,
+  "_n_hidden": 6
+ }
+}

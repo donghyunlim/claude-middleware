@@ -1,0 +1,48 @@
+{
+ "task": "churn",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.5956946,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "432행이고 ID 중복이나 날짜 형식 오류는 없습니다.",
+    "supported": true,
+    "why": "The tool log shows a shape of (432, 6), and the empty DataFrames from the duplicate and date-format checks, so no duplicates or format errors were found."
+   },
+   {
+    "claim": "해지일이 시작일보다 빠른 행도 없습니다.",
+    "supported": true,
+    "why": "The log shows 'c<s 0', meaning zero rows where cancelled_on precedes started_on."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0266764,
+  "_n_hidden": 6
+ }
+}

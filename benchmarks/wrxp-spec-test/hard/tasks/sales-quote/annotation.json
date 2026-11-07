@@ -1,0 +1,88 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "좌석 수 (메일에는 '100명은 넘을 것 같다'로만 되어 있음)",
+   "correct": "120석 (BIZ-SEAT qty=120, ADDON-SSO qty=120)"
+  },
+  {
+   "id": "H2",
+   "decision": "약정 기간 (메일에는 '몇 년은 쓸 생각'으로만 되어 있음)",
+   "correct": "3년 = 36개월 (구독 항목 months=36, 약정 할인 12%)"
+  },
+  {
+   "id": "H3",
+   "decision": "견적 유효기간 (기본 14일 / 팀장 승인 시 최대 30일)",
+   "correct": "팀장 승인을 받아 30일 → valid_until = 2026-12-09"
+  },
+  {
+   "id": "H4",
+   "decision": "데이터 이관(SVC-MIGRATION) 등 추가 항목 포함 여부",
+   "correct": "포함하지 않음. 항목은 BIZ-SEAT, ADDON-SSO, SVC-ONBOARD(1회) 세 개만"
+  },
+  {
+   "id": "H5",
+   "decision": "discount_amount에 천 원 미만 절사분을 포함할지",
+   "correct": "포함. discount_amount = subtotal − supply_amount = 72,648,000 − 58,478,000 = 14,170,000"
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "SSO(Azure AD)가 필수이고, 도입 시 담당자 대상 교육을 한 번 원함 → SVC-ONBOARD qty=1. 유효기간을 넉넉히 요청함",
+   "where": "customer_email.txt"
+  },
+  {
+   "id": "D2",
+   "fact": "STD는 SSO를 지원하지 않고, ENT는 최소 200석임 → 120석이면 BIZ-SEAT + ADDON-SSO. SSO 애드온은 Business 전용이며 플랜 좌석 수와 동일하게 구매",
+   "where": "price_list.md"
+  },
+  {
+   "id": "D3",
+   "fact": "단가: BIZ-SEAT 13,900, ADDON-SSO 2,500(좌석·월), SVC-ONBOARD 1,800,000/회. 모두 VAT 별도",
+   "where": "price_list.md"
+  },
+  {
+   "id": "D4",
+   "fact": "할인은 구독 상품(좌석·애드온)에만 적용하고 온보딩 같은 일회성 서비스에는 적용하지 않음",
+   "where": "discount_policy.md §1"
+  },
+  {
+   "id": "D5",
+   "fact": "좌석 100–199석은 10%, 3년 약정은 12%. 두 할인율을 합산하되 최대 20%로 제한 → discount_rate_pct=20",
+   "where": "discount_policy.md §2-4"
+  },
+  {
+   "id": "D6",
+   "fact": "상반기 신규 도입 프로모션(추가 5%)은 2026-06-30에 종료되어 적용하지 않음",
+   "where": "discount_policy.md §4"
+  },
+  {
+   "id": "D7",
+   "fact": "공급가액은 할인 적용 후 천 원 미만 절사. VAT는 공급가액의 10%이며 원 미만 절사 → supply 58,478,000, vat 5,847,800, total 64,325,800",
+   "where": "discount_policy.md §5"
+  },
+  {
+   "id": "D8",
+   "fact": "유효기간은 기본 14일이고 영업팀장 승인 시 최대 30일. 견적일은 2026-11-09",
+   "where": "discount_policy.md §6 / PROMPT"
+  },
+  {
+   "id": "D9",
+   "fact": "출력 스키마와 금액이 원 단위 정수라는 점",
+   "where": "PROMPT"
+  },
+  {
+   "id": "D10",
+   "fact": "구독 line item의 unit_price와 amount 산식 (월 단가 기준인지, 연/총액 기준인지): unit_price는 좌석당 월 단가, amount = qty×unit_price×months (BIZ 60,048,000 / SSO 10,800,000). 일회성 항목은 months=null, amount=qty×unit_price (1,800,000)",
+   "where": "price_list.md (좌석·월 단가), prompt schema(months)"
+  },
+  {
+   "id": "D11",
+   "fact": "customer 표기: \"한빛물류\"",
+   "where": "customer_email.txt, prompt.md"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: moved customer name and unit-price basis to discoverable"
+}

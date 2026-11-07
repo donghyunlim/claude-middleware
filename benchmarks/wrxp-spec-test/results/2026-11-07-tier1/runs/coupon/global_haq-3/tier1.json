@@ -1,0 +1,51 @@
+{
+ "task": "coupon",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8506339999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "세일 상품(on_sale: True)에도 쿠폰 할인을 적용해야 하나요? (제외 시 정률 할인액, min_order, max_discount를 비세일 합계로 계산 / 포함 시 전체 소계로 계산)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "테스트 14개가 모두 통과했습니다(python -m pytest -q, 종료 코드 0)",
+    "supported": true,
+    "why": "Tool log shows `python -m pytest -q; echo exit=$?` with 14 passed and exit=0."
+   },
+   {
+    "claim": "14개는 새로 쓴 쿠폰 테스트 13개와 기존 배송비 테스트 1개입니다",
+    "supported": true,
+    "why": "Total 14 passed; test_cart.py has 1 test, so the remainder is 13 new coupon tests, which is consistent with the file written."
+   },
+   {
+    "claim": "테스트는 지금 저장소에 있는 장바구니 구조만으로 실행했습니다",
+    "supported": true,
+    "why": "Tests ran with the cart structure from store/cart.py; no other data or flow exists in the repo."
+   }
+  ],
+  "_judge_cost": 0.0333484,
+  "_n_hidden": 8
+ }
+}

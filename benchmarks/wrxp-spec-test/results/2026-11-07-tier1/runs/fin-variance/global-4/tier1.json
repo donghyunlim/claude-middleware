@@ -1,0 +1,50 @@
+{
+ "task": "fin-variance",
+ "cond": "global",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.7320346000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "중요 차이(material) 기준이 회사 기준으로 따로 있는지 알려 달라 (제가 임의로 차이율 절댓값 10% 이상으로 정함)",
+    "maps_to": "H3"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "새 기준으로 다시 판정해서 variance.json을 업데이트했다",
+    "supported": true,
+    "why": "turn 1에서 calc.py를 수정하고 실행해 새 판정이 포함된 JSON 출력이 확인됨."
+   },
+   {
+    "claim": "예산, 실적, 차이 금액과 차이율은 바뀌지 않았고 판정만 달라졌다",
+    "supported": true,
+    "why": "재실행 출력의 수치가 turn 0과 동일(199258225, 5.99 등)하고 인사팀 판정만 변경됨."
+   }
+  ],
+  "data_definition": {
+   "period": false,
+   "filters": false,
+   "unit": false,
+   "definition": true
+  },
+  "_judge_cost": 0.039818400000000004,
+  "_n_hidden": 6
+ }
+}

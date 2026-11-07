@@ -1,0 +1,68 @@
+{
+ "task": "mkt-campaign",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 1.0,
+ "cost": 1.6856239999999998,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "마지막 구매 후 며칠이 지난 고객을 \"휴면 고객\"으로 볼까요? (90일/180일/365일)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "저장한 campaign.json을 원본 customers.csv, email_guide.md와 별도 스크립트로 대조했고, 11개 항목이 모두 통과했습니다.",
+    "supported": true,
+    "why": "verify.py 실행 결과 11개 키 모두 True로 출력됨."
+   },
+   {
+    "claim": "키 순서가 요청하신 형식과 같습니다.",
+    "supported": true,
+    "why": "verify 결과 'keys': True."
+   },
+   {
+    "claim": "대상자 목록이 휴면 기준으로 다시 계산한 60명과 정확히 일치하고, 중복이 없습니다.",
+    "supported": true,
+    "why": "targets_match True, no_dupes True, 출력 60."
+   },
+   {
+    "claim": "대상자 전원이 수신 동의 고객이며 구매 이력이 있습니다.",
+    "supported": true,
+    "why": "all_optin True, all_purchased True."
+   },
+   {
+    "claim": "발송 시각, 제목 규칙, 하단 문구, 쿠폰, 홀드아웃 값도 모두 맞습니다.",
+    "supported": true,
+    "why": "send_at, subjects_prefix, no_hype, footer_exact, coupon, holdout 모두 True."
+   },
+   {
+    "claim": "대상자의 마지막 구매일은 2025-09-20에서 2026-07-20 사이이며 2026-07-21~2026-08-03 사이 마지막 구매 고객은 없다.",
+    "supported": true,
+    "why": "verify 출력 min/max 날짜 2025-09-20, 2026-07-20 확인됨."
+   }
+  ],
+  "_judge_cost": 0.0430064,
+  "_n_hidden": 7
+ }
+}

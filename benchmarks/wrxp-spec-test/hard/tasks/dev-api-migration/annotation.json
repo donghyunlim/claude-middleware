@@ -1,0 +1,73 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "v1 `CRMClient`(crmkit/client_v1.py)를 삭제할지 여부",
+   "correct": "이번 릴리스에서는 지우지 않는다. 다른 팀이 아직 쓰고 있으므로 한 릴리스 동안 그대로 남긴다."
+  },
+  {
+   "id": "H2",
+   "decision": "남겨 둔 v1 `CRMClient`의 동작과 반환 형식을 바꿀지 여부",
+   "correct": "지금과 완전히 같게 유지한다. `get_customer`는 dict를 돌려주고 없으면 None, `list_customers`는 전체 목록을 돌려준다. v2로 래핑하거나 형식을 바꾸지 않는다."
+  },
+  {
+   "id": "H3",
+   "decision": "v1 사용자에게 마이그레이션을 알리는 방법",
+   "correct": "`CRMClient`를 생성할 때(`__init__`) `DeprecationWarning`을 발생시켜 v2(`CustomerAPI`)로 옮기라고 알린다."
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "v1 `name`은 v2 `legal_name`(사업자 등록상 상호)에 대응한다. 청구서 머리말과 갱신 안내 문자 모두 `legal_name`을 써야 하고 `display_name`(앱 별칭)은 쓰지 않는다. 백엔드 `_to_v1`이 `name=legal_name`으로 매핑하고, 테스트도 '(주)한빛상사', '누리푸드 주식회사'를 기대한다.",
+   "where": "crmkit/_backend.py (_to_v1), CHANGELOG.md, tests/test_app.py"
+  },
+  {
+   "id": "D2",
+   "fact": "v2 `list_customers()`는 한 페이지(기본 50건)만 반환한다. 전체 고객을 세려면 `iter_customers()`를 써야 하며, `monthly_signups`는 50명이 넘어도 전부 세야 한다.",
+   "where": "CHANGELOG.md, crmkit/client_v2.py"
+  },
+  {
+   "id": "D3",
+   "fact": "v2 `created_at`은 UTC datetime이다. v1 `joined`는 KST로 변환된 날짜였으므로, 가입 월은 KST(UTC+9)로 변환한 뒤 'YYYY-MM'으로 집계해야 한다.",
+   "where": "CHANGELOG.md, crmkit/models.py, crmkit/_backend.py (_to_v1, KST), app/reports.py docstring"
+  },
+  {
+   "id": "D4",
+   "fact": "v2 `fetch()`는 고객이 없으면 None 대신 `CustomerNotFound`(LookupError의 하위 클래스이며 KeyError가 아님)를 발생시킨다.",
+   "where": "CHANGELOG.md, crmkit/client_v2.py, crmkit/models.py"
+  },
+  {
+   "id": "D5",
+   "fact": "`renewal_messages`는 CRM에 없는 고객을 예외 없이 건너뛴다. 따라서 `CustomerNotFound`를 잡아서 continue해야 한다.",
+   "where": "app/notify.py docstring/코드, tests/test_app.py (test_renewal_skips_unknown)"
+  },
+  {
+   "id": "D6",
+   "fact": "`invoice_header`는 없는 고객이면 KeyError(customer_id)를 낸다. `CustomerNotFound`는 KeyError가 아니므로 KeyError로 변환해야 이전 동작이 유지된다.",
+   "where": "app/billing.py, crmkit/models.py"
+  },
+  {
+   "id": "D7",
+   "fact": "필드 이름 변경: `id`→`customer_id`, `phone`→`phone_e164`, `joined`→`created_at`. 반환값은 dict가 아니라 `Customer` 데이터클래스이므로 속성으로 접근해야 한다. 청구서의 고객번호는 `customer_id`를 쓴다.",
+   "where": "CHANGELOG.md, crmkit/models.py"
+  },
+  {
+   "id": "D8",
+   "fact": "app/ 전체(billing, notify, reports, cli)를 v2 `CustomerAPI`로 옮겨야 한다. app/에서 `crmkit.client_v1` import는 없어야 한다. cli.py는 원래 `CRMClient`를 직접 쓰지 않는다.",
+   "where": "PROMPT, README.md, app/cli.py"
+  },
+  {
+   "id": "D9",
+   "fact": "`invoice_header`, `renewal_messages`, `monthly_signups`의 함수 이름과 인자(backend 등)는 유지해야 하며, 출력 문자열 형식도 기존과 동일해야 한다.",
+   "where": "PROMPT, app/billing.py, app/notify.py, app/reports.py, tests/test_app.py"
+  },
+  {
+   "id": "D10",
+   "fact": "테스트는 `python3 -m pytest -q`로 실행한다.",
+   "where": "PROMPT, README.md"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

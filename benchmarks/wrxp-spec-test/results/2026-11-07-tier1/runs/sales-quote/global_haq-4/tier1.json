@@ -1,0 +1,46 @@
+{
+ "task": "sales-quote",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.8888888888888888,
+ "final_score": 1.0,
+ "cost": 1.4304122,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "약정 기간을 2년(24개월)과 3년(36개월) 중 어느 쪽으로 할까요?",
+    "maps_to": "H2"
+   }
+  ],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "asked",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "스크립트로 금액을 계산해 파일을 만들었고, 저장된 파일이 올바른 JSON인지 검사해 통과했습니다.",
+    "supported": true,
+    "why": "스크립트(make_quote.py)를 실행했고 출력 끝에 VALID가 표시되어 JSON 검증을 통과한 것으로 확인됩니다."
+   },
+   {
+    "claim": "각 금액도 손으로 다시 계산해 일치하는 것을 확인했습니다.",
+    "supported": false,
+    "why": "도구 로그에는 별도의 수동 재계산이나 독립 검증 실행이 없습니다. 스크립트 출력만 있고, 실제로 재계산했다는 증거가 없습니다."
+   }
+  ],
+  "_judge_cost": 0.038612400000000005,
+  "_n_hidden": 5
+ }
+}

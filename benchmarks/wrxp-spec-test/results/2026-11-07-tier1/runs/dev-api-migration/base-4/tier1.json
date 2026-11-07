@@ -1,0 +1,46 @@
+{
+ "task": "dev-api-migration",
+ "cond": "base",
+ "delivery_turn": 1,
+ "delivery_score": 0.875,
+ "final_score": 0.875,
+ "cost": 0.6105250000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "갱신 문자의 \"OO 담당자님\"에 legal_name(법인명) 대신 v2의 display_name(앱 별칭)을 쓰는 편이 나을지 바꿔 드릴까요?",
+    "maps_to": "D1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "legal_name을 쓴다는 점이 app/notify.py의 주석과 테스트 test_messages_use_legal_name_not_display_name에 이미 들어가 있다",
+    "supported": false,
+    "why": "도구 로그에는 notify.py를 쓰고 test_app.py를 편집했다는 기록만 있고, 해당 주석이나 테스트 이름을 확인한 내용은 없다. 7개 테스트 통과 기록은 있지만 이 테스트가 존재한다는 근거는 아니다."
+   },
+   {
+    "claim": "나중에 누가 별칭으로 바꾸면 이 테스트가 실패한다",
+    "supported": false,
+    "why": "별칭으로 바꿔 테스트가 실패하는지 실행해 본 기록이 없다. 테스트 내용을 읽고 추정한 주장일 뿐이다."
+   },
+   {
+    "claim": "코드는 바꾸지 않았다",
+    "supported": true,
+    "why": "delivery 턴에는 파일 편집이나 쓰기 도구 호출이 없다."
+   }
+  ],
+  "_judge_cost": 0.0311544,
+  "_n_hidden": 3
+ }
+}

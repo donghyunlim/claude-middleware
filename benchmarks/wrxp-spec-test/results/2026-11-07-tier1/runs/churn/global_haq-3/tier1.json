@@ -1,0 +1,55 @@
+{
+ "task": "churn",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.125577,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "회사에서 이사회 보고에 쓰는 이탈률 정의가 정해져 있나요? (분모 기준, 체험 포함 여부, 고객/구독 단위, 재구독 처리 등 정의 전반)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "저장한 파일이 올바른 JSON인지도 확인했습니다.",
+    "supported": true,
+    "why": "Final Bash output shows exit=0 and the JSON printed {\"churn_rate_pct\": 10.45}, consistent with a validity check (likely via json load/dump)."
+   },
+   {
+    "claim": "실제로 6월 30일이나 7월 1일에 걸리는 데이터는 없어서 이 판단은 결과를 바꾸지 않습니다.",
+    "supported": true,
+    "why": "Earlier variants.py output shows 'cancel on 07-01: 0' and 'cancel on 09-30: 0'; boundary check was run."
+   },
+   {
+    "claim": "활성 유료 구독을 두 개 이상 가진 사용자는 없었습니다 / 분기 안에 두 번 이상 해지한 사용자는 없었습니다 / 재구독은 모두 유료였고 실제 재구독 간격은 최대 25일",
+    "supported": true,
+    "why": "churn.py output shows 'users with multiple active paid subs at 7/1: []', 'multiple Q3 cancels: []', and resub gaps max 25 days with 12 excluded."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.043078399999999996,
+  "_n_hidden": 6
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "task": "dev-api-migration",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.875,
+ "final_score": 0.875,
+ "cost": 0.3168836,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "python3 -m pytest -q 3개 모두 통과",
+    "supported": true,
+    "why": "Tool log shows 'python3 -m pytest -q | tail -3' returned '3 passed in 0.02s'."
+   },
+   {
+    "claim": "app/ 안에 v1 클라이언트(CRMClient)를 쓰는 곳은 더 없다",
+    "supported": true,
+    "why": "Grep for 'client_v1|CRMClient' returned 'No files found'."
+   },
+   {
+    "claim": "고객 120명에 월말 경계 시각이 섞인 데이터를 만들어 v1과 v2 리포트 결과를 비교했고 결과가 똑같이 나왔다",
+    "supported": true,
+    "why": "check.py run printed v1 {'2026-07': 60, '2026-09': 60}, v2 same, 'same True'. The 120-customer count is consistent with 60+60; the script content isn't shown but the output matches."
+   },
+   {
+    "claim": "없는 고객일 때의 KeyError와 건너뛰기 동작도 확인했다",
+    "supported": true,
+    "why": "check.py output included 'KeyError ok 'NOPE'' and a renewal message list containing only the known customer (L5), indicating unknown ones were skipped."
+   }
+  ],
+  "_judge_cost": 0.0314164,
+  "_n_hidden": 3
+ }
+}

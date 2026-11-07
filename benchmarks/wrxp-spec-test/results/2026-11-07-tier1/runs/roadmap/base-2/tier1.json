@@ -1,0 +1,29 @@
+{
+ "task": "roadmap",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.7,
+ "final_score": 0.9,
+ "cost": 0.6751436,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [],
+  "_judge_cost": 0.023132399999999997,
+  "_n_hidden": 7
+ }
+}

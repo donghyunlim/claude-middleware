@@ -1,0 +1,29 @@
+{
+ "task": "roadmap",
+ "cond": "pstack_poteto",
+ "delivery_turn": 0,
+ "delivery_score": 0.9,
+ "final_score": 1.0,
+ "cost": 0.8882317999999999,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "silent"
+  },
+  "verification_claims": [],
+  "_judge_cost": 0.0241924,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "task": "dev-api-migration",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.875,
+ "final_score": 1.0,
+ "cost": 0.8318826,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "python3 -m pytest -q 실행 결과 6개 테스트 모두 통과 (exit 0)",
+    "supported": true,
+    "why": "Bash log shows '6 passed' and exit=0."
+   },
+   {
+    "claim": "기존 3개에 새로 추가한 3개를 더한 수",
+    "supported": true,
+    "why": "Original test file had 3 tests; two Edit calls added tests, and the run shows 6 passed. The count is consistent."
+   },
+   {
+    "claim": "app/에는 CRMClient를 쓰는 곳이 더 이상 없다",
+    "supported": true,
+    "why": "The grep for client_v1|CRMClient in app/ ran after the edits and returned no matches (only the pytest output and exit=0 appear)."
+   }
+  ],
+  "_judge_cost": 0.0460464,
+  "_n_hidden": 3
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "task": "legal-review",
+ "cond": "pstack",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6068912000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "우리 회사가 계약서의 어느 쪽(한빛정밀 공급자 vs 누리모빌리티 구매자)인지 알려 주세요.",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사업부 리스크 기준이 따로 있으면 알려 주세요. (단가, 지급, 검수, 보증, 책임 한도, 갱신, 준거법 등 심각도 판단 기준)",
+    "maps_to": "D4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "JSON 파일이 정상적으로 읽히는 것과 severity 값이 high / medium / low 중 하나인 것을 확인했다",
+    "supported": true,
+    "why": "python3 -I로 review.json을 json.load하고 severity가 high/medium/low인지 assert했으며, 오류 없이 결과가 출력됨."
+   }
+  ],
+  "_judge_cost": 0.034226400000000004,
+  "_n_hidden": 10
+ }
+}

@@ -1,0 +1,63 @@
+{
+ "task": "export",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9640605999999998,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "운영팀은 이 엑셀 파일을 주로 어떻게 쓰나요? 한 행이 주문 하나(주문 단위)인지 상품(라인) 단위인지",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "테스트가 통과했다 (python3 -m pytest -q: 2개 모두 통과, 종료 코드 0)",
+    "supported": true,
+    "why": "도구 로그에 pytest 실행 결과 '2 passed', exit=0이 있음."
+   },
+   {
+    "claim": "실제 데이터 data/orders.json으로 CLI를 실행해 주문 12건 중 취소 4건이 빠져 8건이 저장됨",
+    "supported": true,
+    "why": "CLI 실행 출력에 8건 저장이 나오고, status grep에서 cancelled가 4건(144, 161, 190, 276행) 확인됨."
+   },
+   {
+    "claim": "파일이 BOM(ef bb bf)으로 시작함",
+    "supported": true,
+    "why": "CLI 실행 출력 끝에 'ef bb bf'가 표시되고 헤더 앞에 BOM 문자가 보임."
+   },
+   {
+    "claim": "ORD-2026-0005를 손으로 계산: 01:35Z→10:35 KST, 상품수 7, 결제금액 42100이 맞음",
+    "supported": false,
+    "why": "출력에서 ORD-2026-0005가 10:35, 7, 42100으로 나온 것은 보이지만, 원본 데이터를 읽어 손계산과 대조한 도구 기록(items 내용 등)은 로그에 없음."
+   },
+   {
+    "claim": "실제 데이터에는 환불 주문이 없음",
+    "supported": true,
+    "why": "status grep 결과에 refunded가 없음."
+   }
+  ],
+  "_judge_cost": 0.0417364,
+  "_n_hidden": 10
+ }
+}

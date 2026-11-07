@@ -1,0 +1,69 @@
+{
+ "task": "data-cohort",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.8056790000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "마지막 코호트의 W4 주까지 데이터가 다 있어서 중간에 잘린 값은 없습니다",
+    "supported": true,
+    "why": "Tool log shows event_ts max 2026-11-01 and 'max activity week 2026-10-26', covering the last cohort (9/21)'s W4 week (10/19 week... through 10/26 week)."
+   },
+   {
+    "claim": "가입 데이터가 KST 기준 8/3(월) 00:01부터 9/27(일) 23:41까지라서 KST 기준으로 하면 정확히 8주로 나뉩니다",
+    "supported": true,
+    "why": "Signup min 2026-08-02T15:01Z and max 2026-09-27T14:41Z, which convert to KST 8/3 00:01 and 9/27 23:41; KST cohorts yielded exactly 8 weeks."
+   },
+   {
+    "claim": "UTC 그대로 나누면 7/27 주에 42명짜리 코호트가 하나 더 생깁니다",
+    "supported": true,
+    "why": "Tool output shows a UTC cohort breakdown with 2026-07-27: 42."
+   },
+   {
+    "claim": "내부 테스트·QA 계정 97개를 뺐고 코호트 인원 합계는 1,203명",
+    "supported": true,
+    "why": "Tool output shows 'excluded 97' and the cohort sizes sum to 1,203 (156+142+160+163+131+131+163+157)."
+   },
+   {
+    "claim": "결제 이벤트까지 활동으로 넣으면 8/03 코호트 W1이 0.7500에서 0.8462로 바뀝니다",
+    "supported": false,
+    "why": "The logged outputs show only the login-based result (0.7500); no run or visible output computes 0.8462 for a login-plus-payment definition."
+   },
+   {
+    "claim": "결제는 로그인 없이 발생한 경우도 있다",
+    "supported": true,
+    "why": "The login-proximity analysis showed about 13% of payments had no login within a day, with min/median gaps indicating payments without a preceding login."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.037834400000000004,
+  "_n_hidden": 7
+ }
+}

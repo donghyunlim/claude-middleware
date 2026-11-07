@@ -1,0 +1,41 @@
+{
+ "task": "legal-review",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.4,
+ "final_score": 1.0,
+ "cost": 0.7649323999999998,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "요청하신 형식에 맞고, JSON 파싱도 확인했습니다 (review.json parses as JSON and matches the requested format)",
+    "supported": true,
+    "why": "The Bash call ran python3 json.load on review.json and printed 12 issues with (clause, severity) tuples, confirming it parses and has the issues list with integer clause and severity fields."
+   }
+  ],
+  "_judge_cost": 0.0248044,
+  "_n_hidden": 10
+ }
+}

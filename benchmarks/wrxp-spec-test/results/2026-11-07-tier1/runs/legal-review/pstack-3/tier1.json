@@ -1,0 +1,46 @@
+{
+ "task": "legal-review",
+ "cond": "pstack",
+ "delivery_turn": 1,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 1.1605564000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "우리 쪽이 한빛정밀(공급자)인가요, 누리모빌리티(구매자)인가요?",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "파일이 올바른 JSON으로 읽히는 것도 확인했습니다 (review.json이 13건이고 유효한 JSON)",
+    "supported": true,
+    "why": "python3 json.load로 review.json을 읽어 13개 (clause, severity) 항목을 출력했고, 오류 없이 실행됨."
+   }
+  ],
+  "_judge_cost": 0.0332304,
+  "_n_hidden": 10
+ }
+}

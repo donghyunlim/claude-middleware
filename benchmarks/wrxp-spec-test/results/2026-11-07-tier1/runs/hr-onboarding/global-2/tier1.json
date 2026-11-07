@@ -1,0 +1,36 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.2,
+ "final_score": 1.0,
+ "cost": 0.601898,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "silent",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "자료에서 확인해 반영한 내용 (보안 교육 선행 정책, 오리엔테이션 둘째 주 수요일, 11/20 휴무, 스탠드업 10:00, order-api 첫 과제) — asserts these were confirmed from the folder materials",
+    "supported": true,
+    "why": "The agent read hr_policy.md, holidays_2026.csv and team_notes.md, and these items match their contents."
+   }
+  ],
+  "_judge_cost": 0.0264324,
+  "_n_hidden": 6
+ }
+}

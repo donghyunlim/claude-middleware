@@ -1,0 +1,41 @@
+{
+ "task": "legal-review",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.6,
+ "final_score": 1.0,
+ "cost": 0.653927,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "JSON 형식이 맞는지도 파싱해서 확인했습니다",
+    "supported": true,
+    "why": "The Bash call ran python3 json.load on review.json and printed 13 issues with their clause numbers, matching the 13 reported."
+   }
+  ],
+  "_judge_cost": 0.0249424,
+  "_n_hidden": 10
+ }
+}

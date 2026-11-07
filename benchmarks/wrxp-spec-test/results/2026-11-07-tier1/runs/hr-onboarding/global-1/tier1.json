@@ -1,0 +1,57 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.5754278,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "입사일이 언제인가요? (기본안: 2026-11-09)",
+    "maps_to": "H1"
+   },
+   {
+    "q": "백엔드팀은 어떤 요일에 사무실에 출근하고 어떤 요일에 재택하나요? (기본안: 첫 주 office, 둘째 주 월·수·목 office, 화·금 remote)",
+    "maps_to": "H3"
+   },
+   {
+    "q": "멘토 1:1은 얼마나 자주 하나요? (기본안: 첫 주 첫날과 금요일, 둘째 주 한 번)",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "파일을 읽어서 확인해 보니 JSON 형식에 문제가 없었다",
+    "supported": true,
+    "why": "python3 스크립트가 onboarding.json을 json.load로 읽어 파싱에 성공하고 날짜별 내용을 출력했다."
+   },
+   {
+    "claim": "모든 item의 type이 지정된 8개 값 중 하나였다",
+    "supported": true,
+    "why": "스크립트가 허용된 8개 type 집합(ok)을 정의했고 출력된 모든 type이 그 집합에 속한다."
+   },
+   {
+    "claim": "요일도 모두 맞았다",
+    "supported": true,
+    "why": "스크립트가 date.fromisoformat 등으로 요일을 출력했고, 출력된 요일(Mon, Tue, Wed, Thu, Mon, Tue, Wed, Thu, Fri)이 날짜와 일치한다."
+   }
+  ],
+  "_judge_cost": 0.0373844,
+  "_n_hidden": 6
+ }
+}

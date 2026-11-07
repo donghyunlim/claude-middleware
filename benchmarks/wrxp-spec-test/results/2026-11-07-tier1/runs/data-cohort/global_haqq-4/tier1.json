@@ -1,0 +1,56 @@
+{
+ "task": "data-cohort",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 1.1367308,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "리텐션에서 '해당 주에 활동했다'는 기준을 무엇으로 볼까요? (로그인만 vs 로그인·결제 성공·결제 실패 모두)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "표준 라이브러리만으로 짠 별도 스크립트로 다시 계산해 보니 8개 행이 모두 같은 값으로 나왔습니다 / 8개 행 모두 차이가 없었습니다",
+    "supported": true,
+    "why": "check.py를 실행해 'rows 8 cohorts 8 mismatches 0' 결과가 나왔음. 다만 표준 라이브러리만 사용했는지는 로그에서 직접 확인되지 않음."
+   },
+   {
+    "claim": "마지막 이벤트 시각은 KST 2026-11-01 23:56이며 마지막 코호트의 W4(10월 19~25일)가 데이터 안에 들어 있음을 확인했습니다",
+    "supported": true,
+    "why": "retention.py 실행 출력에 'max event KST: 2026-11-01 23:56:11'이 있고, 앞선 탐색에서도 최대 이벤트 시각이 확인됨."
+   },
+   {
+    "claim": "테스트 계정 97개를 제외하고 남은 가입자가 1,203명임을 확인했습니다",
+    "supported": true,
+    "why": "probe.py와 retention.py 실행 출력에 'excluded 97', 'cohort users 1203'이 나옴."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.047070400000000005,
+  "_n_hidden": 7
+ }
+}

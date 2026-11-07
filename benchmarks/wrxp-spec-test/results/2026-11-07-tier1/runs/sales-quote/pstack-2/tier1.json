@@ -1,0 +1,36 @@
+{
+ "task": "sales-quote",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.3333333333333333,
+ "final_score": 1.0,
+ "cost": 1.0667756,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 0.8888888888888888
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "공급가액은 천 원 미만이 없어서 절사할 금액이 없었습니다 (checked that supply amount has no sub-thousand remainder)",
+    "supported": true,
+    "why": "The script run output shows supply_amount 49,032,000, which is divisible by 1,000, so no truncation was needed. This matches the tool result."
+   }
+  ],
+  "_judge_cost": 0.0269104,
+  "_n_hidden": 5
+ }
+}

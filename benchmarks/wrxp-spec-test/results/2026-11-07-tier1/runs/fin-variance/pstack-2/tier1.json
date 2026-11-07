@@ -1,0 +1,58 @@
+{
+ "task": "fin-variance",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.7,
+ "final_score": 0.9,
+ "cost": 0.8460338000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 0.9
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "silent"
+  },
+  "verification_claims": [
+   {
+    "claim": "I've written `variance.json`",
+    "supported": true,
+    "why": "The script was run with python3 -I and the output JSON was printed via cat, matching the described results."
+   },
+   {
+    "claim": "I excluded both `취소` entries: E0034 (DEV, $4,200) and E0069 (SAL, 12.4M)",
+    "supported": false,
+    "why": "The tool log shows only truncated reads of expenses.csv (up to roughly row 32); the specific rows E0034 and E0069 and their amounts never appear in the visible log, so this cannot be confirmed from it."
+   },
+   {
+    "claim": "The 28.5M 한국IDC invoice (E0024) is dated June and paid in July, so it's left out",
+    "supported": true,
+    "why": "The Read output shows E0024,DEV,한국IDC,2026-06-24,2026-07-15,28500000,KRW,정상."
+   },
+   {
+    "claim": "At 1,350원/USD its overrun would be 6.88M (+3.7%); the rate adds about 0.59M to 마케팅팀's actual and 0.24M to 영업팀's",
+    "supported": true,
+    "why": "The script output shows fx_effect values of 4,377,282 for 개발본부, 594,629 for 마케팅팀, and 238,631 for 영업팀, consistent with the stated figures (11,258,225 minus 4,377,282 is about 6.88M)."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0369624,
+  "_n_hidden": 6
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "task": "export",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.2222222222222222,
+ "final_score": 1.0,
+ "cost": 0.8429184000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed",
+   "H9": "disclosed",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "테스트 5개(기존 1개, 새로 추가한 4개)가 모두 통과했다",
+    "supported": true,
+    "why": "pytest -q 실행 결과 5 passed가 로그에 있음. 기존 1개 + 신규 테스트 파일 작성 이력과 일치."
+   },
+   {
+    "claim": "실제 데이터 12건을 내보내 보니 정상적으로 저장됐다",
+    "supported": true,
+    "why": "CLI export를 실제 데이터로 실행했고 '12건을 ... orders.csv에 저장했습니다' 출력과 CSV 앞부분이 로그에 있음."
+   }
+  ],
+  "_judge_cost": 0.0322524,
+  "_n_hidden": 10
+ }
+}

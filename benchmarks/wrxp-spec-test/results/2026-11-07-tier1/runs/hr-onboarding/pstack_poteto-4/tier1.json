@@ -1,0 +1,52 @@
+{
+ "task": "hr-onboarding",
+ "cond": "pstack_poteto",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.6801470000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "입사일이 언제인가요?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사무실 출근 요일과 재택 요일은 어떻게 되나요?",
+    "maps_to": "H3"
+   },
+   {
+    "q": "멘토 1:1은 얼마나 자주 하나요? (멘토 이름도 알려 주세요)",
+    "maps_to": "H4"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "검사 스크립트를 실제 파일과 휴무일 CSV에 돌렸고 모두 통과했다",
+    "supported": true,
+    "why": "Bash 로그에서 check.py를 python3 -I로 실행했고 'ok'와 9개 근무일 목록이 출력됨."
+   },
+   {
+    "claim": "근무일 목록, 정렬, 날짜별 location, 1:1·회고·오리엔테이션 날짜, 첫날 보안 교육이 맨 앞인지, type 값이 허용 목록 안에 있는지를 확인했다",
+    "supported": true,
+    "why": "스크립트가 통과(ok)했다는 로그는 있으나 스크립트 내용은 로그에 없음. 다만 출력된 근무일 목록은 일치하며, 보고된 검사 항목과 모순되는 증거는 없음."
+   }
+  ],
+  "_judge_cost": 0.0382384,
+  "_n_hidden": 6
+ }
+}

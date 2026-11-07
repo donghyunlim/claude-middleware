@@ -1,0 +1,47 @@
+{
+ "task": "legal-review",
+ "cond": "global_haqq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.8505009999999998,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "우리 쪽은 공급자(한빛정밀)인가요, 구매자(누리모빌리티)인가요?",
+    "maps_to": "H1"
+   },
+   {
+    "q": "사업부에서 정해 둔 리스크 기준(예: 받아들일 수 있는 배상 한도, 외국 준거법 허용 여부 등)이 있으면 알려 달라",
+    "maps_to": "H7"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "asked",
+   "H8": "disclosed",
+   "H9": "asked",
+   "H10": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "파일을 다시 읽어 형식을 검사했습니다. 키가 issues 하나뿐이고, 각 항목에 clause(정수), severity(high/medium/low), reason 세 개만 있는지 확인했고 모두 통과했습니다.",
+    "supported": true,
+    "why": "첫 번째 검증 명령은 오류가 났지만 두 번째 python3 -I 명령이 review.json을 읽어 키 집합, clause 정수 여부, severity 값을 assert로 검사했고 출력은 'OK'였습니다."
+   }
+  ],
+  "_judge_cost": 0.0365864,
+  "_n_hidden": 10
+ }
+}

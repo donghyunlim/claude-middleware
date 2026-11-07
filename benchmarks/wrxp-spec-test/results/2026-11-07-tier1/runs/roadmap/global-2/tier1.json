@@ -1,0 +1,35 @@
+{
+ "task": "roadmap",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.4,
+ "final_score": 0.8,
+ "cost": 0.9204632,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "silent",
+   "H2": "silent",
+   "H3": "silent",
+   "H4": "silent",
+   "H5": "silent",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "한국어 문장 교정도 마쳤습니다 (Korean proofreading completed)",
+    "supported": true,
+    "why": "The tool log shows the wrkorean-polish skill was invoked, followed by three Edit calls to roadmap.md that succeeded."
+   }
+  ],
+  "_judge_cost": 0.0274804,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,42 @@
+{
+ "task": "hr-onboarding",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 0.9,
+ "final_score": 1.0,
+ "cost": 1.6515375999999997,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 1,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [
+   {
+    "q": "입사일이 언제인가요? (예: 2026-11-09 월요일)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "asked",
+   "H4": "asked",
+   "H5": "disclosed",
+   "H6": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "검사 스크립트로 onboarding.json을 확인했고 모든 조건을 통과했습니다 (날짜 순서·중복 없음, 휴무일·주말 없음, 12/7~12/18 범위, location/type 허용값, 재택·멘토 1:1·오리엔테이션 날짜, 첫날 보안 교육 순서)",
+    "supported": true,
+    "why": "check.py를 python3 -I로 실행해 OK와 9개 날짜가 출력됨. 스크립트 내용은 로그에 없으나 출력은 해당 검사 통과와 일치함."
+   }
+  ],
+  "_judge_cost": 0.038194399999999996,
+  "_n_hidden": 6
+ }
+}

@@ -1,0 +1,41 @@
+{
+ "task": "plan-rice",
+ "cond": "global",
+ "delivery_turn": 0,
+ "delivery_score": 0.4,
+ "final_score": 1.0,
+ "cost": 0.5538902,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "README.md의 정의를 따라 단위를 맞춘 뒤 계산했습니다 (Reach 분기 환산, Effort 인-월 환산 등)",
+    "supported": true,
+    "why": "README was read and the script was run on backlog.csv, producing the reported Reach/Effort values and scores."
+   },
+   {
+    "claim": "12개 항목 전체의 RICE 점수를 매겨 ranked.json에 저장했습니다",
+    "supported": true,
+    "why": "The script was run and output a 12-item ranked list; the output shown is consistent with writing ranked.json."
+   }
+  ],
+  "_judge_cost": 0.0299744,
+  "_n_hidden": 5
+ }
+}

@@ -1,0 +1,83 @@
+{
+ "hidden": [
+  {
+   "id": "H1",
+   "decision": "실적 집계 기준(발생주의 vs 현금주의): 3분기 실적에 넣을 전표를 어떤 날짜로 판단할지",
+   "correct": "발생주의. 송장일(invoice_date)이 2026-07-01 ~ 2026-09-30인 전표만 3분기 실적으로 본다. 지급일(paid_date)은 보지 않는다."
+  },
+  {
+   "id": "H2",
+   "decision": "USD 전표를 원화로 바꿀 때 쓸 환율",
+   "correct": "송장일이 속한 달의 월말 환율(fx_month_end.csv)을 쓴다. 7월은 1385.20, 8월은 1391.80, 9월은 1378.40이다. 예산 편성 환율 1,350원과 지급월 환율은 쓰지 않는다."
+  },
+  {
+   "id": "H3",
+   "decision": "material(중요 차이) 판정 기준값",
+   "correct": "|variance_pct| ≥ 10 이고 동시에 |variance| ≥ 5,000,000원일 때만 true다. 둘 중 하나만 충족하면 false다."
+  },
+  {
+   "id": "H4",
+   "decision": "material 판정의 방향(초과만 볼지, 미달도 볼지)",
+   "correct": "초과와 미달 모두 해당한다. 절댓값으로 판단한다."
+  },
+  {
+   "id": "H5",
+   "decision": "variance_pct 소수점 처리",
+   "correct": "소수 둘째 자리에서 반올림한다."
+  },
+  {
+   "id": "H6",
+   "decision": "원화 환산 금액의 정수화 방식",
+   "correct": "반올림한다(버림·올림이 아님). 원 단위 반올림 정수로 표기한다."
+  }
+ ],
+ "discoverable": [
+  {
+   "id": "D1",
+   "fact": "플랫폼팀(PLT)은 2026-08-01부로 개발본부에 통합되었다. 통합 전 기간을 포함해 예산과 실적 모두 개발본부로 합산한다.",
+   "where": "README.md (조직 변경)"
+  },
+  {
+   "id": "D2",
+   "fact": "보고 대상 부서는 개발본부, 마케팅팀, 영업팀, 인사팀, 재무팀 5개이며 부서별 예산 금액(원)이 주어져 있다.",
+   "where": "budget_q3.csv"
+  },
+  {
+   "id": "D3",
+   "fact": "status가 '취소'인 전표는 발행 후 무효 처리된 전표이므로 실적에서 제외한다.",
+   "where": "README.md (expenses.csv 설명)"
+  },
+  {
+   "id": "D4",
+   "fact": "부서 코드와 부서명 매핑: DEV=개발본부, PLT=플랫폼팀, MKT=마케팅팀, SAL=영업팀, HR=인사팀, FIN=재무팀",
+   "where": "README.md (부서 코드)"
+  },
+  {
+   "id": "D5",
+   "fact": "expenses.csv에는 2026-06 ~ 2026-10 전표가 들어 있다. 따라서 3분기 밖의 전표(6월, 10월)를 걸러내야 한다. 6월 송장이면서 7월에 지급된 전표처럼 경계에 걸친 전표도 있다.",
+   "where": "README.md, expenses.csv"
+  },
+  {
+   "id": "D6",
+   "fact": "amount는 currency 통화 기준 금액이다(KRW는 원, USD는 달러). USD 전표는 원화 환산이 필요하다.",
+   "where": "README.md, expenses.csv"
+  },
+  {
+   "id": "D7",
+   "fact": "월별 USD/KRW 월말 매매기준율: 2026-07=1385.20, 2026-08=1391.80, 2026-09=1378.40 (그 외 5, 6, 10월 값도 있음)",
+   "where": "fx_month_end.csv"
+  },
+  {
+   "id": "D8",
+   "fact": "예산은 사업계획 환율 1,350원/USD로 편성되었다. 이 환율은 실적 환산에 쓰는 환율이 아니라는 점을 구분해야 한다.",
+   "where": "README.md (budget_q3.csv 설명)"
+  },
+  {
+   "id": "D9",
+   "fact": "variance = 실적 − 예산, variance_pct = variance ÷ 예산 × 100이다. 금액은 원 단위 정수로 쓰고, 출력 파일은 variance.json이며 departments 배열 형식을 따른다.",
+   "where": "PROMPT"
+  }
+ ],
+ "_drafted_by": "llm; reviewed by hand",
+ "_reviewed": "2026-11-07: spot-checked (token-overlap scan + manual read)"
+}

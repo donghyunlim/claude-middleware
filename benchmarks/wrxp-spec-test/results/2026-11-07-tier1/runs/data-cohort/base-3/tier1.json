@@ -1,0 +1,69 @@
+{
+ "task": "data-cohort",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.8457958000000002,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "Converting to KST makes the data span exactly 8/3 (Mon) 00:01 to 11/1 (Sun) 23:56",
+    "supported": true,
+    "why": "The tool output shows the ts range 2026-08-03 00:01:35 to 2026-11-01 23:56:11 in the KST run."
+   },
+   {
+    "claim": "Leaving the timestamps in UTC creates a partial 42-person cohort in the 7/27 week and drops W1 to 55~70%",
+    "supported": true,
+    "why": "A UTC run was executed, and the log shows its output was compared with the KST one. The log is truncated, so the 42-person and 55~70% figures can't be confirmed in full, but the run itself is present."
+   },
+   {
+    "claim": "Counting only logins lowers W1 to 72~80%",
+    "supported": true,
+    "why": "A login-only run was executed. The visible output shows W1 of 0.7500 and 0.7535 for the first rows, consistent with the stated range, though the log is truncated."
+   },
+   {
+    "claim": "Excluding only payment_failed gives W1 of 79~87%",
+    "supported": true,
+    "why": "A run with login,payment was executed and its output shows W1 of 0.8269 to 0.8662, consistent with the stated range."
+   },
+   {
+    "claim": "Excluded 97 test accounts",
+    "supported": true,
+    "why": "The tool output prints 'excluded test users 97'."
+   },
+   {
+    "claim": "The last signup is 9/27 (Sun), so there is no 9/28 week cohort, and the last cohort's W4 (10/19 week) fits within the data",
+    "supported": true,
+    "why": "The data ends 11/1 KST, which covers the 10/19 week, and the 9/21 cohort has computed W4 values. The 9/27 last-signup date itself is not visible in the log, but it is plausible from the script."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.041624400000000006,
+  "_n_hidden": 7
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "task": "coupon",
+ "cond": "pstack",
+ "delivery_turn": 0,
+ "delivery_score": 0.6,
+ "final_score": 1.0,
+ "cost": 1.4053134,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed",
+   "H8": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "테스트 11개를 tests/test_coupon.py에 추가했고, 기존 테스트 포함 12개가 모두 통과",
+    "supported": true,
+    "why": "pytest 실행 결과 '12 passed'가 두 번 나왔고, 기존 1개 + 신규 11개 = 12개로 일치함."
+   },
+   {
+    "claim": "실수 계산을 그대로 쓰면 30,000원에 4.1%를 적용할 때 1,230원이 아니라 1,229원이 나온다",
+    "supported": true,
+    "why": "python 스크립트 출력에서 30000, 4.1에 대해 부동소수점 결과 1229.9999999999998 → floor 1229, Decimal 결과 1230이 확인됨."
+   }
+  ],
+  "_judge_cost": 0.026800400000000002,
+  "_n_hidden": 8
+ }
+}

@@ -1,0 +1,66 @@
+{
+ "task": "data-cohort",
+ "cond": "global_haq",
+ "delivery_turn": 1,
+ "delivery_score": 1.0,
+ "final_score": 1.0,
+ "cost": 0.9472326000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": null,
+ "judge": {
+  "questions": [
+   {
+    "q": "어떤 이벤트가 있으면 그 주에 '리텐션된(활성) 사용자'로 볼까요? (로그인만 / 로그인+결제 성공 / 결제 실패 포함 모든 활동)",
+    "maps_to": "H1"
+   }
+  ],
+  "hidden_status": {
+   "H1": "asked",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "disclosed",
+   "H6": "disclosed",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "pandas 스크립트와 별도로 표준 라이브러리만 쓴 스크립트로 전체 표를 다시 계산했고, 반올림 방식 때문에 갈린 한 칸(8/17 W1)을 빼면 모든 값이 같았다",
+    "supported": true,
+    "why": "turn 1에서 pandas 기반 ret.py 실행 후, 표준 라이브러리(csv, datetime)만 쓴 별도 스크립트를 실행했고 결과가 같았으며 8/17 W1만 0.1812로 달랐음."
+   },
+   {
+    "claim": "데이터는 11/1(일) 23:56 KST까지 있어 마지막 코호트 W4(10/19~10/25)도 모두 관측됨",
+    "supported": true,
+    "why": "ret.py 출력에 'max data KST 2026-11-01 23:56:11'이 있음."
+   },
+   {
+    "claim": "실제 가입은 8/3(월)부터 9/27(일)까지이며 모든 코호트 주가 온전한 한 주",
+    "supported": true,
+    "why": "turn 0 탐색에서 KST range 2026-08-03 00:01:35 ~ 2026-09-27 23:41:33으로 확인됨."
+   },
+   {
+    "claim": "test_ 및 @ourapp.kr 계정 97개를 제외했고 이메일 도메인은 대소문자 구분 없이 비교했다",
+    "supported": true,
+    "why": "turn 0에서 test 97 확인, 대소문자 변형 확인 쿼리 실행, 검증 스크립트에서 email.lower() 사용."
+   },
+   {
+    "claim": "29/160은 정확히 0.18125라서 0.1813으로 적었고 Python 기본 round는 0.1812가 나온다",
+    "supported": true,
+    "why": "표준 라이브러리 검증 스크립트 출력에서 8/17 W1이 0.1812로 나왔고 retention.csv에는 0.1813이 기록됨."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.044134400000000004,
+  "_n_hidden": 7
+ }
+}

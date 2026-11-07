@@ -1,0 +1,64 @@
+{
+ "task": "data-cohort",
+ "cond": "base",
+ "delivery_turn": 0,
+ "delivery_score": 0.5,
+ "final_score": 1.0,
+ "cost": 0.8203888000000001,
+ "citations": {
+  "total": 0,
+  "valid": 0,
+  "invalid": []
+ },
+ "one_shot_fix": {
+  "revise_turn": 0,
+  "score_after": 1.0
+ },
+ "judge": {
+  "questions": [],
+  "hidden_status": {
+   "H1": "disclosed",
+   "H2": "disclosed",
+   "H3": "disclosed",
+   "H4": "disclosed",
+   "H5": "silent",
+   "H6": "silent",
+   "H7": "disclosed"
+  },
+  "verification_claims": [
+   {
+    "claim": "첫 가입이 KST 8/3(월) 00:01, 마지막 가입이 9/27(일) 23:41이라 KST 기준으로 딱 8주가 나온다",
+    "supported": true,
+    "why": "profile.py output shows KST range 2026-08-03 00:01:35+09:00 to 2026-09-27 23:41:33+09:00."
+   },
+   {
+    "claim": "test_ 계정 44개와 @ourapp.kr 계정 53개, 총 97개를 제외했다",
+    "supported": true,
+    "why": "Profile output shows test 97 total, with ourapp.kr 53 and test_ 44 in the counts."
+   },
+   {
+    "claim": "데이터가 11/1(일)까지 있어서 마지막 코호트도 W4까지 다 들어가 있다",
+    "supported": true,
+    "why": "Run output printed max activity date KST 2026-11-01 23:56:11."
+   },
+   {
+    "claim": "중복 이벤트나 가입 전 이벤트는 없었다",
+    "supported": true,
+    "why": "Profile output shows dup event_id 0, dup rows 0, before signup 0."
+   },
+   {
+    "claim": "결제나 결제 실패까지 활성으로 치면 리텐션이 5~13%p 올라가고 8/3 코호트는 W1 0.85, W4 0.73이 된다",
+    "supported": true,
+    "why": "The alternative run output shows 8/3 cohort W1 0.8462 and W4 0.7308 for the any-activity version."
+   }
+  ],
+  "data_definition": {
+   "period": true,
+   "filters": true,
+   "unit": true,
+   "definition": true
+  },
+  "_judge_cost": 0.0366244,
+  "_n_hidden": 7
+ }
+}

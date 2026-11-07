@@ -8,6 +8,8 @@
 | global_ha | yes                         | yes           | /wrxp:ha      |
 | global_haq  | yes                       | yes           | /wrxp:haq     |  (hard suite)
 | global_haqq | yes                       | yes           | /wrxp:haqq    |  (hard suite)
+| pstack      | no                        | pstack only   | -             |  (hook routes to poteto-mode)
+| pstack_poteto | no                      | pstack only   | /pstack:poteto-mode |
 
 Every condition runs with its own CLAUDE_CONFIG_DIR so that only the setup
 output differs. "global" loads the plugin because the setup rules route to
@@ -22,6 +24,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PLUGIN = HERE.parent.parent / "wrxp"
 SETUP = PLUGIN / "skills/setup/scripts/setup_global.py"
+# pstack (michael-denyer/pstack-claude) pinned by fetch_pstack.sh; override with PSTACK_DIR
+PSTACK = Path(os.environ.get("PSTACK_DIR", HERE / ".cache" / "pstack-claude" / "plugins" / "pstack"))
 
 CONDS = {
     "base": {"global": False, "plugin": False, "prefix": ""},
@@ -31,6 +35,9 @@ CONDS = {
     # hard suite only: question tiers on top of the global block
     "global_haq": {"global": True, "plugin": True, "prefix": "/wrxp:haq"},
     "global_haqq": {"global": True, "plugin": True, "prefix": "/wrxp:haqq"},
+    # pstack only (no wrxp): its SessionStart hook routes work to poteto-mode
+    "pstack": {"global": False, "plugin": "pstack", "prefix": ""},
+    "pstack_poteto": {"global": False, "plugin": "pstack", "prefix": "/pstack:poteto-mode"},
 }
 STRIP_ENV = ["CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD", "CLAUDE_ADDITIONAL_DIRECTORIES"]
 
@@ -54,7 +61,11 @@ def command(cond: str, allowed: str, resume: str = None):
            "--permission-mode", "acceptEdits", "--allowedTools", allowed]
     if resume:
         cmd += ["--resume", resume]
-    if c["plugin"]:
+    if c["plugin"] == "pstack":
+        if not (PSTACK / ".claude-plugin" / "plugin.json").exists():
+            raise RuntimeError(f"pstack not found at {PSTACK}; run fetch_pstack.sh")
+        cmd += ["--plugin-dir", str(PSTACK)]
+    elif c["plugin"]:
         cmd += ["--plugin-dir", str(PLUGIN)]
     return cmd
 

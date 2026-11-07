@@ -3,3 +3,5 @@ __pycache__/
 .pytest_cache/
 std/items/scifact_corpus/
 std/items_pilot/
+.cache/
+tbench/tasks/

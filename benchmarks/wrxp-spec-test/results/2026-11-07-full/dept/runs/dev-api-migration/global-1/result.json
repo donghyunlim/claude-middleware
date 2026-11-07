@@ -1,0 +1,32 @@
+{
+ "task": "dev-api-migration",
+ "cond": "global",
+ "rep": 1,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.293141,
+   "agent_sec": 44.7331120967865,
+   "num_turns": 9,
+   "agent_message": "`app/` 코드의 billing, notify, reports를 v2 `CustomerAPI`로 옮겼습니다. 세 함수의 이름과 인자는 바꾸지 않았고, 기존 동작도 v1과 같게 유지됩니다. `python3 -m pytest -q`를 실행한 결과 7개 테스트가 모두 통과했습니다(exit 0). 기존 테스트는 3개이고, 이번에 4개를 추가했습니다. CLI의 `report`, `invoice`, `notify` 명령도 실행해서 출력이 이전과 같은 것을 확인했습니다.\n\nCHANGELOG에 적힌 변경 가운데 그대로 옮기면 결과가 틀어지는 부분이 있어서, 아래처럼 처리했습니다.\n\n- **`monthly_signups`** (`app/reports.py`)\n  - v2의 `list_customers()`는 첫 페이지 50건만 반환합니다. 그대로 쓰면 고객이 50명을 넘을 때 집계가 모자라므로 `iter_customers()`로 전체 고객을 순회합니다.\n  - v2의 `created_at`은 UTC 시각입니다. v1의 `joined`처럼 KST 기준 월로 세도록, 월을 셀 때 KST(UTC+9)로 변환합니다. 이 변환을 하지 않으면 매달 1일 0~9시(KST)에 가입한 고객이 전달로 집계됩니다.\n- **상호 필드**: v1의 `name`은 v2의 `legal_name`에 해당합니다(`_backend._to_v1` 기준). 그래서 청구서와 갱신 안내 문자에는 `display_name`(앱 별칭)이 아니라 `legal_name`을 씁니다.\n- **고객이 없는 경우**: v2의 `fetch()`는 고객이 없으면 `CustomerNotFound`를 발생시킵니다.\n  - `renewal_messages`는 이 예외를 잡아서 해당 고객을 이전처럼 건너뜁니다.\n  - `invoice_header`는 이 예외를 받아 이전과 같이 `KeyError`를 발생시킵니다. `CustomerNotFound`는 `LookupError`를 상속하지만 `KeyError`의 하위 클래스가 아니므로, 기존에 `except KeyError`로 처리하던 호출부가 계속 동작하도록 변환했습니다.\n\n추가한 테스트(`tests/test_app.py`)는 다음 4가지를 확인합니다.\n- 고객이 120명일 때 페이지를 넘어 전체가 집계되는지\n- UTC 8월 31일 16시에 가입한 고객이 KST 기준 9월로 집계되는지\n- 없는 고객으로 청구서를 만들면 `KeyError`가 발생하는지\n- 상호에 `display_name`이 아니라 `legal_name`이 쓰이는지\n\n`app/`에는 이제 `client_v1`을 쓰는 코드가 없습니다. `crmkit/client_v1.py`는 라이브러리 쪽 파일이므로 수정하지 않았습니다.",
+   "user_action": "revise",
+   "user_message": "app/ 쪽 이전은 의도대로입니다. 다만 crmkit/client_v1.py를 수정하지 않았다고 하셨는데, 그 파일도 손봐야 합니다. v1 CRMClient는 이번 릴리스에서 지우지 않고 반환 형식과 동작을 지금과 그대로 두되, CRMClient를 만들 때 DeprecationWarning이 나서 v2로 옮기라고 알리게 해 주세요. 이 경고가 나는지 확인하는 테스트도 추가하고 python3 -m pytest -q로 다시 확인해 주세요.",
+   "user_cost": 0.0183544
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.385577,
+   "agent_sec": 24.298264741897583,
+   "num_turns": 4,
+   "agent_message": "이제 `crmkit/client_v1.py`의 `CRMClient`를 만들면 `DeprecationWarning`이 발생하고, v2 `CustomerAPI`로 옮기라는 안내가 함께 나옵니다. `CRMClient`는 삭제하지 않았고, 반환 형식과 동작도 그대로입니다. `python3 -m pytest -q`로 다시 확인한 결과 10개 테스트가 모두 통과했습니다(exit 0).\n\n**`crmkit/client_v1.py`**\n- 경고 문구는 다음과 같습니다. \"crmkit.client_v1.CRMClient는 더 이상 권장되지 않으며 /v1 엔드포인트가 내려가면 제거됩니다. crmkit.client_v2.CustomerAPI로 옮기세요(변경 사항은 CHANGELOG.md 참고).\"\n- `stacklevel=2`를 지정했습니다. 그래서 경고 위치가 `client_v1.py` 내부가 아니라 `CRMClient(...)`를 호출한 코드의 줄로 표시됩니다.\n- `get_customer()`와 `list_customers()`는 수정하지 않았습니다.\n\n**새 테스트 파일 `tests/test_client_v1.py`** (3개)\n- `CRMClient`를 만들 때 `DeprecationWarning`이 발생하는지, 그리고 경고 문구에 `CustomerAPI`가 들어 있는지 확인합니다.\n- v1의 기존 동작이 그대로인지 확인합니다. 반환 dict의 모양과 값(`010-1234-5678` 형식 전화번호, KST 기준 `joined`), 고객이 없을 때 `None`을 반환하는지, 전체 목록이 나오는지를 검사합니다.\n- `app/`의 세 함수를 실행해도 `DeprecationWarning`이 발생하지 않는지 확인합니다. `app/`이 v1을 다시 쓰게 되면 이 테스트가 실패합니다.\n\n`python3 -W always`로 `CRMClient`를 직접 만들어 보니, 위 경고 문구가 호출한 줄의 위치와 함께 출력되었습니다.\n\n참고로 Python은 `DeprecationWarning`을 기본 설정에서 `__main__` 모듈의 코드가 직접 발생시킨 경우에만 표시합니다. 그래서 다른 모듈에서 `CRMClient`를 쓰는 배치 코드를 그냥 실행하면 이 경고가 터미널에 보이지 않을 수 있습니다. pytest를 실행할 때는 경고가 표시됩니다. 일반 실행에서도 경고가 반드시 보여야 한다면, 경고 종류를 `FutureWarning`으로 바꾸는 방법이 있습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0209644
+  }
+ ],
+ "wall_sec": 83.0274019241333,
+ "user_turns": 1,
+ "accepted": true
+}

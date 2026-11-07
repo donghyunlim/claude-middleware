@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "base",
+ "rep": 1,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.5559572,
+   "agent_sec": 146.6874589920044,
+   "num_turns": 13,
+   "agent_message": "운영 규모 데이터에서 몇 분 걸리던 리포트 생성이 0.15초 정도로 줄었습니다. 바꾼 파일은 `salesreport/report.py` 하나이고, `build_report(data_dir)`와 `python3 -m salesreport.cli DATA_DIR OUT_PATH`는 그대로입니다.\n\n| 데이터 | 이전 | 이후 |\n|---|---|---|\n| `data/` 샘플 (500라인), `bench.py` | 0.319s | 0.002s |\n| 운영 규모 (주문 라인 4.5만, 상품 3천, 고객 5천, 환율 5년치) | 1,500라인에 19초, 4.5만 라인이면 약 10분 예상 | 0.15s |\n\n운영 규모 데이터는 실제 운영 데이터가 아니라 README에 적힌 규모에 맞춰 제가 만든 것입니다. 이전 코드로 4.5만 라인 전체를 돌리면 너무 오래 걸려서, 이전 시간은 1,500라인 실측값으로 추산했습니다.\n\n**느렸던 이유:** 주문 라인 하나를 처리할 때마다 상품 CSV를 3번, 고객 CSV를 2번, 환율 CSV를 1번 처음부터 다시 읽었습니다. 주문 ID와 고객을 셀 때도 이미 본 값을 리스트에서 찾느라 데이터가 커질수록 시간이 제곱으로 늘었습니다.\n\n**바꾼 내용:**\n- 각 파일을 `build_report` 호출당 한 번만 읽어 SKU, 고객 ID, 통화별로 바로 찾을 수 있게 만들어 둡니다.\n- 환율은 통화별로 날짜순 정렬해 두고, 기준일 이하 가장 최근 고시를 이진 탐색으로 찾습니다.\n- 주문 ID와 고객 중복 확인은 리스트 대신 집합으로 바꿨습니다.\n\n**결과가 이전과 같도록 지킨 점:**\n- 실제 데이터에 중복 SKU 5개가 있는데, 이전처럼 파일에서 먼저 나온 행을 씁니다.\n- 같은 날짜에 환율이 두 번 고시된 경우가 6건 있는데, 이것도 먼저 나온 행을 씁니다.\n- 고객 ID 앞뒤 공백은 이전처럼 떼고 비교합니다.\n- 매출 합계를 더하는 순서가 이전과 같아서 반올림 결과도 같습니다.\n- 인덱스는 호출할 때마다 새로 만듭니다. 배치가 한 프로세스에서 매일 바뀌는 여러 폴더를 연달아 처리해도 이전 데이터가 섞이지 않습니다.\n- 파일은 필요해질 때 읽습니다. 그래서 전부 원화 주문이면 지금처럼 환율 파일이 없어도 됩니다.\n\n**검증:**\n- `pytest`가 통과하고, CLI 출력이 `expected/report.txt`와 바이트 단위로 같습니다.\n- 운영 규모를 흉내 낸 1,500라인 데이터에서 이전 코드와 출력이 같았습니다. 이 데이터에는 중복 SKU, 같은 날짜 중복 환율, 미등록 고객, 공백 섞인 고객 ID를 넣었습니다.\n- 오류 상황 4가지에서 이전 코드와 예외 종류와 메시지까지 같았습니다. 없는 SKU는 `KeyError`, 기준일 이전 환율이 없으면 `LookupError`이고, 미등록 고객과 환율 파일이 없는 전부 원화 주문은 이전처럼 정상 처리됩니다.\n\n`catalog.get_product`, `customers.get_customer`, `fx.rate_for`, `line_amount`는 다른 곳에서 쓸 수도 있어서 그대로 두었습니다. 리포트 생성에는 더 이상 쓰지 않습니다.\n\n검증 스크립트와 데이터 생성기는 스크래치패드에 있습니다:\n- /tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-base-1-work/5e278ae8-9e5a-4249-97fb-532ef49f4d1d/scratchpad/verify.py\n- /tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-base-1-work/5e278ae8-9e5a-4249-97fb-532ef49f4d1d/scratchpad/gen.py",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0180884
+  }
+ ],
+ "wall_sec": 152.76329040527344,
+ "user_turns": 0,
+ "accepted": true
+}

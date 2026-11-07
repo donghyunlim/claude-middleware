@@ -1,0 +1,42 @@
+{
+ "domain": "retail",
+ "task_id": "9",
+ "cond": "global_haq",
+ "trial": 1,
+ "reward": {
+  "db": 0.0
+ },
+ "stopped": true,
+ "termination": "###OUT-OF-SCOPE###",
+ "agent_turns": 2,
+ "tool_calls": 0,
+ "agent_cost": 0.2499192,
+ "user_cost": 0.0252352,
+ "wall_sec": 36.33750128746033,
+ "events": [
+  {
+   "role": "assistant",
+   "content": "Hi! How can I help you today?"
+  },
+  {
+   "role": "user",
+   "content": "Hi, I'd like to exchange a couple of items from my order. My user ID is mei_kovacs_8020, and I'm in zipcode 28236. I want to swap the water bottle for a bigger one, and the desk lamp for a brighter one."
+  },
+  {
+   "role": "assistant",
+   "content": "Thanks for reaching out! I'd be glad to help with the exchange. First, I need to verify your identity. Could you please give me either the email address on your account, or your full name (to use with the zip code 28236 you provided)?"
+  },
+  {
+   "role": "user",
+   "content": "I don't remember the email on the account, sorry. I don't have it handy. Could you verify me with my user ID and zip code instead? Or I can give you my full name if that helps, but I'd rather try the user ID and zip first."
+  },
+  {
+   "role": "assistant",
+   "content": "I'm sorry, but I can't verify your identity with a user ID and zip code. Our policy only allows verification by email address, or by full name plus zip code. If you give me your full name, I'll use it with zip code 28236 to verify your account, and then we can start on your exchange."
+  },
+  {
+   "role": "user",
+   "content": "###OUT-OF-SCOPE###"
+  }
+ ]
+}

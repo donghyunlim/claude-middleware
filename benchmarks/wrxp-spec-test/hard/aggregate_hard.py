@@ -5,10 +5,15 @@ import statistics as st
 import sys
 from pathlib import Path
 
-CONDS = ["base", "global", "global_ha", "global_haq", "global_haqq"]
-LABEL = {"base": "미적용", "global": "전역만", "global_ha": "전역+ha", "global_haq": "전역+haq", "global_haqq": "전역+haqq"}
+CONDS = ["base", "global", "global_ha", "global_haq", "global_haqq", "pstack", "pstack_poteto"]
+LABEL = {"base": "미적용", "global": "전역만", "global_ha": "전역+ha", "global_haq": "전역+haq", "global_haqq": "전역+haqq",
+         "pstack": "pstack", "pstack_poteto": "pstack+poteto"}
 TASK = {"export": "주문 CSV 내보내기(모호한 요구)", "coupon": "쿠폰 규칙(모호한 요구)", "churn": "이탈률 정의(모호한 요구)",
-        "inventory": "여러 파일에 걸친 재고 버그", "roadmap": "3개 팀 조율 로드맵 문서"}
+        "inventory": "여러 파일에 걸친 재고 버그", "roadmap": "3개 팀 조율 로드맵 문서",
+        "mkt-campaign": "마케팅: 재활성화 캠페인", "fin-variance": "재무: 예산 대비 실적", "plan-rice": "기획: RICE 우선순위",
+        "legal-review": "법무: 공급 계약 검토", "hr-onboarding": "HR: 온보딩 일정", "cs-macro": "CS: 환불 매크로",
+        "sales-quote": "영업: 견적서", "data-cohort": "데이터: 코호트 리텐션", "dev-api-migration": "개발: API v1→v2 이전",
+        "dev-perf": "개발: 리포트 성능 개선"}
 METRICS = [
     ("delivery", "첫 납품 점수", "pct"), ("final", "최종 점수", "pct"),
     ("user_turns", "사용자 개입 횟수", "num"), ("revisions_requested", "수정 요청 횟수", "num"),
@@ -41,7 +46,7 @@ def main():
     conds = [c for c in CONDS if any(c in v for v in data.values())]
     head = " | ".join(LABEL[c] for c in conds)
     summary = {"conds": conds, "overall": {}, "per_task": {}}
-    print("## 전체 평균 (과제 5개 × 3회)\n")
+    print(f"## 전체 평균 (과제 {len(data)}개)\n")
     print(f"| 지표 | {head} |")
     print("|---|" + "---:|" * len(conds))
     for key, label, kind in METRICS:

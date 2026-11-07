@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "pstack_poteto",
+ "rep": 1,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 1.3367400000000003,
+   "agent_sec": 774.8034868240356,
+   "num_turns": 2,
+   "agent_message": "리포트 생성이 이제 빨라졌습니다. 다른 시스템이 부르는 두 인터페이스와 결과 텍스트는 그대로입니다. 운영 규모 데이터로 원래 코드는 리포트 한 번에 10분 23초가 걸렸고, 고친 코드는 0.13초로 줄었습니다. 4,000배 이상 빨라진 셈이고, 결과 리포트는 바이트 단위로 같습니다.\n\n**원인.** 주문 라인 한 건마다 `products.csv`를 두 번, `customers.csv`를 두 번, `fx_rates.csv`를 한 번 처음부터 다시 읽고 파싱하고 있었습니다. 2,000라인 데이터를 프로파일링하니 29.0초 중 27.5초가 파일 읽기 함수(`read_rows`)였고, 이 함수가 7,923번 호출됐습니다.\n\n**고친 내용.** 파일마다 `build_report` 호출당 한 번만 읽어서 dict 인덱스로 만듭니다.\n- `catalog.load_products`, `customers.load_customers`, `fx.load_rates`가 인덱스를 만들어 조회 함수를 돌려줍니다.\n- 환율은 통화별 날짜 정렬 목록에서 `bisect`로 \"당일 또는 그 이전 최근 고시\"를 찾습니다.\n- 같은 키가 여러 행이면 예전처럼 파일에서 먼저 나온 행을 씁니다.\n- 주문 수와 고객 수 중복 제거는 리스트 대신 set과 dict로 바꿨습니다.\n\n배치 서버는 한 프로세스에서 매일 바뀌는 폴더를 연달아 처리합니다. 그래서 호출 사이에는 캐시를 두지 않았습니다. 두면 어제 데이터로 오늘 리포트가 나올 수 있습니다.\n\n**수치.** 측정한 값입니다.\n\n| 데이터 | 원래 코드 | 고친 코드 |\n|---|---|---|\n| 40k 라인, 상품·고객 4천, 환율 5년치 | 10분 23초 (1회) | 0.13초 (7회 중 최소, 범위 0.13~0.23초) |\n| 2k 라인 | 10.39초 | 0.019초 |\n\n2k 라인 값은 원래와 고친 코드를 번갈아 5회씩 돌린 중앙값입니다. 측정 머신은 4코어에 load average가 7.8로 바빴습니다. 그래서 2k 비교는 번갈아 돌렸습니다. 40k 원래 코드는 너무 오래 걸려서 1회만 쟀습니다. 실제 운영 데이터가 아니라 README에 적힌 규모에 맞춰 만든 합성 데이터라는 점도 감안해 주세요. 지금 남은 시간은 CSV를 한 번 파싱하는 비용과 집계 루프여서, 더 줄여도 배치에서 체감할 차이는 아닐 것으로 봅니다.\n\n**동작이 같은지 확인한 방법.**\n- 데이터셋 네 개 모두에서 원래 코드 출력과 비교해 바이트 단위로 같았습니다. `data/`, 합성 2k, 합성 3k, 합성 40k입니다.\n- 합성 데이터에는 앞뒤 공백 섞인 고객 ID, 미등록 고객, 중복 상품·고객 행, 같은 날짜 중복 환율, 날짜순이 아닌 환율 파일을 넣었습니다.\n- 예외 경우 7가지도 원래 코드와 결과가 같았습니다. 없는 SKU는 `KeyError`, 환율이 없으면 `LookupError`, 빈 주문은 `ValueError`이고, 두 예외 중 어느 쪽이 먼저 나는지도 같습니다.\n- `pytest`가 통과하고, `python3 -m salesreport.cli`의 출력은 `expected/report.txt`와 같습니다.\n\n**알아두실 점.**\n- 내부 함수 `catalog.get_product`, `customers.get_customer`, `fx.rate_for`는 지웠습니다. 말씀하신 인터페이스는 `build_report`와 CLI 두 개였고, 이 함수들을 쓰는 곳은 리포트 생성 코드밖에 없었습니다. 혹시 다른 곳에서 이 함수들을 직접 import한다면 알려 주세요.\n- 작업 폴더가 git 저장소가 아니어서 커밋이나 PR은 만들지 않았습니다. 바뀐 파일은 작업 폴더의 `salesreport/` 아래 네 개입니다.\n\n이번 작업에서 판단에 쓴 원칙은 세 가지입니다.\n- **benchmark-checklist.** 머신이 바빠서 2k 비교는 번갈아 측정했고, 원인 함수는 숫자를 믿기 전에 프로파일로 확인했습니다.\n- **Laziness Protocol.** 0.13초에서 멈췄고, 원래 함수를 감싸는 호환용 래퍼는 남기지 않았습니다.\n- **Prove It Works.** 결과가 같다는 주장을 눈으로 확인하지 않고, 원래 코드 출력과 비교하는 스크립트로 확인했습니다.\n\n다시 돌려볼 수 있는 파일은 다음과 같습니다.\n- 비교·측정 스크립트: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-poteto-1-work/9c85466d-07c5-41eb-b2ff-dee4f9be81ed/scratchpad/harness.py`\n- 예외 경우 비교: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-poteto-1-work/9c85466d-07c5-41eb-b2ff-dee4f9be81ed/scratchpad/edges.py`\n- 합성 데이터 생성: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-poteto-1-work/9c85466d-07c5-41eb-b2ff-dee4f9be81ed/scratchpad/gen.py`",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0205964
+  }
+ ],
+ "wall_sec": 779.6787657737732,
+ "user_turns": 0,
+ "accepted": true
+}

@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "pstack",
+ "rep": 2,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 1.0051694,
+   "agent_sec": 768.7969975471497,
+   "num_turns": 29,
+   "agent_message": "리포트 생성이 이제 훨씬 빠릅니다. 운영 규모 데이터(주문 라인 4만 건)에서 원래 코드는 9분 58초 걸렸고, 바꾼 코드는 0.27초 걸립니다. 출력은 한 바이트도 다르지 않습니다. `build_report(data_dir)`와 `python3 -m salesreport.cli DATA_DIR OUT_PATH`는 그대로 두었습니다.\n\n**원인.** 주문 라인 하나를 처리할 때마다 `products.csv`를 두 번, `fx_rates.csv`와 `customers.csv`를 각각 한 번씩 처음부터 다시 읽고 있었습니다. 고객과 주문 중복을 리스트의 `in`으로 확인하는 것도 라인 수의 제곱에 비례했습니다.\n\n**수정 내용.**\n- 각 CSV를 `build_report` 호출당 한 번만 읽어 사전으로 만듭니다. `Catalog`, `Customers`, `FxRates` 클래스가 이 일을 합니다.\n- 환율은 통화별로 날짜순 목록을 만들고, 주문일 이전의 가장 최근 고시를 이진 탐색으로 찾습니다.\n- 중복 확인은 집합(set)으로 바꿨습니다.\n\n기존 동작에서 그대로 지킨 부분은 이렇습니다.\n- 같은 SKU, 같은 고객, 같은 (통화, 날짜) 행이 여러 번 나오면 파일에서 먼저 나온 행이 이깁니다.\n- 고객 ID의 앞뒤 공백은 제거해서 비교하고, 등록되지 않은 고객은 기본값으로 처리합니다.\n- 오류는 예전과 같은 종류로 납니다. 없는 SKU는 `KeyError`, 해당 날짜의 환율이 없으면 `LookupError`입니다.\n- 매출 합산 순서가 같아서 소수점 반올림 결과도 같습니다.\n\n배치 서버는 매일 바뀌는 폴더를 한 프로세스에서 연달아 처리하기 때문에, 호출과 호출 사이에는 아무것도 캐시하지 않습니다.\n\n**측정 결과** (`bench.py`, 여러 번 돌린 것 중 가장 빠른 값)\n\n| 데이터 | 이전 | 이후 |\n|---|---|---|\n| `data/` (500라인) | 0.312s | 0.002s |\n| 3,000라인 | 23.7s | 0.013s |\n| 40,000라인 | 9분 58초 (1회) | 0.273s |\n\n**검증.**\n- `pytest`가 통과하고, CLI 출력도 `expected/report.txt`와 똑같습니다.\n- 3천 라인과 4만 라인 데이터에서 원래 코드와 새 코드의 출력을 `cmp`로 비교했고, 둘 다 같았습니다.\n- 이 테스트 데이터는 운영 데이터를 흉내 내서 제가 만든 것입니다. 중복 SKU, 중복 환율 행, 영업일이 아닌 날의 주문, 공백이 붙은 고객 ID, 미등록 고객, 중복 고객 행이 모두 실제로 들어 있는 것을 확인했습니다.\n- 실제 운영 데이터로는 돌려보지 않았습니다. 그래서 운영 환경에서의 실제 시간은 추정입니다. 수정 후에는 처리 시간이 데이터 크기에 거의 비례하므로 1초 안쪽일 것으로 예상합니다.\n\n바뀐 파일은 `salesreport/report.py`, `catalog.py`, `customers.py`, `fx.py`입니다. 예전 내부 함수 `get_product`, `get_customer`, `rate_for`, `line_amount`는 삭제했습니다. 요청하신 두 인터페이스 밖에서 이 함수들을 직접 호출하는 곳이 있다면 알려 주세요.\n\n데이터 생성 스크립트와 비교 스크립트는 `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-2-work/d288418f-dbc7-4d9e-af26-38510a63da89/scratchpad/gen.py`와 `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-2-work/d288418f-dbc7-4d9e-af26-38510a63da89/scratchpad/golden.py`에 있습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0180004
+  }
+ ],
+ "wall_sec": 774.045037984848,
+ "user_turns": 0,
+ "accepted": true
+}

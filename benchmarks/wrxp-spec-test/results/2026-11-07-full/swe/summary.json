@@ -1,0 +1,166 @@
+{
+ "conds": [
+  "base",
+  "global",
+  "global_haq",
+  "global_haqq",
+  "pstack",
+  "pstack_poteto"
+ ],
+ "instances": [
+  "astropy__astropy-14182",
+  "django__django-13401",
+  "mwaskom__seaborn-3069",
+  "psf__requests-2931",
+  "pylint-dev__pylint-6386",
+  "pytest-dev__pytest-7490",
+  "sphinx-doc__sphinx-8595",
+  "sympy__sympy-19040"
+ ],
+ "by_cond": {
+  "base": {
+   "pass@1": 1,
+   "pass^2": 1.0,
+   "runs": 16,
+   "cost": 0.32043095,
+   "sec": 163.78106679022312,
+   "diff_vs_base": null
+  },
+  "global": {
+   "pass@1": 1,
+   "pass^2": 1.0,
+   "runs": 16,
+   "cost": 0.3535404125,
+   "sec": 126.24498951435089,
+   "diff_vs_base": {
+    "mean": 0,
+    "ci": [
+     0,
+     0
+    ]
+   }
+  },
+  "global_haq": {
+   "pass@1": 1,
+   "pass^2": 1.0,
+   "runs": 16,
+   "cost": 0.4175259625,
+   "sec": 115.14313104748726,
+   "diff_vs_base": {
+    "mean": 0,
+    "ci": [
+     0,
+     0
+    ]
+   }
+  },
+  "global_haqq": {
+   "pass@1": 1,
+   "pass^2": 1.0,
+   "runs": 16,
+   "cost": 0.4631296875,
+   "sec": 178.45227792859077,
+   "diff_vs_base": {
+    "mean": 0,
+    "ci": [
+     0,
+     0
+    ]
+   }
+  },
+  "pstack": {
+   "pass@1": 1,
+   "pass^2": 1.0,
+   "runs": 16,
+   "cost": 0.3787023125,
+   "sec": 117.9037968814373,
+   "diff_vs_base": {
+    "mean": 0,
+    "ci": [
+     0,
+     0
+    ]
+   }
+  },
+  "pstack_poteto": {
+   "pass@1": 1,
+   "pass^2": 1.0,
+   "runs": 16,
+   "cost": 0.4899373125,
+   "sec": 205.98645941913128,
+   "diff_vs_base": {
+    "mean": 0,
+    "ci": [
+     0,
+     0
+    ]
+   }
+  }
+ },
+ "by_instance": {
+  "astropy__astropy-14182": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "django__django-13401": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "mwaskom__seaborn-3069": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "psf__requests-2931": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "pylint-dev__pylint-6386": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "pytest-dev__pytest-7490": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "sphinx-doc__sphinx-8595": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "sympy__sympy-19040": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  }
+ }
+}

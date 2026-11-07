@@ -1,0 +1,32 @@
+{
+ "task": "data-cohort",
+ "cond": "pstack",
+ "rep": 1,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.4089537999999999,
+   "agent_sec": 78.56009149551392,
+   "num_turns": 10,
+   "agent_message": "I saved `retention.csv`. It has 8 cohorts, from the week of 8/3 to the week of 9/21, with 1,203 users in total.\n\n```\ncohort_week,cohort_size,W1,W2,W3,W4\n2026-08-03,156,0.8462,0.7756,0.7949,0.7308\n2026-08-10,142,0.838,0.7817,0.6972,0.6831\n2026-08-17,160,0.8125,0.8438,0.7625,0.6813\n2026-08-24,163,0.8773,0.7055,0.7607,0.6933\n2026-08-31,131,0.855,0.7863,0.7099,0.771\n2026-09-07,131,0.8168,0.7405,0.7099,0.7557\n2026-09-14,163,0.8405,0.7975,0.7239,0.7055\n2026-09-21,157,0.8854,0.7516,0.7452,0.6943\n```\n\n**How I calculated it:**\n- **Timezone:** I converted the UTC timestamps to Korea time (KST). Signups start Monday 8/3 at 00:01 and end Sunday 9/27 in KST, so the data lines up with Monday-to-Sunday weeks. If I had used UTC as is, one Sunday 8/2 signup would have created an extra 7/27 cohort, and around 7 users' signup month would have shifted.\n- **Weeks:** Weeks start on Monday. Wk counts users who were active in the k-th calendar week after the week they signed up.\n- **Excluded:** 97 internal accounts (44 with IDs starting `test_` and 53 with `@ourapp.kr` emails), as the data dictionary instructs. They are removed from both the cohort sizes and the activity counts.\n- **Complete data:** The data runs to 11/1, so the W4 week (10/19) is fully covered even for the last cohort (9/21).\n\n**Decision for you: what counts as \"active\".** I counted a user as active in a week if they had any login, payment, or failed payment (`payment_failed`) event, meaning they came back and did something. If you count logins only, every value drops by about 8–15 percentage points. For example, the 8/3 cohort becomes W1 0.7500 and W4 0.5897. If your team's standard is login-only, tell me and I'll recalculate.\n\nSome values show fewer than 4 decimal places because a trailing zero was dropped (e.g. 0.838 = 0.8380). The script that generates the file is at `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-data-cohort-pstack-1-work/af9de5bf-98e8-473a-b17a-dc0efd4ca829/scratchpad/retention.py`.",
+   "user_action": "revise",
+   "user_message": "활성 기준이 잘못됐어요. 리텐션은 로그인이 아니라 결제(event_type == \"payment\") 기준입니다. login은 세지 말고, payment_failed도 결제가 아니니 세지 마세요. Wk는 코호트 주로부터 k주 뒤의 달력 주(월~일, KST) 안에 payment 이벤트가 1건 이상 있는 코호트 사용자 수 ÷ cohort_size로 다시 계산해서 retention.csv를 갱신해 주세요.",
+   "user_cost": 0.0170444
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.5351819999999999,
+   "agent_sec": 30.96414279937744,
+   "num_turns": 6,
+   "agent_message": "I recalculated retention using payments only and updated `retention.csv`.\n\n```\ncohort_week,cohort_size,W1,W2,W3,W4\n2026-08-03,156,0.2564,0.2500,0.1859,0.1667\n2026-08-10,142,0.2183,0.1901,0.1690,0.1690\n2026-08-17,160,0.1813,0.1500,0.1688,0.1625\n2026-08-24,163,0.1779,0.1718,0.2086,0.0982\n2026-08-31,131,0.2061,0.1756,0.1908,0.1221\n2026-09-07,131,0.2137,0.1985,0.1374,0.1069\n2026-09-14,163,0.2209,0.1595,0.2393,0.1411\n2026-09-21,157,0.2293,0.1592,0.2038,0.1720\n```\n\n- **What changed:** Wk is now the share of cohort users with at least one `payment` event in the k-th Monday–Sunday week (KST) after their cohort week. `login` and `payment_failed` are no longer counted. The cohorts, cohort sizes and the internal-account exclusion are the same as before.\n- **Values:** Retention now runs about 10–26%, compared with 70–88% under the old any-activity definition.\n- **Spot check:** I recomputed one cell by hand, the 8/3 cohort's W1, with separate code. It came out to 40/156 = 0.2564, the same as the file.\n- **Rounding fix:** Python's default `round` sends exact halves to the even digit, so 29/160 = 0.18125 became 0.1812. I switched to normal round-half-up, so that cell is now 0.1813. Every value also now shows all four decimal places (e.g. 0.2500).",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0213184
+  }
+ ],
+ "wall_sec": 123.09465312957764,
+ "user_turns": 1,
+ "accepted": true
+}

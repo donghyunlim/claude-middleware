@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "global_haq",
+ "rep": 2,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.7732808000000001,
+   "agent_sec": 188.33260416984558,
+   "num_turns": 22,
+   "agent_message": "🎚️ Tier: haq · quick · 질문 0~4개 · 최대 1라운드\n🗡️ 실행: runtime-bounded task graph\n\n리포트 생성 속도를 크게 개선했습니다. `bench.py data` 기준으로 0.274s가 0.002s로 줄었고, 운영 규모로 만든 합성 데이터(주문 라인 6만 건, 상품·고객 각 5천 건, 환율 4년 치)에서는 **0.226s**가 걸립니다. 출력은 원본과 바이트 단위로 같고, 두 인터페이스(`build_report(data_dir)`, `python3 -m salesreport.cli DATA_DIR OUT_PATH`)는 그대로입니다. 사용자께 확인할 결정은 없다고 판단해 질문 없이 진행했습니다.\n\n**제가 정한 판단**\n- **출력은 한 글자도 바꾸지 않았습니다.** README에 재무팀 정산 시스템이 결과 텍스트를 그대로 파싱한다고 되어 있기 때문입니다. 샘플 데이터에는 중복된 SKU 5개와 같은 날짜에 두 번 고시된 환율 6건이 있는데, 기존처럼 파일에서 먼저 나온 행을 씁니다. 합계를 더하는 순서도 기존과 같아서 부동소수점 결과가 달라지지 않습니다.\n- **호출을 넘나드는 캐시는 두지 않았습니다.** 배치 서버는 한 프로세스에서 매일 갱신되는 폴더로 `build_report`를 연달아 부릅니다. 전역 캐시를 두면 어제 데이터가 남아 있을 수 있으므로, 인덱스는 호출할 때마다 새로 만듭니다.\n\n다르게 처리해야 하면 말씀해 주세요. 예를 들어 중복 SKU는 마지막 행을 써야 한다면 그에 맞춰 바꾸겠습니다.\n\n**느렸던 원인과 수정 내용** (`salesreport/report.py`만 수정)\n- 기존 코드는 주문 라인 1건마다 `products.csv`를 2번, `customers.csv`와 `fx_rates.csv`를 1번씩 처음부터 다시 읽었습니다. 고객 중복 확인과 주문 ID 중복 확인도 리스트를 처음부터 훑는 방식이었습니다. 그래서 데이터가 늘면 시간이 제곱에 가깝게 늘었습니다.\n- 이제 CSV 파일은 호출마다 한 번만 읽어 사전 인덱스로 만듭니다. 환율은 통화별로 날짜를 정렬해 이진 탐색하고, 고객과 주문 ID 중복 확인에는 집합을 씁니다.\n- 기존 `catalog.get_product`, `customers.get_customer`, `fx.rate_for` 함수는 그대로 두었습니다. 다른 곳에서 이 함수를 써도 동작은 같습니다.\n\n**확인한 내용**\n- `python3 -m pytest -q`: 1개 테스트가 통과했습니다(골든 파일 `expected/report.txt`와 비교).\n- 기존 코드를 비교용으로 따로 두고 신규 코드와 결과를 대조했습니다. 샘플 데이터와 합성 데이터 2세트에서 모두 같았습니다. 합성 데이터에는 중복 SKU, 같은 날 중복 고시된 환율, 공백이 섞인 고객 ID, 미등록 고객, 주말 미고시, 날짜순이 아닌 환율 파일을 넣었습니다.\n  - 주문 라인 3천 건: 기존 7.229s → 신규 0.009s\n  - 주문 라인 4천 건: 기존 16.225s → 신규 0.012s\n- 오류 동작도 기존과 같습니다. 없는 SKU는 `KeyError`, 고시 환율이 없는 날짜는 같은 메시지의 `LookupError`가 나고, 미등록 고객은 기본값으로 처리됩니다.\n- 같은 폴더의 파일을 바꾼 뒤 다시 호출하면 바뀐 내용이 결과에 반영됩니다.\n- CLI 출력 파일은 `expected/report.txt`와 일치합니다.\n\n**남은 위험**\n- 실제 운영 데이터로는 돌려 보지 못했습니다. 합성 데이터 6만 건에서 기존 코드는 너무 오래 걸릴 것 같아 신규 코드만 측정했습니다. 운영 데이터 폴더에서 `python3 bench.py <운영데이터폴더> 3`으로 한 번 확인해 주세요.\n\n비교와 측정에 쓴 스크립트(`orig_report.py`, `compare.py`, `edge.py`, `gen.py`)는 저장소 밖 임시 폴더 `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-haq-2-work/de5c09df-eeef-4cc1-a3f9-c5a7a5a0baa7/scratchpad`에 있고, 저장소에는 추가하지 않았습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0187644
+  }
+ ],
+ "wall_sec": 193.80015397071838,
+ "user_turns": 0,
+ "accepted": true
+}

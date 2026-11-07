@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "base",
+ "rep": 2,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.7365902,
+   "agent_sec": 329.05449080467224,
+   "num_turns": 1,
+   "agent_message": "Report generation is now about 3,000× faster. On a 12,000-line dataset it went from 165s to 0.06s. At production size (50,000 order lines) it takes 0.26s; the original version would take tens of minutes there, so I couldn't measure it directly. The results are byte-identical to the original code.\n\n**Why it was slow:** for every order line, the code re-read and scanned the whole products, customers and FX rate files from disk, each several times. On top of that, customer and order IDs were deduplicated with linear list searches. The cost grew with lines × file size.\n\n**What I changed**\n- `catalog.py`, `customers.py`, `fx.py`: added classes that read each file once into a lookup table. FX rates are sorted by date per currency and searched by binary search for \"the most recent rate on or before that day\".\n- `report.py`: `build_report` uses those tables, and the ID dedup now uses a set or dict.\n- The `build_report(data_dir)` and `python3 -m salesreport.cli DATA_DIR OUT_PATH` interfaces are unchanged. The old per-row functions (`get_product`, `get_customer`, `rate_for`, `line_amount`) are still there, in case other code calls them.\n\n**Things kept exactly as before**\n- **Duplicates:** when a SKU or customer appears twice, the first row wins. The sample data really does have 5 duplicate SKUs and duplicate FX rates on the same date. When rates for the same date differ, the one earlier in the file is used.\n- **Whitespace in customer IDs:** leading and trailing spaces are ignored when matching. Unregistered customers still show as `(미등록)/미상/일반`.\n- **Totals:** amounts are added up in the same order as before, so totals and percentages match to the last digit.\n- **No caching across calls:** the lookup tables are built fresh on every call. The batch server processes folders that are updated daily in one process, so a shared cache could mix in yesterday's data.\n\n**Checks I ran**\n- `pytest` passes, and the CLI output matches `expected/report.txt`.\n- I compared old and new outputs on the bundled `data` and on three generated datasets of 2,000–12,000 lines. All were identical. The generated data deliberately included duplicate SKUs and customers, duplicate FX dates with different rates, spaces in IDs, unregistered customers and out-of-order FX files.\n- Calling `data` → another folder → `data` again in one process returns correct, unmixed results.\n- `bench.py data` went from 0.272s to 0.002s.\n\nThe generated data isn't real production data, so I'd suggest running the old and new versions once on one day of real data and diffing the outputs before deploying. The data generator and comparison script are at `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-base-2-work/3596c063-4828-4fe8-87e8-b0a15d8082e0/scratchpad/gen.py` and `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-base-2-work/3596c063-4828-4fe8-87e8-b0a15d8082e0/scratchpad/compare.py`. The comparison script needs the original `report.py`, which I saved as `report_orig.py` in that same folder.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0159644
+  }
+ ],
+ "wall_sec": 334.7648196220398,
+ "user_turns": 0,
+ "accepted": true
+}

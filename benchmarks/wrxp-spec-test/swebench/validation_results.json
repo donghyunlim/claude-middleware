@@ -1,0 +1,202 @@
+[
+ {
+  "instance_id": "astropy__astropy-14182",
+  "valid": true,
+  "envrun_ok": true,
+  "prepare_sec": 2.4,
+  "noop": {
+   "resolved": false,
+   "f2p_passed": 0,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 9,
+   "eval_sec": 85.2,
+   "error": null
+  },
+  "ref": {
+   "resolved": true,
+   "f2p_passed": 1,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 9,
+   "eval_sec": 70.8,
+   "error": null,
+   "patch_lines": 29
+  }
+ },
+ {
+  "instance_id": "django__django-13401",
+  "valid": true,
+  "envrun_ok": true,
+  "prepare_sec": 6.8,
+  "noop": {
+   "resolved": false,
+   "f2p_passed": 0,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 32,
+   "eval_sec": 12.9,
+   "error": null
+  },
+  "ref": {
+   "resolved": true,
+   "f2p_passed": 1,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 32,
+   "eval_sec": 11.3,
+   "error": null,
+   "patch_lines": 20
+  }
+ },
+ {
+  "instance_id": "mwaskom__seaborn-3069",
+  "valid": true,
+  "envrun_ok": true,
+  "prepare_sec": 1.9,
+  "noop": {
+   "resolved": false,
+   "f2p_passed": 0,
+   "f2p_total": 2,
+   "p2p_failed": 0,
+   "p2p_total": 94,
+   "eval_sec": 28.5,
+   "error": null
+  },
+  "ref": {
+   "resolved": true,
+   "f2p_passed": 2,
+   "f2p_total": 2,
+   "p2p_failed": 0,
+   "p2p_total": 94,
+   "eval_sec": 36.2,
+   "error": null,
+   "patch_lines": 34
+  }
+ },
+ {
+  "instance_id": "psf__requests-2931",
+  "valid": true,
+  "envrun_ok": true,
+  "prepare_sec": 2.0,
+  "noop": {
+   "resolved": false,
+   "f2p_passed": 0,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 82,
+   "eval_sec": 4.1,
+   "error": null
+  },
+  "ref": {
+   "resolved": true,
+   "f2p_passed": 1,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 82,
+   "eval_sec": 6.6,
+   "error": null,
+   "patch_lines": 5
+  }
+ },
+ {
+  "instance_id": "pylint-dev__pylint-6386",
+  "valid": true,
+  "envrun_ok": true,
+  "prepare_sec": 3.2,
+  "noop": {
+   "resolved": false,
+   "f2p_passed": 0,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 7,
+   "eval_sec": 3.7,
+   "error": null
+  },
+  "ref": {
+   "resolved": true,
+   "f2p_passed": 1,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 7,
+   "eval_sec": 3.4,
+   "error": null,
+   "patch_lines": 22
+  }
+ },
+ {
+  "instance_id": "pytest-dev__pytest-7490",
+  "valid": true,
+  "envrun_ok": true,
+  "prepare_sec": 2.6,
+  "noop": {
+   "resolved": false,
+   "f2p_passed": 0,
+   "f2p_total": 2,
+   "p2p_failed": 0,
+   "p2p_total": 78,
+   "eval_sec": 7.9,
+   "error": null
+  },
+  "ref": {
+   "resolved": true,
+   "f2p_passed": 2,
+   "f2p_total": 2,
+   "p2p_failed": 0,
+   "p2p_total": 78,
+   "eval_sec": 8.9,
+   "error": null,
+   "patch_lines": 3
+  }
+ },
+ {
+  "instance_id": "sphinx-doc__sphinx-8595",
+  "valid": true,
+  "envrun_ok": true,
+  "prepare_sec": 1.6,
+  "noop": {
+   "resolved": false,
+   "f2p_passed": 0,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 0,
+   "eval_sec": 5.5,
+   "error": null
+  },
+  "ref": {
+   "resolved": true,
+   "f2p_passed": 1,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 0,
+   "eval_sec": 5.7,
+   "error": null,
+   "patch_lines": 2
+  }
+ },
+ {
+  "instance_id": "sympy__sympy-19040",
+  "valid": true,
+  "envrun_ok": true,
+  "prepare_sec": 1.2,
+  "noop": {
+   "resolved": false,
+   "f2p_passed": 0,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 148,
+   "eval_sec": 16.3,
+   "error": null
+  },
+  "ref": {
+   "resolved": true,
+   "f2p_passed": 1,
+   "f2p_total": 1,
+   "p2p_failed": 0,
+   "p2p_total": 148,
+   "eval_sec": 17.3,
+   "error": null,
+   "patch_lines": 38
+  }
+ }
+]

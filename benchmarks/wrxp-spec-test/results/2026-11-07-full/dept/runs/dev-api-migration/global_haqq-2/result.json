@@ -1,0 +1,21 @@
+{
+ "task": "dev-api-migration",
+ "cond": "global_haqq",
+ "rep": 2,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.42793880000000006,
+   "agent_sec": 63.83661460876465,
+   "num_turns": 13,
+   "agent_message": "`app/` 아래 billing, notify, reports 세 모듈을 v2 `CustomerAPI`로 옮겼습니다. `python3 -m pytest -q`는 6개 테스트가 모두 통과했습니다(exit 0). 기존 테스트 3개와 새로 추가한 3개입니다.\n\n**대신 정한 판단 (다르게 원하시면 말씀해 주세요)**\n- **고객 이름:** v1의 `name`이 v2에서 `legal_name`과 `display_name`으로 나뉘었는데, 청구서와 갱신 문자에는 정식 상호인 `legal_name`을 썼습니다. 기존 테스트가 `누리푸드 주식회사 담당자님`처럼 v1과 같은 출력을 기대하기 때문입니다. 갱신 문자에 앱 별칭(`display_name`, 예: `누리푸드`)을 쓰고 싶으시면 `app/notify.py`의 한 줄만 바꾸면 됩니다.\n- **없는 고객:** v2의 `fetch()`는 고객이 없으면 `None` 대신 `CustomerNotFound`를 던집니다. 그래서 `invoice_header`는 이 예외를 받아 예전처럼 `KeyError`로 바꿔 던지게 했습니다. `CustomerNotFound`를 그대로 내보내는 편이 좋으시면 말씀해 주세요.\n\n**바꾼 내용**\n- `app/billing.py`, `app/notify.py`: `fetch()`를 쓰고, v2 필드 이름(`customer_id`, `legal_name`)으로 바꿨습니다. `renewal_messages`는 `CustomerNotFound`가 나면 그 고객을 건너뜁니다.\n- `app/reports.py`: CHANGELOG에서 짚은 두 가지를 처리했습니다.\n  - v2의 `list_customers()`는 첫 페이지 50건만 돌려주므로 `iter_customers()`로 전체 고객을 순회합니다.\n  - `created_at`은 UTC 시각이므로 KST로 바꾼 뒤 가입 월을 셉니다.\n- 세 함수의 이름과 인자는 그대로 두었고, `app/` 안에는 v1(`CRMClient`)을 쓰는 곳이 남아 있지 않습니다.\n- `tests/test_app.py`에 회귀 테스트 3개를 추가했습니다.\n  - 없는 고객으로 `invoice_header`를 부르면 `KeyError`가 나는지 확인합니다.\n  - UTC로 `2026-08-31T16:00Z`에 가입한 고객이 KST 기준 `2026-09`로 집계되는지 확인합니다.\n  - 고객이 120명일 때 50건 페이지 제한과 관계없이 전부 세는지 확인합니다.\n\n**확인한 것**\n- `python3 -m app.cli report / invoice / notify`를 직접 실행해 보았고, 세 명령 모두 v1 때와 같은 결과를 냈습니다. `notify`를 실행할 때 없는 고객 `NOPE`를 섞었는데, 그 고객은 건너뛰었습니다.\n\n**남은 위험**\n- 확인은 모두 인메모리 `FakeBackend`로만 했습니다. 실제 CRM 서버의 /v2 엔드포인트에서는 돌려 보지 않았으므로, 실제 서버에서의 페이지 동작과 시간대 처리는 아직 확인되지 않았습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.019056399999999998
+  }
+ ],
+ "wall_sec": 71.52995252609253,
+ "user_turns": 0,
+ "accepted": true
+}

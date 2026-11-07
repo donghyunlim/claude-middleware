@@ -1,0 +1,32 @@
+{
+ "task": "dev-api-migration",
+ "cond": "global_haqq",
+ "rep": 4,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.43491379999999996,
+   "agent_sec": 68.70477366447449,
+   "num_turns": 14,
+   "agent_message": "🎚️ Tier: haqq · standard · 질문 0~8개 · 최대 2라운드\n🗡️ 실행: runtime-bounded task graph\n\n`app/`의 billing, notify, reports를 v2 `CustomerAPI`로 옮겼습니다. 테스트 6개가 모두 통과합니다. 세 함수의 이름과 인자는 그대로이고, 반환값과 예외도 v1 때와 같게 맞췄습니다. 그 과정에서 사용자께 여쭤야 할 결정은 없었습니다.\n\n**제가 정한 기본값 (다르게 원하시면 말씀해 주세요)**\n1. **문자와 청구서의 이름은 `legal_name`(사업자 등록상 상호)으로 유지했습니다.** v1의 `name`이 이 값이었고, 기존 테스트도 이 값을 기대합니다. 갱신 안내 문자에 고객이 앱에서 정한 별칭(`display_name`)을 쓰려면 \"notify는 display_name으로\"라고 말씀해 주세요.\n2. **`invoice_header`는 고객이 없을 때 계속 `KeyError`를 냅니다.** v2가 내는 `CustomerNotFound`를 함수 안에서 `KeyError`로 바꿔 다시 던지므로, `KeyError`를 잡던 호출부를 고칠 필요가 없습니다.\n\n**바뀐 내용**\n- `app/billing.py`: 고객 조회를 `fetch()`로 바꾸고 `customer_id`, `legal_name` 필드를 쓰도록 했습니다.\n- `app/notify.py`: v1은 고객이 없으면 `None`을 돌려줬지만 v2는 `CustomerNotFound`를 냅니다. 이 예외를 잡아 해당 고객을 건너뛰게 해서, 탈퇴한 고객을 건너뛰는 기존 동작을 유지했습니다.\n- `app/reports.py`: CHANGELOG에 적힌 두 가지 변경에 대응했습니다.\n  - `list_customers()`가 이제 한 페이지(50건)만 돌려주므로 `iter_customers()`로 전체 고객을 돌게 했습니다.\n  - `created_at`이 UTC 기준이므로 KST로 바꾼 뒤 월을 셉니다. 바꾸지 않으면 UTC 8/31 16:00, 곧 KST 9/1 01:00에 가입한 고객이 8월로 잘못 집계됩니다.\n- `tests/test_app.py`: 샘플 데이터로는 확인되지 않는 경우를 다루는 회귀 테스트 3개를 추가했습니다.\n  - 없는 고객으로 `invoice_header`를 부르면 `KeyError`가 나는지 확인합니다.\n  - KST 월 경계에 걸친 가입이 맞는 달로 집계되는지 확인합니다.\n  - 고객이 120명이라 여러 페이지에 걸쳐도 전부 세는지 확인합니다.\n\n**확인한 내용**\n- `python3 -m pytest -q`를 실행해 6개 테스트가 모두 통과했습니다(exit 0).\n- `python3 -m app.cli`로 `report`, `invoice C003 2026-11`, `notify C001 NOPE C003`을 실행했습니다. 세 명령 모두 수정 전과 같은 값을 출력했고, 없는 고객 `NOPE`은 건너뛰었습니다.\n- `app/` 안에 `client_v1`이나 `CRMClient`를 쓰는 곳은 더 없습니다.\n\n**남은 위험**\n- 확인은 인메모리 `FakeBackend`로만 했고, 실제 CRM 서버의 /v2 엔드포인트로는 돌려 보지 않았습니다.\n- `crmkit/client_v1.py`는 지시하신 범위 밖이라 삭제하지 않았습니다.",
+   "user_action": "revise",
+   "user_message": "v1 `CRMClient`는 이번 릴리스에서 지우지 않고 그대로 동작해야 하는데, 생성할 때 `DeprecationWarning`이 나게 해 주세요. 반환 형식과 동작은 지금과 같아야 합니다. 다른 팀이 아직 쓰고 있어서 v2로 옮기라는 알림이 필요합니다.",
+   "user_cost": 0.017930400000000003
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.7168260999999999,
+   "agent_sec": 70.18182110786438,
+   "num_turns": 8,
+   "agent_message": "v1 `CRMClient`는 그대로 남아 있고 지금처럼 동작합니다. 달라진 점은 객체를 생성할 때 `DeprecationWarning`이 한 번 발생한다는 것뿐입니다. 테스트 8개가 모두 통과합니다.\n\n**제가 정한 기본값 (다르게 원하시면 말씀해 주세요)**\n- 경고 문구는 영어로 썼습니다. 내용은 \"/v1 엔드포인트가 내려가면 제거될 예정이니 `crmkit.client_v2.CustomerAPI`로 옮기라\"이며, CHANGELOG 2.0.0을 함께 안내합니다. 한국어 문구나 제거 예정 버전·날짜를 넣으려면 알려 주세요.\n- 경고 위치는 `stacklevel=2`로 정했습니다. 그래서 경고에 crmkit 내부가 아니라 다른 팀 코드에서 `CRMClient(...)`를 부른 줄이 표시되고, 다른 팀이 고칠 곳을 바로 찾을 수 있습니다.\n\n**바뀐 내용**\n- `crmkit/client_v1.py`: `__init__`에서 경고를 내도록 했습니다. `get_customer`와 `list_customers`는 고치지 않았습니다.\n- `tests/test_app.py`: 테스트 2개를 추가했습니다.\n  - 첫째 테스트는 경고가 발생하는지와 v1 반환값이 예전과 같은지 확인합니다. 고객 dict 형식, 없는 고객일 때 `None`, 전체 목록 3건을 봅니다.\n  - 둘째 테스트는 `app/`의 세 함수를 실행해도 경고가 나지 않는지, 곧 `app/`이 더 이상 v1을 쓰지 않는지 확인합니다.\n- `README.md`와 `CHANGELOG.md`: v1 클라이언트를 생성하면 경고가 발생한다는 문장을 한 줄씩 넣었습니다.\n\n**확인한 내용**\n- `python3 -m pytest -q`를 실행해 8개 테스트가 모두 통과했습니다(exit 0).\n- `-W default`로 v1 클라이언트를 직접 만들어 보았습니다. 경고에는 호출한 줄(`<string>:5`)이 표시되었고, `get_customer(\"C002\")`는 예전 형식의 dict를 그대로 돌려줬습니다.\n- 공용 모듈을 바꾼 것이라 새 맥락의 sonnet 검토를 한 번 붙였고, 문제는 나오지 않았습니다.\n  - 저장소 안에서 `CRMClient`를 생성하는 곳은 자기 정의와 테스트뿐입니다.\n  - `-W error::DeprecationWarning`으로 pytest, `app.cli`, import를 실행해도 모두 성공했습니다.\n  - `filterwarnings` 설정이나 다른 언어로 쓴 사용처는 없었습니다.\n  - 검토에서 나온 사소한 지적은 README에 지원 중단 표시가 없다는 것이었고, README에 한 줄을 추가해 반영했습니다.\n\n**남은 위험**\n- 다른 팀이 경고를 오류로 바꿔 실행하면 `CRMClient`를 생성하는 곳에서 바로 실패합니다. `-W error`, `PYTHONWARNINGS=error`, pytest의 `filterwarnings = error` 같은 설정이 여기에 해당합니다. 이 저장소에는 그런 설정이 없지만, 다른 팀 저장소는 확인할 수 없었습니다.\n- Python은 기본 설정에서 라이브러리 안에서 생긴 `DeprecationWarning`을 숨깁니다. 그래서 다른 팀 라이브러리 코드 안에서 `CRMClient`를 생성하면 경고가 보이지 않을 수 있습니다. pytest를 돌리거나 `__main__`에서 직접 생성할 때는 경고가 보입니다. 경고가 반드시 보여야 한다면 `FutureWarning`으로 바꾸는 방법이 있습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.023956400000000003
+  }
+ ],
+ "wall_sec": 154.4037516117096,
+ "user_turns": 1,
+ "accepted": true
+}

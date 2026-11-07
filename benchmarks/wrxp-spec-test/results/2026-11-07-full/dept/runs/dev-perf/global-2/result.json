@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "global",
+ "rep": 2,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.6333782,
+   "agent_sec": 156.04637265205383,
+   "num_turns": 15,
+   "agent_message": "`salesreport/report.py` 파일 하나만 고쳤고, 리포트 생성 시간이 운영 규모 데이터 기준 0.2초 정도로 줄었습니다. 두 호출 방식인 `build_report(data_dir)`와 `python3 -m salesreport.cli DATA_DIR OUT_PATH`는 그대로 쓰시면 됩니다.\n\n**느렸던 원인**\n- 주문 라인마다 `products.csv`를 두 번, `customers.csv`와 `fx_rates.csv`를 한 번씩 처음부터 다시 읽고 있었습니다. 주문 라인이 수만 건이면 CSV 파일을 수만~십수만 번 다시 읽게 됩니다.\n- 고객과 주문의 중복을 리스트에서 찾고 있어서, 건수가 늘어날수록 이 부분도 제곱으로 느려졌습니다.\n\n**고친 내용**\n- `build_report`를 한 번 호출할 때 CSV 파일을 각각 한 번만 읽고, 상품은 SKU, 고객은 ID로 바로 찾을 수 있게 정리합니다. 환율은 통화별로 날짜순으로 정렬해 두고 이진 탐색으로 찾습니다.\n- 고객과 주문의 중복은 `set`으로 셉니다.\n- 읽은 데이터는 호출이 끝나면 버립니다. 배치가 한 프로세스에서 매일 갱신되는 여러 폴더를 연달아 돌리므로, 이전 폴더의 데이터가 다음 리포트에 섞이지 않게 하려는 것입니다.\n- 실제 데이터에 같은 SKU가 두 번 나오거나 같은 날짜에 환율이 두 번 고시된 경우가 있습니다. 이때 파일에서 먼저 나온 행을 쓰는 기존 규칙을 그대로 지켰습니다. 고객 ID 앞뒤 공백 처리, 미등록 고객 처리, 오류가 나는 조건, 합산 순서도 기존과 같아서 출력은 한 글자도 달라지지 않습니다.\n\n**확인 결과**\n- `python3 -m pytest -q`: 통과(1 passed, exit 0)\n- CLI로 만든 결과 파일이 `expected/report.txt`와 같습니다.\n- 수정 전 코드와 결과 비교: 중복 키, 공백, 미등록 고객을 섞어 만든 합성 데이터 3세트에서 출력이 완전히 같았습니다. 2,000라인 기준으로 6.6~7.5초 걸리던 것이 0.01초 정도로 줄었습니다.\n- `bench.py` 측정(가장 빠른 실행 기준):\n\n| 데이터 | 수정 전 | 수정 후 |\n|---|---|---|\n| `data` (500라인) | 0.282s | 0.003s |\n| 합성 운영 규모 (주문 5만 라인, 상품·고객 각 5천 건, 환율 5년 치) | 측정 안 함 | 0.209s |\n\n수정 전 코드는 운영 규모 데이터에서 몇 분 이상 걸릴 것으로 보여 측정하지 않았습니다. 실제 운영 데이터로는 아직 돌려 보지 않았으니, 배치에 넣기 전에 운영 데이터 폴더로 `python3 bench.py <운영데이터폴더> 3`를 한 번 실행해 보시면 좋겠습니다.\n\n비교에 쓴 스크립트(합성 데이터 생성기, 수정 전 코드 사본, 비교·벤치마크 실행)는 작업 폴더 밖의 다음 경로에 있습니다.\n- /tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-2-work/c82fa03c-f839-423e-9803-0481353aeac7/scratchpad/run_all.py\n- /tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-2-work/c82fa03c-f839-423e-9803-0481353aeac7/scratchpad/gen.py\n- /tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-2-work/c82fa03c-f839-423e-9803-0481353aeac7/scratchpad/orig_report.py\n- /tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-2-work/c82fa03c-f839-423e-9803-0481353aeac7/scratchpad/compare.py",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0183444
+  }
+ ],
+ "wall_sec": 161.6080083847046,
+ "user_turns": 0,
+ "accepted": true
+}

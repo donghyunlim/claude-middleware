@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "base",
+ "rep": 3,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.5522074,
+   "agent_sec": 154.90711164474487,
+   "num_turns": 15,
+   "agent_message": "Report generation is now much faster, and the output is byte-for-byte identical to the old code's. `build_report(data_dir)` and `python3 -m salesreport.cli DATA_DIR OUT_PATH` keep the same interface.\n\n| Data | Before | After |\n|---|---|---|\n| Sample `data/` (500 order lines) | 0.40s | 0.001s |\n| Medium generated data (3,000 lines, 800 products, 1,500 customers) | 14.6s | — |\n| Generated production-scale data (50,000 lines, 5,000 products, 5,000 customers, 4 years of FX history) | not run | 0.16–0.2s |\n\nI didn't run the old code on the production-scale set because it would have taken too long. Going by the medium-data number, it would likely have taken tens of minutes. I also haven't run anything on real production data, so please time `bench.py` there once.\n\n**Cause:** For every order line, the code reread `products.csv` twice, `customers.csv` once and `fx_rates.csv` once, from start to finish. The deduplication checks also did linear searches over lists. Run time therefore grew with \"order lines × size of the reference tables\".\n\n**Change:** only `salesreport/report.py` was modified.\n- Each CSV is read once per `build_report` call and turned into a lookup table.\n- Exchange rates are sorted by date per currency, and a binary search finds the latest rate on or before the order date.\n- Deduplication of customers and orders now uses sets instead of lists.\n- The lookup rules are the same as before:\n  - If the same SKU or customer appears more than once, the first row wins.\n  - Customer IDs are compared with surrounding whitespace removed.\n  - Unregistered customers are reported as \"(미등록)/미상/일반\" (unregistered/unknown/regular).\n  - If two rates are posted on the same date, the first row wins.\n  - Line amounts are added in the same order with the same arithmetic, so float rounding gives the same results.\n  - A missing SKU still raises `KeyError`, and a missing exchange rate still raises `LookupError`.\n- **No cache across calls.** The batch server calls `build_report` repeatedly on folders that are updated daily, so the tables are rebuilt on every call. A cache could have served stale data.\n- I left the old helpers (`catalog.get_product`, `customers.get_customer`, `fx.rate_for`, `report.line_amount`) unchanged in case other code calls them.\n\n**Verification:**\n- `pytest` passes, and the CLI output matches `expected/report.txt` exactly.\n- I compared old and new output on four generated data sets with edge cases: duplicate SKUs and customers, IDs with extra spaces, tied FX dates, unregistered customers, a missing SKU, and a date before the first exchange rate. All four matched, including the error types and messages.\n\nFiles are in the scratchpad:\n- Comparison script: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-base-3-work/b2c350b2-130d-404f-8bc8-e80a2a22044b/scratchpad/check.py`\n- Copy of the original logic: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-base-3-work/b2c350b2-130d-404f-8bc8-e80a2a22044b/scratchpad/ref_report.py`",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0161204
+  }
+ ],
+ "wall_sec": 160.52188515663147,
+ "user_turns": 0,
+ "accepted": true
+}

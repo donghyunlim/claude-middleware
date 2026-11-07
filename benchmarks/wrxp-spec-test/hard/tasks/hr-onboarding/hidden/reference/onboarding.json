@@ -1,0 +1,30 @@
+{
+ "start_date": "2026-12-07",
+ "days": [
+  {"date": "2026-12-07", "location": "office", "items": [
+   {"type": "security_training", "title": "정보보안 교육"},
+   {"type": "setup", "title": "계정·노트북 수령 및 개발 환경 설정"},
+   {"type": "mentor_1on1", "title": "멘토 1:1"}]},
+  {"date": "2026-12-08", "location": "office", "items": [
+   {"type": "meeting", "title": "데일리 스탠드업"},
+   {"type": "task", "title": "order-api 코드베이스 둘러보기"}]},
+  {"date": "2026-12-09", "location": "office", "items": [
+   {"type": "meeting", "title": "데일리 스탠드업"},
+   {"type": "orientation", "title": "전사 신규 입사자 오리엔테이션 (14:00)"}]},
+  {"date": "2026-12-10", "location": "office", "items": [
+   {"type": "mentor_1on1", "title": "멘토 1:1"},
+   {"type": "retro", "title": "1주 차 회고 (12-11 창립기념일로 하루 당김)"}]},
+  {"date": "2026-12-14", "location": "office", "items": [
+   {"type": "mentor_1on1", "title": "멘토 1:1"},
+   {"type": "task", "title": "첫 과제: order-api 작은 버그 수정"}]},
+  {"date": "2026-12-15", "location": "remote", "items": [
+   {"type": "task", "title": "첫 과제 진행"}]},
+  {"date": "2026-12-16", "location": "office", "items": [
+   {"type": "task", "title": "정산 배치 구조 설명 듣기"}]},
+  {"date": "2026-12-17", "location": "remote", "items": [
+   {"type": "mentor_1on1", "title": "멘토 1:1 (화상)"},
+   {"type": "task", "title": "첫 과제 코드 리뷰 반영"}]},
+  {"date": "2026-12-18", "location": "office", "items": [
+   {"type": "retro", "title": "2주 차 회고"}]}
+ ]
+}

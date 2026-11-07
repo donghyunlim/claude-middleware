@@ -1,0 +1,32 @@
+{
+ "task": "data-cohort",
+ "cond": "global_haq",
+ "rep": 1,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.48748060000000004,
+   "agent_sec": 85.43894529342651,
+   "num_turns": 11,
+   "agent_message": "🎚️ Tier: haq · quick · 질문 0~4개 · 최대 1라운드\n🗡️ 실행: runtime-bounded task graph\n\n데이터를 확인해 보니 결과를 실제로 바꾸는 정의가 하나 남아 있습니다. 이 런타임에는 선택형 질문 도구가 없어서, 가장 중요한 것 하나만 여쭙니다. `retention.csv`는 답을 받은 뒤에 저장하겠습니다.\n\n**질문: 어떤 행동을 해야 그 주에 \"활성(리텐션)\"으로 볼까요?**\n\n- **A. `login`만** (제 추천): 데이터 사전이 정의한 활동 이벤트 중 재방문을 가장 직접적으로 보여 줍니다. 8/3 코호트 W1은 0.7500입니다.\n- **B. 가입 이후의 모든 이벤트** (`login`, `payment`, `payment_failed`): 8/3 코호트 W1이 0.8462가 되어, 코호트마다 약 0.07~0.14씩 높아집니다.\n- **C. `login` + `payment`(결제 성공)**: 결제 실패는 활동에서 뺍니다.\n\n**제가 기본값으로 정한 것들입니다.** 다르게 원하시면 답하실 때 같이 말씀해 주세요.\n\n- **주 단위 W1~W4:** 달력 기준 주로 셉니다. W1은 가입한 주의 바로 다음 주(월~일)이고, 가입 주는 W0입니다. 가입 시각부터 7일 단위로 자르는 방식으로 바꾸면 값이 약 0.03~0.10 낮아집니다(8/3 코호트 W1은 0.6859).\n- **시간대:** 이벤트 시각을 UTC에서 KST로 바꿔 계산하고, 주는 월요일에 시작합니다. 데이터가 정확히 KST 8/3(월) 00:01부터 11/1(일) 23:56까지라서 KST로 맞춘 것입니다. UTC로 계산하면 7/27 주에 가짜 코호트(42명)가 생깁니다.\n- **8~9월 가입자:** KST 가입일이 8/1~9/30인 사용자입니다. 실제로는 8/3 주부터 9/21 주까지 코호트 8개가 나옵니다. 마지막 9/21 코호트의 W4(10/19 주)까지 데이터가 모두 있어서, 값이 덜 채워진 코호트는 없습니다.\n- **테스트 계정 제외:** `test_`로 시작하는 ID 44개와 `@ourapp.kr` 이메일 53개를 데이터 사전 규칙대로 뺐습니다.\n- **비율 계산:** 그 주에 활성인 고유 사용자 수를 코호트 크기로 나눈 값입니다.\n\n\"A로 진행\"처럼 답해 주시면 바로 `retention.csv`를 저장하고, 실제 파일을 한 번 더 확인하겠습니다.",
+   "user_action": "answer",
+   "user_message": "리텐션은 로그인이 아니라 결제(payment) 기준으로 해 주세요. 즉 A/B/C 어느 것도 아니고, event_type == \"payment\"만 활동으로 셉니다. payment_failed는 세지 않습니다. 나머지 기본값(KST 월요일 시작 달력 주, 코호트 주 기준 W1~W4, KST 변환, 8/3~9/21 8개 코호트, test_·@ourapp.kr 제외, 고유 사용자 수 ÷ cohort_size)은 그대로 좋습니다. 이대로 retention.csv 저장해 주세요.",
+   "user_cost": 0.0178624
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.6030834,
+   "agent_sec": 28.231765747070312,
+   "num_turns": 4,
+   "agent_message": "I saved the payment-based retention to `retention.csv`. Only `payment` events count as activity, and `payment_failed` is excluded.\n\n```\ncohort_week,cohort_size,W1,W2,W3,W4\n2026-08-03,156,0.2564,0.2500,0.1859,0.1667\n2026-08-10,142,0.2183,0.1901,0.1690,0.1690\n2026-08-17,160,0.1812,0.1500,0.1688,0.1625\n2026-08-24,163,0.1779,0.1718,0.2086,0.0982\n2026-08-31,131,0.2061,0.1756,0.1908,0.1221\n2026-09-07,131,0.2137,0.1985,0.1374,0.1069\n2026-09-14,163,0.2209,0.1595,0.2393,0.1411\n2026-09-21,157,0.2293,0.1592,0.2038,0.1720\n```\n\nThe other settings are the defaults you approved: KST calendar weeks starting on Monday, W1 to W4 counted from the cohort's week, the 8/3 to 9/21 cohorts (8 in total), `test_` and `@ourapp.kr` accounts excluded, and unique users ÷ `cohort_size`.\n\n- **What changed in the file:** every value is written to exactly four decimal places, so `0.25` appears as `0.2500`. If you'd rather have trailing zeros dropped, just tell me.\n- **Results:** about 18–26% of each cohort pays in W1, and about 10–17% pays in W4.\n- **Check:** I recomputed the 2026-08-24 W4 cell with separate code that doesn't use pandas. It gave 16 of 163 users, or 0.0982, which matches the file. I didn't recompute the other cells that way.\n- **Note:** some cohorts go back up in later weeks (for example, 2026-09-14 is 0.1595 in W2 and 0.2393 in W3). That's expected, because a user only counts in a week if they paid that week.\n\nThe calculation script is at `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-data-cohort-global-haq-1-work/e08f9662-3cfc-4b9e-853e-d54fa686f777/scratchpad/ret.py`. To get the same numbers again, run it from the project folder with the arguments `Asia/Seoul pay cal` (it writes up to four decimal places and drops trailing zeros).",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0225304
+  }
+ ],
+ "wall_sec": 129.4689977169037,
+ "user_turns": 1,
+ "accepted": true
+}

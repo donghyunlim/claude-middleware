@@ -1,0 +1,44 @@
+{
+ "departments": [
+  {
+   "dept": "개발본부",
+   "budget": 188000000,
+   "actual": 199258225,
+   "variance": 11258225,
+   "variance_pct": 5.99,
+   "material": false
+  },
+  {
+   "dept": "마케팅팀",
+   "budget": 73300000,
+   "actual": 84339417,
+   "variance": 11039417,
+   "variance_pct": 15.06,
+   "material": true
+  },
+  {
+   "dept": "영업팀",
+   "budget": 42300000,
+   "actual": 35511079,
+   "variance": -6788921,
+   "variance_pct": -16.05,
+   "material": true
+  },
+  {
+   "dept": "인사팀",
+   "budget": 13500000,
+   "actual": 15948000,
+   "variance": 2448000,
+   "variance_pct": 18.13,
+   "material": false
+  },
+  {
+   "dept": "재무팀",
+   "budget": 7800000,
+   "actual": 7997000,
+   "variance": 197000,
+   "variance_pct": 2.53,
+   "material": false
+  }
+ ]
+}

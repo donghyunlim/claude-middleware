@@ -1,0 +1,32 @@
+{
+ "task": "dev-api-migration",
+ "cond": "pstack_poteto",
+ "rep": 4,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.501049,
+   "agent_sec": 86.52404761314392,
+   "num_turns": 16,
+   "agent_message": "`app/` billing, notify and reports now run on the v2 `CustomerAPI`. The three functions keep their names and arguments, and nothing under `app/` or `tests/` imports `client_v1` any more. `python3 -m pytest -q` passes 6 tests: your 3 plus 3 new ones.\n\n**What I changed.**\n- **reports.** v2's `list_customers()` returns only one page of 50, so `monthly_signups` now uses `iter_customers()` to count every customer. It also converts the UTC `created_at` to Korean time (KST) before taking the month, because v1's `joined` was already a KST date. Without that, a sign-up at `2026-08-31T16:00:00Z` (Sept 1 in Korea) would be counted in August.\n- **billing and notify.** Both use `legal_name`, because the old `name` field was the registered company name. I did not use `display_name`, the alias customers set in the app, since that would change the text on invoices and texts.\n- **Missing customers.** `notify` still skips them. `invoice_header` still raises `KeyError`. v2 raises `CustomerNotFound`, which is not a `KeyError` subclass, so callers catching `KeyError` would have broken. I convert it back.\n\n**New tests.** Your 3 existing tests would still pass if the page limit or the time zone were wrong, so I added 3 that would catch it:\n- 120 customers, to check counting past one page.\n- Two sign-ups either side of the KST month boundary.\n- An unknown customer ID raising `KeyError`.\n\nI didn't break the code on purpose to watch these fail. I'm confident they would, because 120 is more than one page and `16:00Z` on Aug 31 falls in September in KST.\n\n**Checking against v1.** I ran a separate comparison of the old v1 code and the new code on 200 random datasets. Each had 0 to 180 customers, many signing up near month ends, plus lookups for IDs that don't exist. The output was identical every time. I also ran all three CLI commands (`report`, `invoice`, `notify`) and the output was correct. The script is at `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-api-migration-pstack-poteto-4-work/d76a21e8-9759-42b6-92b9-0016d8d14d3f/scratchpad/diff_v1_v2.py`.\n\n**Two choices for you.**\n- I left `crmkit/client_v1.py` in place. The CHANGELOG plans to remove it once the server's v1 endpoints go down, and that belongs to crmkit's own release.\n- `reports.py` defines its own KST constant rather than importing the one in `crmkit/_backend.py`, which is a private test module.\n\nThe folder isn't a git repository, so nothing is committed.",
+   "user_action": "revise",
+   "user_message": "v1 `CRMClient`는 지우지 않는 건 맞는데, 한 릴리스 동안 다른 팀이 쓰니까 `CRMClient`를 만들 때 `DeprecationWarning`이 나게 해 주세요. 반환 형식과 동작은 지금과 같게 유지하고, v2로 옮기라는 안내만 나오게 하면 됩니다.",
+   "user_cost": 0.0162764
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.6327442,
+   "agent_sec": 29.666632175445557,
+   "num_turns": 5,
+   "agent_message": "Creating a v1 `CRMClient` now raises a `DeprecationWarning` that tells teams to move to `crmkit.client_v2.CustomerAPI` and to check the CHANGELOG. Everything else in v1 works exactly as before.\n\n**The change.** It's one `warnings.warn(..., DeprecationWarning, stacklevel=2)` call in `CRMClient.__init__` in `crmkit/client_v1.py`. The `stacklevel=2` makes the warning show the file and line where the other team creates the client, not a line inside crmkit, so they can find the code to change. The warning fires once per client created, not on every `get_customer` or `list_customers` call. I also added a line to `CHANGELOG.md` announcing the warning.\n\n**What other teams will see.** Python hides `DeprecationWarning` by default unless it's triggered from code run directly as `__main__`. Teams may not see it in a normal run. pytest does show it in its warnings summary, and I ran it with `python3 -W default` to confirm the message prints. The message says v1 is removed \"in the next release.\" If that date isn't fixed yet, I can soften the wording.\n\n**Verification.** All 9 tests pass, including 3 new ones in `tests/test_client_v1.py`. They check that:\n- creating a client raises the warning and the message mentions `CustomerAPI`;\n- the warning points at the caller's file;\n- the dicts returned, the `None` for an unknown ID and the full customer list are the same as before.\n\nI also ran the suite with `-W error::DeprecationWarning`, which turns any deprecation warning into a test failure, and it still passes. That confirms nothing in `app/` creates a v1 client any more.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0198264
+  }
+ ],
+ "wall_sec": 129.53132343292236,
+ "user_turns": 1,
+ "accepted": true
+}

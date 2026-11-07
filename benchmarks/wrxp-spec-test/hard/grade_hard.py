@@ -50,7 +50,7 @@ JSON 한 개만 출력하라: {{"items": {{"<항목ID>": {{"score": 0 또는 1, 
 
 
 def score(task, work: Path, run_dir: Path, tag: str):
-    if task in ("export", "coupon", "inventory"):
+    if (TASKS / task / "hidden" / "test_hidden.py").exists():
         p, t = pytest_counts(work, TASKS / task / "hidden")
         return {"score": p / t, "pass": p, "total": t}
     if task == "churn":

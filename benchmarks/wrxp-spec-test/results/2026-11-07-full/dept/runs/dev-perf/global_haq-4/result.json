@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "global_haq",
+ "rep": 4,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.8104128,
+   "agent_sec": 715.0960807800293,
+   "num_turns": 18,
+   "agent_message": "리포트 생성 속도를 개선했습니다. 3만 라인 규모 데이터에서 **479초 걸리던 작업이 0.14초로 줄었습니다**. 출력 텍스트는 기존과 바이트 단위로 같고, `build_report(data_dir)`와 CLI 인터페이스도 그대로입니다.\n\n**제가 정한 사항** (다르게 원하시면 말씀해 주세요)\n- **출력은 바이트 단위로 같아야 하는 것으로 정했습니다.** README에 재무팀 정산 시스템이 결과 텍스트를 그대로 파싱한다고 되어 있어서 이렇게 판단했습니다. 따라서 합산 순서, 동률일 때의 정렬 순서, 오류 종류와 메시지까지 모두 기존대로 두었습니다.\n- **데이터는 호출 안에서만 캐시합니다.** 배치 서버는 한 프로세스에서 매일 갱신되는 폴더로 `build_report`를 연달아 호출합니다. 호출 사이에 캐시를 남기면 이전 데이터가 쓰일 수 있어서 호출 간 캐시는 두지 않았습니다.\n\n**원인과 수정 내용**\n- 기존 코드는 주문 라인 하나마다 `products.csv`를 3번, `customers.csv`를 2번, `fx_rates.csv`를 1번 다시 읽고 전체를 훑었습니다. 그 결과 걸리는 시간이 \"라인 수 × 마스터 데이터 크기\"에 비례해 늘었습니다.\n- 이제 `salesreport/report.py` 한 파일만 바뀌었습니다. 각 CSV를 호출당 한 번만 읽어 사전(dict)으로 색인합니다. 환율은 통화별로 날짜를 정렬해 두고 이진 탐색으로 찾습니다. 고객 ID와 주문 ID의 중복 검사는 `list` 대신 `set`을 씁니다.\n- 기존 규칙도 그대로 지켰습니다. 실제 데이터에 SKU 중복과 같은 날짜의 환율 중복이 있는데, 둘 다 파일에서 먼저 나온 행이 우선합니다. 고객 ID는 앞뒤 공백을 제거한 뒤 비교합니다. 파일을 읽는 시점도 같아서, 원화 상품만 있으면 기존처럼 fx 파일이 없어도 동작합니다.\n- 나머지 모듈(`catalog`, `customers`, `fx` 등)과 `line_amount`는 손대지 않았습니다.\n\n**확인한 결과**\n- `python3 -m pytest -q`: 1개 테스트가 통과했습니다(exit 0).\n- `python3 -m salesreport.cli data …`: exit 0이고, 출력이 `expected/report.txt`와 같습니다.\n- `bench.py data 3`: 0.335초에서 0.002초로 줄었습니다.\n- 운영 규모 합성 데이터에서 기존 코드와 새 코드의 출력을 `cmp`로 비교했고, 두 경우 모두 같았습니다.\n  - 3천 라인: 62.6초 → 0.04초\n  - 3만 라인(상품·고객 3천 건, 환율 3년 치): 479초 → 0.14초\n- 오류와 경계 상황 6가지에서도 기존 코드와 결과가 같았습니다. 없는 SKU(KeyError), 환율 이력보다 이전 날짜(LookupError), 환율이 없는 통화, fx 파일이 없는 원화 전용 데이터, 주문 라인 0건(ValueError), 등록되지 않은 고객을 확인했습니다.\n\n**남은 위험**\n- 실제 운영 데이터로는 돌려 보지 못했습니다. 위 측정은 README에 적힌 규모에 맞춰 만든 합성 데이터 결과입니다. 배포 전에 운영 데이터 폴더 하나로 기존 버전과 출력을 `cmp`로 비교해 보시기를 권합니다.\n\n비교에 쓴 스크립트와 데이터는 스크래치패드에 있습니다. 데이터 생성기는 `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-haq-4-work/f88fcdc1-3259-4964-9341-0e9667bf9c63/scratchpad/gen.py`, 경계 상황 비교 스크립트는 `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-haq-4-work/f88fcdc1-3259-4964-9341-0e9667bf9c63/scratchpad/edge.py`입니다. 기존 코드 백업은 `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-haq-4-work/f88fcdc1-3259-4964-9341-0e9667bf9c63/scratchpad/orig/salesreport`에 있습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0188164
+  }
+ ],
+ "wall_sec": 720.2399682998657,
+ "user_turns": 0,
+ "accepted": true
+}

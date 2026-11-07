@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "base",
+ "rep": 4,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.7736454000000001,
+   "agent_sec": 895.6835205554962,
+   "num_turns": 2,
+   "agent_message": "I made report generation fast. On a dataset I generated at production scale (40,000 order lines), the original code took 735 seconds (about 12 minutes) and the new code takes 0.29 seconds. On the sample data in `data/` it went from 0.598s to 0.002s.\n\n**Why it was slow:** in `build_report`, every order line re-read `products.csv` three times, `customers.csv` twice and `fx_rates.csv` once from start to finish. The duplicate checks for customers and orders also scanned a growing list each time, so run time grew roughly with the square of the data size.\n\n**What I changed:** only `salesreport/report.py`.\n- At the start of each `build_report` call, the four CSV files are each read once and turned into lookup tables.\n- Exchange rates are sorted by date for each currency, and \"the most recent rate on or before the order date\" is found with a binary search.\n- The two duplicate checks now use a set instead of a list.\n- Nothing is cached between calls. The batch server calls `build_report` repeatedly in one process on folders that are refreshed daily, so each call reads the latest files.\n- `build_report(data_dir)`, `python3 -m salesreport.cli DATA_DIR OUT_PATH` and the old `line_amount(data_dir, line)` call style all work as before. `catalog`, `customers`, `fx` and the other modules are untouched.\n\n**Making sure the output didn't change:** the finance settlement system parses the text as is, so I kept the original rules exactly:\n- When a SKU appears more than once, or a currency has several rates on the same date, the earlier row in the file wins.\n- Leading and trailing spaces in customer IDs are stripped, and customers missing from `customers.csv` show as \"(미등록)\".\n- Totals are added up in the same order as before, so the rounded amounts come out identical.\n- The same errors are still raised: `KeyError` for an unknown SKU and `LookupError` when no exchange rate exists.\n\n**Verification:**\n- `pytest`: the `expected/report.txt` comparison passes, and the CLI output is byte-for-byte the same file.\n- I generated a test dataset with SKU duplicates, same-day rate duplicates, padded customer IDs and unregistered customers, at two sizes: 3,000 and 40,000 order lines. On both, the new report is byte-for-byte identical to the original code's.\n- I compared the new lookups directly with the original `fx.rate_for`, `catalog.get_product` and `customers.get_customer` on 700 random inputs, including dates before the first rate, unknown currencies and unknown SKUs. Results and errors matched every time.\n\nThe generator script and test data are in the scratchpad, not the project: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-base-4-work/ebf31696-1118-4750-a33e-734f108c5dac/scratchpad/gen.py`. I'd also run it once on real production data before deploying.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0153724
+  }
+ ],
+ "wall_sec": 900.3572707176208,
+ "user_turns": 0,
+ "accepted": true
+}

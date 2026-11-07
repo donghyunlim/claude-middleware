@@ -1,0 +1,1 @@
+이번 부품 공급계약 초안 검토 좀 부탁드려요. 계약서는 `contract.md`에 있어요. 위험한 조항만 골라서 `review.json`에 `{"issues": [{"clause": 3, "severity": "high", "reason": "..."}]}` 형식으로 정리해 주세요. clause는 조 번호(제3조 → 3), severity는 high / medium / low 중 하나예요.

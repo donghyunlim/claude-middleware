@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "pstack",
+ "rep": 1,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 1.0699034,
+   "agent_sec": 609.5749230384827,
+   "num_turns": 3,
+   "agent_message": "리포트 생성이 빨라졌습니다. 운영 규모로 만든 4만 라인 데이터 기준으로 원래 코드는 487초 걸렸고, 바꾼 코드는 최적 0.17초입니다. 약 2,900배 빨라졌고, 출력은 원본과 바이트 단위로 같습니다. `build_report(data_dir)`와 `python3 -m salesreport.cli DATA_DIR OUT_PATH`는 그대로 두었습니다.\n\n**원인.** 주문 라인 한 줄마다 CSV 파일을 처음부터 다시 읽고 있었습니다. 상품 파일은 라인당 세 번, 고객 파일은 두 번, 환율 파일은 한 번씩 다시 읽었습니다. 고객 수와 주문 수를 셀 때도 리스트에서 `in`으로 찾아서 데이터가 커질수록 느려졌습니다.\n\n**수정.** `build_report` 한 번 호출할 때 파일을 하나씩 한 번만 읽고 색인을 만들어 찾게 했습니다.\n- 상품은 sku를 키로 찾습니다.\n- 고객은 앞뒤 공백을 제거한 id를 키로 찾습니다.\n- 환율은 통화별로 날짜를 정렬해 두고 `bisect`로 해당 날짜 이전의 가장 최근 고시를 찾습니다.\n- 고객 수와 주문 수 집계는 set으로 바꿨습니다.\n\n색인은 호출할 때마다 새로 만듭니다. 배치 서버가 한 프로세스에서 매일 바뀌는 폴더들로 연달아 호출하니까, 이전 호출의 데이터가 남아서 쓰이는 일이 없습니다. 중복 sku나 중복 고객은 원래처럼 파일의 첫 행이 이깁니다. 같은 날짜에 환율이 여러 개면 역시 파일에서 먼저 나온 값을 씁니다. 숫자 변환은 실제로 쓰는 행만 하므로, 쓰이지 않는 행에 잘못된 가격이나 환율이 있어도 원래처럼 에러가 나지 않습니다. 매출을 더하는 순서도 원래와 같아서 소수점 합계까지 똑같이 나옵니다.\n\n**검증.**\n- `pytest`(골든 파일 비교)가 통과합니다.\n- CLI 출력이 `expected/report.txt`와 같습니다.\n- 생성한 2천 라인, 4만 라인 데이터에서 원본 코드 출력과 `cmp`로 비교해 같았습니다.\n- 예외 케이스 8개에서 결과와 예외 종류가 원본과 같았습니다. 케이스는 없는 sku, 해당 날짜 이전 환율 없음, 빈 주문 파일, 미사용 행의 잘못된 가격과 환율, 중복 sku, 미지원 통화입니다.\n- `bench.py data`는 0.28초에서 0.002초가 됐습니다.\n\n**측정 시 주의할 점.**\n- 원래 코드는 너무 느려서 4만 라인 데이터로 한 번만 돌렸습니다.\n- 새 코드는 7번 돌렸고 0.168~0.305초가 나왔습니다. 측정하는 동안 서버 부하가 4코어에 약 7.9로 높아서 편차가 큽니다.\n- 지금은 CSV 파싱과 주문 라인 루프가 시간의 대부분을 씁니다(cProfile로 확인).\n\n**참고.** 내부 함수 `catalog.get_product`, `customers.get_customer`, `fx.rate_for(data_dir, ...)`는 `Catalog`, `Customers`, `Rates` 클래스로 바꾸면서 없어졌습니다. 패키지 안에서는 `report.py`만 쓰고 있었고, 외부에서는 위 두 인터페이스만 쓴다고 하셔서 지웠습니다. 다른 곳에서 이 함수들을 직접 import한다면 알려주세요.\n\n이 폴더는 git 저장소가 아니라서 PR은 만들지 않았습니다. 측정용 파일은 scratchpad에 있습니다.\n- 데이터 생성기: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-1-work/681388e4-2bc0-4bef-9134-83c9a7eb1efb/scratchpad/gen.py`\n- 예외 케이스 비교: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-1-work/681388e4-2bc0-4bef-9134-83c9a7eb1efb/scratchpad/edge.py`\n- 원본 출력: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-1-work/681388e4-2bc0-4bef-9134-83c9a7eb1efb/scratchpad/prod.orig.txt`\n- 새 출력: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-1-work/681388e4-2bc0-4bef-9134-83c9a7eb1efb/scratchpad/prod.new.txt`",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0215624
+  }
+ ],
+ "wall_sec": 615.8642570972443,
+ "user_turns": 0,
+ "accepted": true
+}

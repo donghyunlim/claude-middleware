@@ -1,0 +1,32 @@
+{
+ "task": "dev-perf",
+ "cond": "pstack_poteto",
+ "rep": 4,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 1.0886846000000001,
+   "agent_sec": 600.379754781723,
+   "num_turns": 2,
+   "agent_message": "목표는 운영 데이터 기준 몇 분씩 걸리던 리포트 생성을 줄여서 배치가 밀리지 않게 하는 것이었습니다. `build_report(data_dir)`와 CLI 인터페이스, 출력 텍스트는 그대로 둬야 했고요. 운영 규모 데이터에서 377.8초 걸리던 작업이 이제 0.11초 걸립니다. 출력은 원래 코드와 바이트 단위로 같습니다.\n\n**원인.** 주문 라인 하나를 처리할 때마다 `products.csv`를 두 번, `customers.csv`를 두 번, `fx_rates.csv`를 한 번 새로 읽어서 파싱하고 있었습니다. 그래서 시간이 라인 수 × 파일 크기로 늘어났습니다. 2,000줄 데이터가 30초였으니 3만 줄이면 6분 남짓이 나옵니다.\n\n**수정.** `build_report`를 호출할 때마다 각 CSV를 한 번씩만 읽어 인덱스로 만듭니다.\n- `catalog.load_catalog`는 sku별 dict를 만듭니다.\n- `customers.load_customers`는 공백을 제거한 id로 찾고, 없는 고객이면 \"(미등록)\" 기본값을 줍니다.\n- `fx.load_rates`는 통화별로 날짜를 정렬해 두고 `bisect`로 당일 또는 직전 환율을 찾습니다.\n- 그 밖에 중복 체크용 리스트(`seen`, `order_ids`)를 set으로 바꿨습니다.\n\n배치 서버가 한 프로세스에서 매일 바뀌는 폴더를 연달아 처리하기 때문에, 호출 사이에 캐시를 두지 않았습니다. 캐시를 두면 어제 데이터가 그대로 쓰일 수 있습니다. 수정 파일은 `salesreport/report.py`, `catalog.py`, `customers.py`, `fx.py`이고, 예전 행 단위 조회 함수(`get_product`, `get_customer`, `rate_for(data_dir, ...)`)는 삭제했습니다.\n\n**지켜야 했던 기존 동작.** 샘플 데이터에 중복 SKU가 5개, 같은 날 중복 환율 고시가 6건 있습니다. 원래 코드는 두 경우 모두 파일에서 처음 나온 행을 씁니다. dict를 단순하게 덮어쓰면 매출이 조용히 달라지기 때문에, 첫 행을 유지하도록 했습니다. 없는 SKU에서 나는 `KeyError`와 환율이 없을 때 나는 `LookupError`도 메시지까지 똑같습니다.\n\n**측정.** 운영 규모 데이터를 만드는 생성기를 따로 작성했습니다. 주문 라인 3만 건, 상품·고객 약 3천 건, 3년 치 순서 없는 환율이고, 중복과 공백, 미등록 고객도 넣었습니다. 기기 부하가 4코어에 load 11 정도로 높아서 절대값에는 잡음이 있습니다.\n- 운영 규모: 원래 코드는 377.8초(시간이 오래 걸려 1회만 실행)였고, 수정 후에는 7회 중 최고 0.111초(범위 0.111~0.182초)입니다. 약 3,400배 빨라졌습니다.\n- 2,000줄 데이터: 30.3초에서 0.016초로 줄었습니다.\n- 동봉 샘플(`bench.py data`): 0.375초에서 0.002초로 줄었습니다.\n\n남은 시간은 CSV 파싱과 라인 루프가 대부분일 거라고 보지만, 프로파일링은 하지 않아서 추정입니다.\n\n**검증.**\n- `pytest`(golden 리포트) 통과했습니다.\n- 원래 코드 사본과의 차등 비교 5건이 모두 같았습니다. 샘플, 2,000줄 데이터, 없는 SKU, USD 환율 전체 삭제, 7월 이전 환율 삭제입니다.\n- 3만 줄 데이터에서 `python3 -m salesreport.cli`로 만든 결과가 원래 코드 출력과 `cmp`로 동일했습니다. 이 결과에는 \"미상\" 지역이 들어 있어서 미등록 고객 경로도 실제로 거쳤습니다.\n\n**동작이 하나 달라진 점.** 이제 `fx_rates.csv`를 항상 읽습니다. 그래서 원화 상품만 있는 폴더라도 이 파일이 없으면 실패합니다. 원래 코드는 이 경우 통과했습니다. README상 이 파일은 항상 있으니 그대로 뒀지만, 그런 폴더가 실제로 있다면 알려 주세요. 지연 로딩으로 바꾸겠습니다.\n\n**판단 근거로 쓴 원칙.**\n- **Model the Domain**: 파일별 조회 함수 대신 도메인 모듈마다 인덱스를 두는 구조로 정했습니다. 첫 행 우선 같은 규칙과 미등록 기본값은 각 모듈 안에 남겼습니다.\n- **benchmark-checklist**: 샘플 500줄만으로는 운영 상황을 반영하지 못합니다. 그래서 운영 규모 데이터를 만들어 측정했고, 시간뿐 아니라 출력이 동일한지도 함께 확인했습니다.\n\n**생략한 단계.** 플레이북에는 구현을 서브에이전트에 맡기는 단계가 있지만, 변경이 작아서 직접 했습니다. 작업 디렉터리가 git 저장소가 아니어서 커밋과 PR은 만들지 않았습니다.\n\n**확인용 파일.**\n- 데이터 생성기: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-poteto-4-work/a60a4b0d-e775-4c13-b5e2-a612158f52d5/scratchpad/gen_data.py`\n- 차등 비교 스크립트: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-poteto-4-work/a60a4b0d-e775-4c13-b5e2-a612158f52d5/scratchpad/diffcheck.py`\n- 원래 코드 출력: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-poteto-4-work/a60a4b0d-e775-4c13-b5e2-a612158f52d5/scratchpad/prod_expected.txt`\n- 새 코드 출력: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-poteto-4-work/a60a4b0d-e775-4c13-b5e2-a612158f52d5/scratchpad/prod_new.txt`",
+   "user_action": "revise",
+   "user_message": "fx_rates.csv를 항상 읽어서 원화 상품만 있는 폴더에서 파일이 없으면 실패하는 점은 기존 동작과 어긋납니다. 그런 폴더가 있는지는 제가 확인할 수 없으니, 지연 로딩으로 바꿔서 원래 코드처럼 통과하게 해 주세요. 그 외 부분(출력 동일, 호출 간 캐시 없음, 인터페이스 유지, 속도)은 지금 그대로 두세요.",
+   "user_cost": 0.0259244
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 1.2757668000000002,
+   "agent_sec": 71.92759656906128,
+   "num_turns": 5,
+   "agent_message": "`fx_rates.csv`를 이제 처음 외화 환율이 필요할 때만 읽습니다. 그래서 원화 상품만 있는 폴더는 이 파일이 없어도 원래 코드처럼 통과합니다. 변경은 `salesreport/fx.py` 한 파일뿐이고, 나머지는 말씀하신 대로 그대로 뒀습니다.\n\n**확인한 내용**\n- **원화 전용 폴더**: 원화 상품만 있고 `fx_rates.csv`가 없는 폴더를 따로 만들어 돌렸습니다. 새 코드와 원래 코드 모두 리포트를 만들었고, 두 출력이 바이트 단위로 같았습니다.\n- **외화 상품이 있는데 파일이 없는 폴더**: 두 코드 모두 같은 `FileNotFoundError`로 실패했습니다.\n- **기존 비교 항목**: golden 테스트가 통과했습니다. 앞서 한 차등 비교 5건도 모두 원래 코드와 같았습니다.\n- **운영 규모 데이터(3만 줄)**: CLI로 만든 출력이 원래 코드 출력과 `cmp`로 동일했습니다.\n- **호출 간 캐시**: 여전히 없습니다. 환율 표는 `build_report`를 호출할 때마다 새로 만들어지고, 그 호출 안에서만 한 번 읽습니다.\n\n**속도**\n운영 규모 데이터에서 7회 중 최고 0.075초(범위 0.075~0.083초)였습니다. 이전 측정은 0.111초였는데, 이번 변경으로 빨라진 것은 아닙니다. 외화 상품이 있는 데이터에서는 결국 파일을 한 번 읽는 것이 똑같습니다. 그래서 이 차이는 기기 부하 변동으로 봅니다(추정). 원래 코드 377.8초와 비교한 결론은 그대로입니다.\n\n이 경우들을 다시 돌려 볼 수 있는 차등 비교 스크립트는 `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-poteto-4-work/a60a4b0d-e775-4c13-b5e2-a612158f52d5/scratchpad/diffcheck.py`에 있습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0259964
+  }
+ ],
+ "wall_sec": 685.7657713890076,
+ "user_turns": 1,
+ "accepted": true
+}

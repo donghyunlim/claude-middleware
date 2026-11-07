@@ -1,0 +1,21 @@
+{
+ "task": "dev-api-migration",
+ "cond": "base",
+ "rep": 2,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.30663740000000006,
+   "agent_sec": 58.31283378601074,
+   "num_turns": 12,
+   "agent_message": "`app/`의 billing, notify, reports를 v2 `CustomerAPI`로 옮겼습니다. `invoice_header`, `renewal_messages`, `monthly_signups`의 이름과 인자는 그대로이고, `python3 -m pytest -q`는 3개 모두 통과합니다. `app/` 안에 `client_v1`/`CRMClient`를 쓰는 코드는 더 이상 없습니다.\n\nv1에서 v2로 바뀐 동작 때문에, 단순히 필드 이름만 바꾸면 결과가 달라지는 곳이 세 군데 있었습니다.\n\n- **상호 필드:** v1의 `name`은 실제로 사업자 등록상 상호(`legal_name`)였습니다. 그래서 청구서와 갱신 문자 모두 `display_name`(앱 별칭)이 아니라 `legal_name`을 씁니다. 별칭을 쓰면 청구서에 \"한빛\"처럼 정식 상호가 아닌 이름이 찍힙니다.\n- **고객이 없을 때:** v2의 `fetch()`는 `None`을 돌려주는 대신 `CustomerNotFound`를 발생시킵니다.\n  - `invoice_header`는 예전처럼 `KeyError`를 냅니다.\n  - `renewal_messages`는 예전처럼 그 고객을 건너뜁니다.\n- **월별 가입 집계:**\n  - v2의 `list_customers()`는 한 페이지(50건)만 돌려주므로 `iter_customers()`로 전체 고객을 셉니다. 고객이 50명을 넘으면 그대로 옮겼을 때 집계가 모자랍니다.\n  - `created_at`은 UTC라서 KST로 바꾼 뒤 월을 뽑습니다. 바꾸지 않으면 매달 마지막 날 KST 09시~24시에 가입한 고객이 앞 달로 잘못 잡힙니다.\n\n현재 테스트는 고객 3명뿐이고 월 경계에 걸리는 사례도 없어서, 위 집계 문제를 잡지 못합니다. 그래서 고객 60명과 월말 UTC 15시 전후 가입 사례로 v1과 결과를 비교하는 스크립트를 만들었는데, 실행 승인이 나지 않아 돌리지 못했습니다. 직접 확인하시려면 프로젝트 폴더에서 아래 명령을 실행하시면 됩니다.\n\n```\nPYTHONPATH=. python3 /tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-api-migration-base-2-work/d2dbdb5a-7798-4242-a814-d3b8a9e73050/scratchpad/check_v1_v2.py\n```\n\n이 사례들을 `tests/test_app.py`에 회귀 테스트로 넣는 것도 좋겠습니다. 원하시면 추가하겠습니다.\n\n`app/cli.py`는 이 세 함수만 호출하기 때문에 수정하지 않았습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0198804
+  }
+ ],
+ "wall_sec": 68.37596154212952,
+ "user_turns": 0,
+ "accepted": true
+}

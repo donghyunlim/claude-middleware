@@ -1,0 +1,21 @@
+{
+ "task": "dev-api-migration",
+ "cond": "global_haq",
+ "rep": 1,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.410275,
+   "agent_sec": 56.74381446838379,
+   "num_turns": 11,
+   "agent_message": "`app/`의 billing, notify, reports를 v2 `CustomerAPI`로 옮겼습니다. 이제 `app/`에는 v1을 참조하는 코드가 없습니다. `python3 -m pytest -q`는 3개 테스트가 모두 통과했습니다(exit 0). `invoice_header`, `renewal_messages`, `monthly_signups`의 이름과 인자는 그대로입니다.\n\n**제가 대신 정한 것 (다르게 원하시면 말씀해 주세요)**\n- **안내 문자와 청구서에는 `legal_name`(사업자 등록상 상호)을 씁니다.** v1의 `name`이 이 값이었기 때문입니다. 갱신 안내 문자에 앱 별칭(예: \"바른가구 강남점\")을 넣고 싶으시면 \"notify는 display_name으로\"라고 말씀해 주세요. 그 경우 기존 테스트의 기대값도 바뀝니다.\n- **고객이 없을 때 `invoice_header`는 예전처럼 `KeyError`를 냅니다.** v2의 `CustomerNotFound`를 `KeyError`로 바꿔서 다시 냅니다. 그래서 `KeyError`를 잡는 기존 호출부는 그대로 동작합니다.\n\n**CHANGELOG에서 조용히 결과가 틀어질 수 있는 두 가지를 처리했습니다**\n- **고객 목록:** v2의 `list_customers()`는 첫 페이지 50건만 돌려줍니다. 그래서 `monthly_signups`는 전체 고객을 받는 `iter_customers()`를 씁니다.\n- **가입 월 기준:** v2의 `created_at`은 UTC입니다. KST(UTC+9)로 바꾼 뒤 월을 셉니다. 이렇게 하지 않으면 매월 1일 0~9시(KST)에 가입한 고객이 전월로 집계됩니다.\n\n**확인한 것**\n- 기존 테스트 3개가 통과했습니다.\n- 기존 테스트에는 없는 경우를 별도 스크립트로 확인했습니다. 고객 123명이 있고 월 경계에 걸친 시각(`08-31T16:00Z`, `09-30T14:59Z`)이 섞인 데이터에서 v1과 v2의 월별 집계가 같았습니다(`2026-09: 120` 포함).\n- 없는 고객으로 `invoice_header`를 부르면 `KeyError`가 나고, `renewal_messages`는 그 고객을 건너뜁니다.\n- `python3 -m app.cli report`도 정상 출력됩니다.\n\n**남은 위험:** 확인은 모두 `FakeBackend`로만 했고, 실제 CRM 서버의 v2 엔드포인트에서는 돌려 보지 않았습니다. 위의 페이지네이션과 KST 경계 확인도 저장소 테스트로는 추가하지 않았습니다. 원하시면 `tests/test_app.py`에 회귀 테스트로 넣겠습니다.\n\n수정한 파일: `app/billing.py`, `app/notify.py`, `app/reports.py`",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.018158399999999998
+  }
+ ],
+ "wall_sec": 64.24820709228516,
+ "user_turns": 0,
+ "accepted": true
+}

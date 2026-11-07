@@ -1,0 +1,7 @@
+code,유형,건수,비고
+REFUND_HOWTO,환불 신청 방법,1820,챗봇 자동응답으로 처리 중(상담원 매크로 불필요)
+REFUND_STATUS,환불 진행 상황 문의,1410,
+CARD_CANCEL_DELAY,카드 취소 반영 지연,960,
+PARTIAL_REFUND,부분 환불 금액 문의,610,
+REFUND_DENIED,환불 불가(기간 경과),420,
+DUP_PAYMENT,중복 결제 환불,180,결제팀 이관 건

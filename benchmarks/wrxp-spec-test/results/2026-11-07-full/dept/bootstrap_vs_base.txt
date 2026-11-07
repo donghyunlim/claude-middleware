@@ -1,0 +1,5 @@
+global deliv +0.026 [-0.021,+0.090] | revisions -0.100 [-0.200,+0.000] | cost +0.101 [-0.008,+0.206] | sec +22.901 [-3.747,+68.146] | tasks better 4 worse 5
+global_haq deliv +0.221 [+0.096,+0.347] | revisions -0.450 [-0.717,-0.150] | cost +0.387 [+0.252,+0.520] | sec +15.798 [+2.573,+29.991] | tasks better 10 worse 1
+global_haqq deliv +0.278 [+0.134,+0.423] | revisions -0.567 [-0.817,-0.300] | cost +0.410 [+0.255,+0.552] | sec +27.750 [+5.007,+58.711] | tasks better 10 worse 1
+pstack deliv +0.008 [-0.042,+0.068] | revisions +0.033 [-0.133,+0.217] | cost +0.200 [+0.115,+0.296] | sec +27.144 [-1.622,+77.984] | tasks better 2 worse 5
+pstack_poteto deliv +0.054 [-0.001,+0.124] | revisions -0.150 [-0.350,+0.050] | cost +0.276 [+0.122,+0.461] | sec +45.961 [+4.045,+120.540] | tasks better 5 worse 1

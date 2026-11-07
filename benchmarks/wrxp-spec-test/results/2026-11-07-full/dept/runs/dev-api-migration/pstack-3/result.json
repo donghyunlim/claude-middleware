@@ -1,0 +1,32 @@
+{
+ "task": "dev-api-migration",
+ "cond": "pstack",
+ "rep": 3,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.4783782,
+   "agent_sec": 63.29329299926758,
+   "num_turns": 19,
+   "agent_message": "`app/` now uses the v2 `CustomerAPI` everywhere, and nothing it outputs has changed. `invoice_header`, `renewal_messages` and `monthly_signups` keep the same names and arguments, and `cli.py` needed no edits. `python3 -m pytest -q` passes 6 of 6. Running the CLI's `report`, `invoice` and `notify` commands gives the same output as before the migration.\n\nA straight field-for-field swap would have broken four things without any error, so each one is handled:\n\n- **Name.** The v1 `name` held the registered business name, so it now comes from `legal_name`, not `display_name`. Using `display_name` would put a nickname like \"바른가구 강남점\" on invoices and texts.\n- **Missing customer.** `fetch` now raises `CustomerNotFound` instead of returning `None`. `invoice_header` turns that back into the `KeyError` it raised before. `renewal_messages` still skips the missing customer.\n- **Only the first page.** v2 `list_customers()` returns 50 customers at most, so `monthly_signups` now uses `iter_customers()` to count everyone.\n- **Time zone.** `created_at` is in UTC, so I convert it to Korean time (KST) before taking the month. Otherwise a signup at 01:00 KST on September 1 would be counted in August.\n\nI added three tests in `tests/test_app.py` for the cases the original tests didn't cover:\n\n- an invoice for an unknown customer raises `KeyError`\n- the month is taken in Korean time\n- 120 customers are all counted\n\nI ran them against the old v1 code first and they passed, so they pin down the existing behavior. I didn't run them against a naive migration. Going by the code, the paging test would count only 50 and the time-zone test would return August.\n\nI left `crmkit/client_v1.py` in place because the changelog says it goes away when the server's /v1 endpoints are shut down, which is outside this task. Nothing in `app/` or `tests/` uses it now, so deleting it later is a single change.",
+   "user_action": "revise",
+   "user_message": "v1 `CRMClient`는 지우지 않은 건 좋은데, 한 가지가 빠졌어요. `CRMClient`를 만들 때 `DeprecationWarning`이 나도록 해 주세요. 다른 팀이 v2로 옮기라고 알리는 용도예요. 반환 형식과 동작은 지금과 똑같이 유지하고요.",
+   "user_cost": 0.0150904
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.579664,
+   "agent_sec": 24.930734395980835,
+   "num_turns": 5,
+   "agent_message": "`CRMClient` now raises a `DeprecationWarning` every time it is constructed. The message tells other teams to move to `crmkit.client_v2.CustomerAPI` and points them to `CHANGELOG.md`. `get_customer` and `list_customers` work exactly as before, with the same return format.\n\n- **Where the warning points.** I set `stacklevel=2`, so the warning shows the file and line that created `CRMClient`, not a line inside crmkit. That way other teams can see right away which of their code needs to change.\n- **Tests.** The new `tests/test_client_v1.py` checks that the warning fires with the caller's location. It also checks that the v1 return values are unchanged, including `None` for a missing customer.\n- **Results.** The full suite passes 8 of 8. I also ran the existing `app/` tests with that warning set to fail the run, and they passed. That confirms nothing in `app/` still creates a `CRMClient`.\n\nOne limit worth knowing: Python hides `DeprecationWarning` by default. Teams will see it in pytest runs, in code run directly as `__main__`, or with `python3 -W default`. A batch job running normally in production will not print it. If you want it shown everywhere, switching to `FutureWarning` is a one-word change. I left it as `DeprecationWarning` because that's what you asked for.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.016108400000000002
+  }
+ ],
+ "wall_sec": 99.48637509346008,
+ "user_turns": 1,
+ "accepted": true
+}

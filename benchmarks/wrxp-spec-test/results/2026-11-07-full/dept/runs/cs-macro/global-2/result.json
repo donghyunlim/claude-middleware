@@ -1,0 +1,32 @@
+{
+ "task": "cs-macro",
+ "cond": "global",
+ "rep": 2,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.2714936,
+   "agent_sec": 48.000596046447754,
+   "num_turns": 12,
+   "agent_message": "I added 3 macros to `macros.json`. They're stored as an array in the format you asked for.\n\n**Which 3 inquiry types I picked**\nThe most frequent type in the Q3 stats is \"how to request a refund\" (`REFUND_HOWTO`, 1,820 cases). The note in the CSV says the chatbot already answers these, so I left it out. \"Duplicate payment\" (`DUP_PAYMENT`) gets transferred to the payments team, so I left that out too. Of what remains, I used the 3 most frequent types:\n\n| scenario | Title | Q3 cases |\n|---|---|---|\n| `REFUND_STATUS` | [환불] 진행 상황 문의 안내 | 1,410 |\n| `CARD_CANCEL_DELAY` | [환불] 카드 취소 반영 지연 안내 | 960 |\n| `PARTIAL_REFUND` | [환불] 부분 환불 금액 안내 | 610 |\n\n**How the source files were applied**\n- **Refund timelines:** these follow the policy revised in October 2026. Approval takes 1–2 business days, and after approval card cancellations take 3–7 business days and bank transfers take 1–3 business days. The old \"cancelled within 2–3 days\" wording from the 2024 FAQ isn't used. Following the policy's rule for agents, no macro promises a specific date.\n- **Partial refunds:** the macro says coupon discounts are excluded from the refund and coupons aren't reissued. It also says amounts paid with points come back as points.\n- **Variables:** I didn't use the old link token `{{refund_status_url}}`, which has returned 404 since September 2026. The progress link uses `{{refund_link}}` instead.\n- **Style guide:** each macro opens with empathy, then the current status, then next steps. The customer is addressed as \"{{customer_name}} 고객님\". There are no exclamation marks, emoji or internal terms, and each paragraph is 2–3 sentences.\n\n**Checks**\n- The JSON parses correctly.\n- Bodies are 390–416 characters, under the help desk's 1,000-character limit.\n- Every token in the bodies is one the help desk can use.\n\n**Possible fourth macro**\n\"Refund not possible (window passed)\" (`REFUND_DENIED`, 420 cases) came 4th, so it didn't make the 3. I can write it as a 4th macro if you want.",
+   "user_action": "revise",
+   "user_message": "본문 길이가 390~416자라고 하셨는데, 본문은 공백과 플레이스홀더를 포함해 350자 이내여야 합니다. 3개 모두 350자 이내로 줄여 주세요. 줄이면서도 \"{{customer_name}} 고객님\"으로 시작하는 것, REFUND_STATUS와 CARD_CANCEL_DELAY의 \"영업일 기준 3~7일\" 문구, PARTIAL_REFUND의 {{refund_amount}}와 쿠폰 제외 안내, 모든 매크로의 {{refund_link}}는 그대로 유지해 주세요.",
+   "user_cost": 0.0175764
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.35710440000000004,
+   "agent_sec": 23.55129909515381,
+   "num_turns": 3,
+   "agent_message": "I shortened all 3 bodies in `macros.json` to under 350 characters. I counted with Python's `len()`, so spaces, line breaks and placeholders are all included.\n\n| scenario | Body length |\n|---|---|\n| `REFUND_STATUS` | 286 chars |\n| `CARD_CANCEL_DELAY` | 284 chars |\n| `PARTIAL_REFUND` | 309 chars |\n\n**Kept as you asked**\n- All 3 bodies start with \"{{customer_name}} 고객님\".\n- `REFUND_STATUS` and `CARD_CANCEL_DELAY` both keep \"영업일 기준 3~7일\".\n- `PARTIAL_REFUND` keeps `{{refund_amount}}` and the note that coupon discounts are excluded from the refund.\n- All 3 bodies keep `{{refund_link}}`.\n\n**What I removed or shortened**\n- The opening \"안녕하세요,\" is gone, since the bodies now have to start with \"{{customer_name}} 고객님\".\n- The empathy sentences and the closing lines are shorter.\n- I removed the refund amount (`{{refund_amount}}`) from `CARD_CANCEL_DELAY`, along with \"확인 후 다시 안내해 드리겠습니다\" from the end of every macro.\n\n**Still in place**\n- Each macro still goes empathy, then current status, then next steps.\n- No macro promises a specific date.\n- There are no exclamation marks, and every token is one the help desk can use.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0200404
+  }
+ ],
+ "wall_sec": 85.56212759017944,
+ "user_turns": 1,
+ "accepted": true
+}

@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "global",
+ "rep": 3,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.8792304000000002,
+   "agent_sec": 1037.8568804264069,
+   "num_turns": 3,
+   "agent_message": "리포트 생성 속도를 개선했습니다. 운영 규모 데이터에서 약 15분 걸리던 작업이 0.16초로 줄었고, 출력은 원본과 바이트 단위까지 같습니다. 수정한 파일은 `salesreport/report.py` 하나입니다.\n\n## 원인\n주문 라인 하나를 처리할 때마다 `products.csv`, `customers.csv`, `fx_rates.csv`를 디스크에서 처음부터 다시 읽고 선형 탐색했습니다. 상품 조회는 라인당 2번 일어났습니다. 그래서 처리 시간이 \"라인 수 × 파일 크기\"에 비례해 늘었습니다. 고유 주문·고객을 셀 때 리스트에서 `in`으로 검사하는 부분도 같은 식으로 느렸습니다.\n\n## 변경 내용\n- `build_report`를 한 번 호출할 때 각 CSV 파일을 처음 필요한 시점에 한 번만 읽고 딕셔너리로 색인합니다.\n- 환율은 통화별 고시일을 정렬해 두고 이진 탐색으로 \"해당일 또는 그 이전 가장 최근 고시일\"을 찾습니다.\n- 고유 주문·고객 집계는 `set`으로 바꿨습니다.\n- 색인은 호출이 끝나면 버려지고, 다음 호출로 넘어가는 캐시는 없습니다. README에 따르면 배치 서버가 한 프로세스에서 매일 갱신되는 폴더를 연달아 처리하므로, 다음 날 호출에 지난 데이터가 쓰이면 안 되기 때문입니다.\n- `build_report(data_dir)`와 `python3 -m salesreport.cli DATA_DIR OUT_PATH`는 그대로입니다. `catalog`, `customers`, `fx` 모듈의 기존 함수도 손대지 않았습니다.\n\n원본 동작은 세부 사항까지 그대로 따랐습니다.\n- 같은 SKU나 고객 ID가 여러 행이면 첫 행을 씁니다. 같은 날짜에 환율 고시가 여러 건이면 파일에서 먼저 나온 행을 씁니다.\n- 고객 ID 앞뒤 공백은 원본처럼 제거하고, 미등록 고객도 원본과 같은 기본값으로 처리합니다.\n- 금액 합산 순서가 원본과 같아서 부동소수점 결과도 같습니다.\n- 오류도 원본과 같은 지점에서 같은 예외로 납니다. 예를 들어 환율이 없으면 `LookupError`, 상품이 없으면 `KeyError`, 주문이 없으면 `ValueError`가 발생합니다. 모든 상품이 KRW이면 `fx_rates.csv`가 없어도 리포트가 만들어집니다.\n\n## 검증 결과\n| 데이터 | 원본 | 변경 후 | 원본 대비 출력 |\n|---|---|---|---|\n| `data/` (500라인) | 0.336s | 0.002s | `expected/report.txt`와 같음 (pytest 1 passed) |\n| 합성 중간 규모 (3,000라인) | 26.8s | 0.054s | 바이트 단위 동일 |\n| 합성 운영 규모 (40,000라인, 상품·고객 각 5,000건, 환율 4년 치) | 899.9s | 0.158s (`bench.py`, 3회 중 최솟값) | 바이트 단위 동일 |\n\n- 합성 데이터에는 중복 SKU·고객, 공백이 섞인 ID, 미등록 고객, 같은 날 중복 환율 고시, 날짜순이 아닌 환율 파일을 일부러 넣었습니다.\n- 경계 사례 7가지(환율 없음, 미지원 통화, 없는 SKU, 빈 주문, 환율 파일 없음 등)도 원본과 결과 또는 예외 메시지가 같았습니다.\n- CLI로 만든 출력 파일도 `expected/report.txt`와 같았습니다.\n\n합성 데이터는 원본 코드로 비교하려고 만든 것이고, 실제 운영 데이터로는 아직 돌려 보지 않았습니다. 운영 데이터로 `python3 bench.py <운영 폴더> 3`을 한 번 실행해 실제 시간을 확인해 보시기 바랍니다.\n\n검증에 쓴 스크립트는 다음 경로에 있습니다.\n- 합성 데이터 생성: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-3-work/2fc6f419-b82d-4999-86cb-5fcdb92e7b1d/scratchpad/gen.py`\n- 경계 사례 비교: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-3-work/2fc6f419-b82d-4999-86cb-5fcdb92e7b1d/scratchpad/edge.py`",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0187124
+  }
+ ],
+ "wall_sec": 1043.4149749279022,
+ "user_turns": 0,
+ "accepted": true
+}

@@ -1,0 +1,1 @@
+다음 분기 백로그 우선순위를 RICE로 매겨 주세요. 후보는 `backlog.csv`에 있어요. 결과는 `ranked.json`에 우선순위 높은 순으로, 모든 항목을 `[{"id": "B-01", "score": 123.4}, ...]` 형태로 저장해 주세요. score는 RICE 점수(Reach × Impact × Confidence ÷ Effort)예요.

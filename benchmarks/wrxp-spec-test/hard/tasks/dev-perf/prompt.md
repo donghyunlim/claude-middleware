@@ -1,0 +1,1 @@
+`salesreport` 리포트 생성이 너무 느려요. 운영 데이터로 돌리면 몇 분씩 걸려서 배치가 밀립니다. 빠르게 좀 만들어 주세요. 다른 시스템이 `salesreport.report.build_report(data_dir)`랑 `python3 -m salesreport.cli DATA_DIR OUT_PATH`를 그대로 호출하니까 이 인터페이스는 유지해야 하고요. 시간은 `bench.py`로 잴 수 있어요.

@@ -1,0 +1,146 @@
+{
+ "conds": [
+  "base",
+  "global",
+  "global_haq",
+  "global_haqq",
+  "pstack",
+  "pstack_poteto"
+ ],
+ "by_domain": {
+  "airline": {
+   "base": {
+    "pass^1": 1.0,
+    "pass^2": 1.0,
+    "cost": 0.8142784000000001,
+    "turns": 3.75,
+    "tasks": 4
+   },
+   "global": {
+    "pass^1": 1.0,
+    "pass^2": 1.0,
+    "cost": 1.003914775,
+    "turns": 3.875,
+    "tasks": 4
+   },
+   "global_haq": {
+    "pass^1": 1.0,
+    "pass^2": 1.0,
+    "cost": 0.9784460500000001,
+    "turns": 3.75,
+    "tasks": 4
+   },
+   "global_haqq": {
+    "pass^1": 1.0,
+    "pass^2": 1.0,
+    "cost": 1.064441975,
+    "turns": 3.875,
+    "tasks": 4
+   },
+   "pstack": {
+    "pass^1": 0.875,
+    "pass^2": 0.75,
+    "cost": 1.037325525,
+    "turns": 3.75,
+    "tasks": 4
+   },
+   "pstack_poteto": {
+    "pass^1": 1.0,
+    "pass^2": 1.0,
+    "cost": 1.36786,
+    "turns": 3.875,
+    "tasks": 4
+   }
+  },
+  "retail": {
+   "base": {
+    "pass^1": 0.75,
+    "pass^2": 0.5,
+    "cost": 1.2341551625,
+    "turns": 5.125,
+    "tasks": 4
+   },
+   "global": {
+    "pass^1": 0.75,
+    "pass^2": 0.5,
+    "cost": 1.2831954,
+    "turns": 4.625,
+    "tasks": 4
+   },
+   "global_haq": {
+    "pass^1": 0.5,
+    "pass^2": 0.25,
+    "cost": 1.214392075,
+    "turns": 4.75,
+    "tasks": 4
+   },
+   "global_haqq": {
+    "pass^1": 0.625,
+    "pass^2": 0.5,
+    "cost": 1.5271596,
+    "turns": 5.375,
+    "tasks": 4
+   },
+   "pstack": {
+    "pass^1": 0.875,
+    "pass^2": 0.75,
+    "cost": 1.79146295,
+    "turns": 5.5,
+    "tasks": 4
+   },
+   "pstack_poteto": {
+    "pass^1": 0.75,
+    "pass^2": 0.5,
+    "cost": 1.59773815,
+    "turns": 4.375,
+    "tasks": 4
+   }
+  }
+ },
+ "overall": {
+  "전체": {
+   "base": {
+    "pass^1": 0.875,
+    "pass^2": 0.75,
+    "cost": 1.02421678125,
+    "turns": 4.4375,
+    "tasks": 8
+   },
+   "global": {
+    "pass^1": 0.875,
+    "pass^2": 0.75,
+    "cost": 1.1435550875,
+    "turns": 4.25,
+    "tasks": 8
+   },
+   "global_haq": {
+    "pass^1": 0.75,
+    "pass^2": 0.625,
+    "cost": 1.0964190625,
+    "turns": 4.25,
+    "tasks": 8
+   },
+   "global_haqq": {
+    "pass^1": 0.8125,
+    "pass^2": 0.75,
+    "cost": 1.2958007875,
+    "turns": 4.625,
+    "tasks": 8
+   },
+   "pstack": {
+    "pass^1": 0.875,
+    "pass^2": 0.75,
+    "cost": 1.4143942375,
+    "turns": 4.625,
+    "tasks": 8
+   },
+   "pstack_poteto": {
+    "pass^1": 0.875,
+    "pass^2": 0.75,
+    "cost": 1.4827990750000002,
+    "turns": 4.125,
+    "tasks": 8
+   }
+  }
+ }
+}

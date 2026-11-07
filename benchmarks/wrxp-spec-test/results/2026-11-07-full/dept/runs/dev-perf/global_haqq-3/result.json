@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "global_haqq",
+ "rep": 3,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.9139560000000001,
+   "agent_sec": 227.38647413253784,
+   "num_turns": 24,
+   "agent_message": "리포트 생성 속도를 개선했습니다. 운영 규모로 만든 테스트 데이터 기준으로 한 번 생성하는 데 약 0.2초가 걸리고, 출력은 기존 코드와 바이트 단위로 같습니다. 다만 실제 운영 데이터로는 아직 돌려 보지 못했습니다.\n\n**제가 정한 기본값** (다르게 원하시면 말씀해 주세요)\n- 바꾼 파일은 `salesreport/report.py` 하나입니다. `catalog.get_product`, `customers.get_customer`, `fx.rate_for`, `report.line_amount` 같은 기존 공개 함수는 다른 곳에서 쓰고 있을 수 있어서 그대로 두었습니다.\n- 데이터는 호출할 때마다 새로 읽고, 호출과 호출 사이에는 캐시하지 않았습니다. README에 따르면 배치 서버가 한 프로세스 안에서 매일 갱신되는 폴더로 `build_report`를 연달아 부릅니다. 이때 캐시를 두면 어제 데이터로 리포트가 나올 수 있습니다.\n\n**원인과 수정 내용**\n- **원인:** 기존 코드는 주문 라인 하나마다 `products.csv`를 세 번, `customers.csv`와 `fx_rates.csv`를 한 번씩 처음부터 다시 읽었습니다. 그래서 처리 시간이 \"주문 라인 수 × 마스터 파일 크기\"에 비례해 늘었습니다. 주문 ID와 고객의 중복을 확인할 때도 리스트에서 `in` 검사를 해서 데이터가 커질수록 느려졌습니다.\n- **수정:** `build_report`를 한 번 호출할 때 CSV를 각각 한 번만 읽어서 조회용 인덱스를 만듭니다.\n  - 상품과 고객은 dict로 찾습니다.\n  - 환율은 통화별로 날짜를 정렬해 두고 이진 탐색으로 찾습니다.\n  - 중복 확인에는 set과 dict를 씁니다.\n- **기존 동작 유지:**\n  - SKU가 중복되면 파일에서 처음 나온 행을 씁니다.\n  - 같은 날짜에 환율이 두 번 고시되면 처음 나온 행을 씁니다.\n  - 고객 ID 앞뒤의 공백은 무시합니다.\n  - 미등록 고객은 `(미등록)/미상/일반`으로 처리합니다.\n  - 합계를 더하는 순서와 정렬 순서도 그대로여서 반올림 결과도 같습니다.\n  - 오류도 같게 납니다. 없는 SKU는 `KeyError`, 환율이 없으면 `LookupError`가 나고 메시지도 같습니다.\n- `build_report(data_dir)`와 `python3 -m salesreport.cli DATA_DIR OUT_PATH` 인터페이스는 바뀌지 않았습니다.\n\n**검증 결과**\n- `python3 -m pytest -q`: 1개 테스트가 통과했습니다(골든 파일 비교).\n- `python3 -m salesreport.cli data …`로 만든 파일은 `cmp`로 비교했을 때 `expected/report.txt`와 같았습니다.\n- 기존 로직을 그대로 복사해 두고, 새 코드와 출력이 완전히 같은지 비교했습니다. 비교한 데이터는 `data`와 합성 데이터 두 종류(800줄, 3,000줄)이며 모두 같았습니다. 합성 데이터에는 SKU 중복, 같은 날짜의 환율 중복, 날짜순이 아닌 환율 파일, 공백이 섞인 고객 ID, 미등록 고객을 일부러 넣었습니다.\n- 없는 SKU, 환율 고시 이전 날짜, 미등록 고객 같은 예외 상황에서도 기존 코드와 결과가 같았습니다.\n- `bench.py` 측정 결과는 아래와 같습니다.\n\n| 데이터 | 기존 | 개선 후 |\n|---|---|---|\n| `data`(501줄) | 0.43s | 0.002s |\n| 합성 3,000줄 / 상품 1,500개 | 18.2s | 0.014s |\n| 합성 운영 규모(6만 줄 / 상품·고객 각 5,000개 / 환율 약 4년 치) | 측정하지 않음(수십 분 예상) | 0.198s |\n\n**남은 위험**\n- 실제 운영 데이터로는 실행해 보지 못했습니다. 위의 운영 규모 수치는 합성 데이터로 잰 것입니다. 배포하기 전에 운영 데이터 폴더 하나로 기존 버전과 새 버전의 출력을 `cmp`로 한 번 비교해 보시길 권합니다.\n- 기존 코드는 파일을 실제로 읽은 행의 숫자만 변환했습니다. 새 코드도 숫자 변환을 필요한 행에서만 늦게 하도록 맞췄습니다. 다만 CSV 자체가 깨져 있어서 읽기에 실패하는 경우에는 오류가 나는 시점이 기존과 다를 수 있습니다.\n\n비교와 측정에 쓴 스크립트는 scratchpad에 있으며, 운영 데이터를 확인할 때 다시 쓸 수 있습니다.\n- `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-haqq-3-work/bef7ba10-0245-499b-af8f-5357e2804e3a/scratchpad/compare.py`: 기존 로직과 새 코드의 출력과 시간을 비교합니다. 비교 기준은 `ref_report.py`에 복사해 둔 기존 로직입니다.\n- `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-global-haqq-3-work/bef7ba10-0245-499b-af8f-5357e2804e3a/scratchpad/gen.py`: 합성 데이터를 만듭니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.021680400000000002
+  }
+ ],
+ "wall_sec": 233.48473167419434,
+ "user_turns": 0,
+ "accepted": true
+}

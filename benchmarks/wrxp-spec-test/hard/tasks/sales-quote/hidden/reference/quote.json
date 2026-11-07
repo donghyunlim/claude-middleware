@@ -1,0 +1,8 @@
+{"customer": "한빛물류",
+ "line_items": [
+  {"sku": "BIZ-SEAT", "qty": 120, "months": 36, "unit_price": 13900, "amount": 60048000},
+  {"sku": "ADDON-SSO", "qty": 120, "months": 36, "unit_price": 2500, "amount": 10800000},
+  {"sku": "SVC-ONBOARD", "qty": 1, "months": null, "unit_price": 1800000, "amount": 1800000}
+ ],
+ "subtotal": 72648000, "discount_rate_pct": 20, "discount_amount": 14170000,
+ "supply_amount": 58478000, "vat": 5847800, "total": 64325800, "valid_until": "2026-12-09"}

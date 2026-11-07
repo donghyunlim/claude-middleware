@@ -1,0 +1,32 @@
+{
+ "task": "dev-perf",
+ "cond": "pstack",
+ "rep": 3,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.9946976000000002,
+   "agent_sec": 1366.5848331451416,
+   "num_turns": 2,
+   "agent_message": "리포트 생성을 빠르게 만들었습니다. 수만 건 규모에서 19분 걸리던 작업이 0.2초에 끝나고, 결과는 기존과 바이트 단위로 같습니다. `build_report(data_dir)`와 `python3 -m salesreport.cli DATA_DIR OUT_PATH`는 그대로입니다.\n\n느렸던 이유는 주문 라인 하나마다 `products.csv`를 두 번, `customers.csv`와 `fx_rates.csv`를 한 번씩 처음부터 끝까지 다시 읽었기 때문입니다. 주문 ID와 고객 ID 중복 확인도 리스트를 처음부터 훑는 방식이었습니다. 이제는 `build_report` 한 번 호출할 때 각 파일을 한 번만 읽어서 색인으로 만듭니다. 환율은 통화별로 날짜순 정렬해 두고 이진 탐색으로 찾고, 중복 확인은 set으로 바꿨습니다.\n\n**동작은 기존과 같습니다.**\n- 같은 키가 여러 줄 있으면 지금처럼 첫 줄이 쓰입니다. 대상은 같은 SKU, 공백을 뺀 같은 고객 ID, 같은 날짜의 환율입니다.\n- 매출 합산 순서와 곱셈 순서가 같아서 반올림 결과도 같습니다.\n- 파일은 처음 필요할 때 엽니다. 숫자 변환도 실제로 쓰이는 줄만 합니다. 그래서 오류가 나는 시점과 종류도 그대로입니다.\n- 캐시는 호출 한 번 동안만 유지합니다. README에 따르면 배치 서버가 한 프로세스에서 매일 갱신되는 폴더를 연달아 처리하므로, 전역 캐시를 두면 어제 데이터가 남을 수 있기 때문입니다.\n\n**측정 결과** (`bench.py`, 5회 중 최고값)\n\n| 데이터 | 이전 | 이후 |\n|---|---|---|\n| 동봉된 `data/` (500줄) | 0.404s | 0.002s |\n| 합성 데이터 2천 줄 | 36.6s | (출력 비교만 함) |\n| 합성 데이터 5만 줄 | 1152s (1회) | 0.190s |\n\n5만 줄 데이터는 README에 적힌 운영 규모에 맞춰 만들었습니다. 상품 5천, 고객 5천, 4년 치 순서가 섞인 환율이고, 일부러 넣은 중복 SKU·중복 고객·중복 환율 날짜도 들어 있습니다. 2천 줄과 5만 줄 데이터 모두 기존 코드와 출력이 완전히 같았고, `pytest`의 기존 정답 비교 테스트도 통과합니다. 실제 운영 데이터로는 돌려보지 못했으니, 첫 배치 때 출력을 한 번 비교해 보시길 권합니다.\n\n**호환성에서 확인할 점이 하나 있습니다.** 모듈 함수 `catalog.get_product`, `customers.get_customer`, `fx.rate_for`, `report.line_amount`를 없애고 호출 한 번 동안만 쓰는 `Catalog`, `Customers`, `Rates` 클래스로 바꿨습니다. 저장소 안에서는 이 함수들을 쓰는 곳이 없지만, 다른 시스템이 이 내부 함수를 직접 import한다면 깨집니다. 그런 곳이 있으면 알려 주세요. 기존 이름을 되살리겠습니다.\n\n변경한 파일은 `salesreport/report.py`, `catalog.py`, `customers.py`, `fx.py`입니다. 테스트 데이터 생성 스크립트는 `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-dev-perf-pstack-3-work/fe71725d-9a0f-4155-97f4-608af0bcab23/scratchpad/gen.py`에 있습니다.",
+   "user_action": "answer",
+   "user_message": "내부 함수를 직접 import하는 곳은 없습니다. 외부에서 쓰는 건 build_report(data_dir)와 CLI뿐이니 내부 구조는 알아서 판단해 주세요. 기존 함수 이름을 되살릴 필요는 없습니다.",
+   "user_cost": 0.0208544
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 1.0306986000000002,
+   "agent_sec": 8.71109676361084,
+   "num_turns": 1,
+   "agent_message": "그럼 지금 상태로 마무리됐습니다. 외부에서 쓰는 `build_report(data_dir)`와 CLI는 그대로이고, 출력도 같습니다. 예전 함수 이름은 되살리지 않습니다.\n\n내부 구조도 이대로 두는 게 맞다고 봅니다. 파일마다 클래스를 하나씩 두고, 호출 한 번 동안만 씁니다. 상품은 `Catalog`, 고객은 `Customers`, 환율은 `Rates`가 맡습니다. 나머지 모듈(`io_utils`, `orders`, `formatting`)은 바꾸지 않았고 모두 쓰이고 있어서, 남은 죽은 코드는 없습니다. 더 손볼 곳은 없습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0197364
+  }
+ ],
+ "wall_sec": 1391.0244200229645,
+ "user_turns": 1,
+ "accepted": true
+}

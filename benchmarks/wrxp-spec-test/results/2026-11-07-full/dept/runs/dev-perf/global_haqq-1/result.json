@@ -1,0 +1,21 @@
+{
+ "task": "dev-perf",
+ "cond": "global_haqq",
+ "rep": 1,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 1.1196518000000002,
+   "agent_sec": 975.9465744495392,
+   "num_turns": 1,
+   "agent_message": "4만 라인 비교를 지켜보던 감시 작업도 끝났습니다. 결과는 앞서 보고한 내용과 같습니다. 원본은 738초, 새 코드는 0.23초가 걸렸고 출력은 같았습니다. 더 할 작업은 없습니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0127884
+  }
+ ],
+ "wall_sec": 981.6001901626587,
+ "user_turns": 0,
+ "accepted": true
+}

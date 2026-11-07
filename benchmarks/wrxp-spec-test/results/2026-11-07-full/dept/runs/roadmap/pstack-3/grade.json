@@ -1,0 +1,66 @@
+{
+ "first": {
+  "score": 0.5,
+  "overall": 7,
+  "items": {
+   "D1": 1,
+   "D2": 0,
+   "D3": 1,
+   "D4": 1,
+   "D5": 1,
+   "D6": 0,
+   "D7": 0,
+   "D8": 1,
+   "D9": 0,
+   "D10": 0
+  },
+  "chars": 2075
+ },
+ "delivery": {
+  "score": 0.5,
+  "overall": 7,
+  "items": {
+   "D1": 1,
+   "D2": 0,
+   "D3": 1,
+   "D4": 1,
+   "D5": 1,
+   "D6": 0,
+   "D7": 0,
+   "D8": 1,
+   "D9": 0,
+   "D10": 0
+  },
+  "chars": 2075
+ },
+ "delivery_turn": 0,
+ "final": {
+  "score": 0.8,
+  "overall": 8,
+  "items": {
+   "D1": 1,
+   "D2": 1,
+   "D3": 1,
+   "D4": 1,
+   "D5": 1,
+   "D6": 1,
+   "D7": 1,
+   "D8": 0,
+   "D9": 0,
+   "D10": 1
+  },
+  "chars": 2952
+ },
+ "agent_turns": 2,
+ "user_turns": 1,
+ "accepted": true,
+ "questions_answered": 0,
+ "revisions_requested": 1,
+ "user_chars": 272,
+ "agent_cost": 0.7726544000000002,
+ "user_cost": 0.0382088,
+ "agent_sec": 112.82255625724792,
+ "wall_sec": 128.57749247550964,
+ "first_reply_chars": 1042,
+ "first_reply_korean": true
+}

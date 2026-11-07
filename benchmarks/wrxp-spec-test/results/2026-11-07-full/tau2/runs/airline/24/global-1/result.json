@@ -1,0 +1,298 @@
+{
+ "domain": "airline",
+ "task_id": "24",
+ "cond": "global",
+ "trial": 1,
+ "reward": {
+  "db": 1.0
+ },
+ "stopped": true,
+ "termination": "###STOP###",
+ "agent_turns": 7,
+ "tool_calls": 16,
+ "agent_cost": 1.9382602000000002,
+ "user_cost": 0.1194115,
+ "wall_sec": 188.53855538368225,
+ "events": [
+  {
+   "role": "assistant",
+   "content": "Hi! How can I help you today?"
+  },
+  {
+   "role": "user",
+   "content": "Hi, I'm Mia Kim, my user id is mia_kim_4397. I'd like to remove a passenger, Ethan, from my reservation H9ZU1C."
+  },
+  {
+   "role": "assistant",
+   "content": "I'm sorry, Mia, but I can't remove Ethan from reservation H9ZU1C. Our policy doesn't allow the number of passengers on a reservation to change after booking, and a human agent can't do it either.\n\nI can still help in other ways. I can change the passenger details on the reservation while keeping the same number of passengers. I can also check whether the reservation qualifies for cancellation. Would you like me to do either of those?"
+  },
+  {
+   "role": "user",
+   "content": "Okay, in that case, please cancel reservation H9ZU1C instead. I can rebook it myself later. Is it eligible for cancellation?"
+  },
+  {
+   "role": "tool_call",
+   "id": "3e66027c68a0",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "H9ZU1C"
+   },
+   "output": "{\"reservation_id\": \"H9ZU1C\", \"user_id\": \"mia_kim_4397\", \"origin\": \"MIA\", \"destination\": \"IAH\", \"flight_type\": \"one_way\", \"cabin\": \"economy\", \"flights\": [{\"flight_number\": \"HAT192\", \"origin\": \"MIA\", \"destination\": \"EWR\", \"date\": \"2024-05-24\", \"price\": 174}, {\"flight_number\": \"HAT166\", \"origin\": \"EWR\", \"destination\": \"IAH\", \"date\": \"2024-05-25\", \"price\": 125}], \"passengers\": [{\"first_name\": \"James\", \"last_name\": \"Moore\", \"dob\": \"1977-02-03\"}, {\"first_name\": \"Ethan\", \"last_name\": \"Lopez\", \"dob\": \"1991-11-04\"}, {\"first_name\": \"Amelia\", \"last_name\": \"Sanchez\", \"dob\": \"1968-08-24\"}], \"payment_history\": [{\"payment_id\": \"gift_card_7359776\", \"amount\": 897}], \"created_at\": \"2024-05-01T04:50:18\", \"total_baggages\": 0, \"nonfree_baggages\": 0, \"insurance\": \"no\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "I found reservation H9ZU1C. It is a one-way economy trip from Miami (MIA) to Houston (IAH) via Newark, departing May 24, 2024, for 3 passengers. It was booked on May 1, 2024, and it has no travel insurance.\n\nBefore I can tell you whether it's eligible for cancellation, I need to know why you want to cancel. Is it a change of plans, a flight the airline cancelled, or some other reason?"
+  },
+  {
+   "role": "user",
+   "content": "It's a change of plans. Ethan won't be traveling anymore, so I'd just rebook myself later. Is the reservation eligible for cancellation?"
+  },
+  {
+   "role": "assistant",
+   "content": "I'm sorry, Mia, but reservation H9ZU1C isn't eligible for cancellation. Our policy only allows a cancellation if at least one of these is true:\n\n- The booking was made within the last 24 hours. Yours was made on May 1, 2024.\n- The airline cancelled the flight. Your flights haven't been cancelled.\n- The booking is in business class. Yours is in economy.\n- The reservation has travel insurance and the reason is covered. Yours has no insurance, and a change of plans isn't a covered reason.\n\nThere are still a few things I can do:\n- Change the passenger details. For example, I could replace Ethan with another traveler.\n- Change the flights to other dates or times, keeping the same origin, destination and trip type.\n- Change the cabin class.\n\nWould you like help with any of these?"
+  },
+  {
+   "role": "user",
+   "content": "Okay, I understand, thanks for checking. I'll leave that reservation as it is.\n\nI'd like to book a different trip. I need the cheapest direct round-trip flight from New York (either EWR or JFK) to anywhere on the West Coast, leaving May 20 and returning May 25. Can you search for that?"
+  },
+  {
+   "role": "tool_call",
+   "id": "9f586ce453a1",
+   "name": "list_all_airports",
+   "arguments": {},
+   "output": "[{\"iata\": \"SFO\", \"city\": \"San Francisco\"}, {\"iata\": \"JFK\", \"city\": \"New York\"}, {\"iata\": \"LAX\", \"city\": \"Los Angeles\"}, {\"iata\": \"ORD\", \"city\": \"Chicago\"}, {\"iata\": \"DFW\", \"city\": \"Dallas\"}, {\"iata\": \"DEN\", \"city\": \"Denver\"}, {\"iata\": \"SEA\", \"city\": \"Seattle\"}, {\"iata\": \"ATL\", \"city\": \"Atlanta\"}, {\"iata\": \"MIA\", \"city\": \"Miami\"}, {\"iata\": \"BOS\", \"city\": \"Boston\"}, {\"iata\": \"PHX\", \"city\": \"Phoenix\"}, {\"iata\": \"IAH\", \"city\": \"Houston\"}, {\"iata\": \"LAS\", \"city\": \"Las Vegas\"}, {\"iata\": \"MCO\", \"city\": \"Orlando\"}, {\"iata\": \"EWR\", \"city\": \"Newark\"}, {\"iata\": \"CLT\", \"city\": \"Charlotte\"}, {\"iata\": \"MSP\", \"city\": \"Minneapolis\"}, {\"iata\": \"DTW\", \"city\": \"Detroit\"}, {\"iata\": \"PHL\", \"city\": \"Philadelphia\"}, {\"iata\": \"LGA\", \"city\": \"LaGuardia\"}]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "61b78d6a018f",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "JFK",
+    "destination": "SFO",
+    "date": "2024-05-20"
+   },
+   "output": "[{\"flight_number\": \"HAT023\", \"origin\": \"JFK\", \"destination\": \"SFO\", \"status\": \"available\", \"scheduled_departure_time_est\": \"14:00:00\", \"scheduled_arrival_time_est\": \"20:00:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 20, \"economy\": 13, \"business\": 11}, \"prices\": {\"basic_economy\": 100, \"economy\": 191, \"business\": 473}}]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "690e43c43147",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "JFK",
+    "destination": "LAX",
+    "date": "2024-05-20"
+   },
+   "output": "[]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "2246e658c346",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "JFK",
+    "destination": "SEA",
+    "date": "2024-05-20"
+   },
+   "output": "[{\"flight_number\": \"HAT069\", \"origin\": \"JFK\", \"destination\": \"SEA\", \"status\": \"available\", \"scheduled_departure_time_est\": \"06:00:00\", \"scheduled_arrival_time_est\": \"12:00:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 17, \"economy\": 12, \"business\": 3}, \"prices\": {\"basic_economy\": 51, \"economy\": 121, \"business\": 239}}, {\"flight_number\": \"HAT083\", \"origin\": \"JFK\", \"destination\": \"SEA\", \"status\": \"available\", \"scheduled_departure_time_est\": \"01:00:00\", \"scheduled_arrival_time_est\": \"07:00:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 16, \"economy\": 7, \"business\": 3}, \"prices\": {\"basic_economy\": 87, \"economy\": 100, \"business\": 276}}]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "e2e3cdb0c987",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "EWR",
+    "destination": "SFO",
+    "date": "2024-05-20"
+   },
+   "output": "[]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "8e09c99287d9",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "EWR",
+    "destination": "LAX",
+    "date": "2024-05-20"
+   },
+   "output": "[{\"flight_number\": \"HAT041\", \"origin\": \"EWR\", \"destination\": \"LAX\", \"status\": \"available\", \"scheduled_departure_time_est\": \"07:00:00\", \"scheduled_arrival_time_est\": \"12:30:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 9, \"economy\": 10, \"business\": 16}, \"prices\": {\"basic_economy\": 86, \"economy\": 196, \"business\": 306}}]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "3dcb140159bb",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "EWR",
+    "destination": "SEA",
+    "date": "2024-05-20"
+   },
+   "output": "[]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "715dab1dfba5",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "SFO",
+    "destination": "JFK",
+    "date": "2024-05-25"
+   },
+   "output": "[]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "b0c5b4c6a5cc",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "SEA",
+    "destination": "JFK",
+    "date": "2024-05-25"
+   },
+   "output": "[{\"flight_number\": \"HAT021\", \"origin\": \"SEA\", \"destination\": \"JFK\", \"status\": \"available\", \"scheduled_departure_time_est\": \"19:00:00\", \"scheduled_arrival_time_est\": \"01:00:00+1\", \"date\": null, \"available_seats\": {\"basic_economy\": 15, \"economy\": 14, \"business\": 19}, \"prices\": {\"basic_economy\": 60, \"economy\": 198, \"business\": 398}}, {\"flight_number\": \"HAT089\", \"origin\": \"SEA\", \"destination\": \"JFK\", \"status\": \"available\", \"scheduled_departure_time_est\": \"10:00:00\", \"scheduled_arrival_time_est\": \"16:00:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 1, \"economy\": 2, \"business\": 15}, \"prices\": {\"basic_economy\": 99, \"economy\": 153, \"business\": 377}}, {\"flight_number\": \"HAT100\", \"origin\": \"SEA\", \"destination\": \"JFK\", \"status\": \"available\", \"scheduled_departure_time_est\": \"13:00:00\", \"scheduled_arrival_time_est\": \"19:00:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 13, \"economy\": 12, \"business\": 1}, \"prices\": {\"basic_economy\": 97, \"economy\": 176, \"business\": 291}}, {\"flight_number\": \"HAT276\", \"origin\": \"SEA\", \"destination\": \"JFK\", \"status\": \"available\", \"scheduled_departure_time_est\": \"18:00:00\", \"scheduled_arrival_time_est\": \"00:00:00+1\", \"date\": null, \"available_seats\": {\"basic_economy\": 18, \"economy\": 20, \"business\": 12}, \"prices\": {\"basic_economy\": 55, \"economy\": 162, \"business\": 490}}]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "b9cba1322168",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "LAX",
+    "destination": "EWR",
+    "date": "2024-05-25"
+   },
+   "output": "[{\"flight_number\": \"HAT012\", \"origin\": \"LAX\", \"destination\": \"EWR\", \"status\": \"available\", \"scheduled_departure_time_est\": \"12:00:00\", \"scheduled_arrival_time_est\": \"17:30:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 17, \"economy\": 18, \"business\": 10}, \"prices\": {\"basic_economy\": 77, \"economy\": 184, \"business\": 253}}, {\"flight_number\": \"HAT228\", \"origin\": \"LAX\", \"destination\": \"EWR\", \"status\": \"available\", \"scheduled_departure_time_est\": \"20:00:00\", \"scheduled_arrival_time_est\": \"01:30:00+1\", \"date\": null, \"available_seats\": {\"basic_economy\": 19, \"economy\": 16, \"business\": 19}, \"prices\": {\"basic_economy\": 85, \"economy\": 105, \"business\": 488}}]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "47ba8e999d9f",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "SFO",
+    "destination": "EWR",
+    "date": "2024-05-25"
+   },
+   "output": "[]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "432a0a8bf096",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "SEA",
+    "destination": "EWR",
+    "date": "2024-05-25"
+   },
+   "output": "[]",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "f3b17c129205",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "LAX",
+    "destination": "JFK",
+    "date": "2024-05-25"
+   },
+   "output": "[]",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "I searched direct flights from JFK and EWR to the West Coast airports we serve: San Francisco (SFO), Los Angeles (LAX) and Seattle (SEA). Only two round trips work on both dates:\n\n**JFK ⇄ Seattle (SEA)**: the cheapest overall\n- Outbound, May 20: HAT069, departs JFK 06:00 and arrives SEA 12:00. Basic economy $51, economy $121, business $239.\n- Outbound, May 20: HAT083, departs JFK 01:00 and arrives SEA 07:00. Basic economy $87, economy $100, business $276.\n- Return, May 25: HAT276, departs SEA 18:00 and arrives JFK 00:00 the next day. Basic economy $55, economy $162, business $490.\n- Return, May 25: HAT021, departs SEA 19:00 and arrives JFK 01:00 the next day. Basic economy $60, economy $198, business $398.\n- Return, May 25: HAT100, departs SEA 13:00 and arrives JFK 19:00. Basic economy $97, economy $176, business $291.\n- Return, May 25: HAT089, departs SEA 10:00 and arrives JFK 16:00. Basic economy $99, economy $153, business $377.\n\n**EWR ⇄ Los Angeles (LAX)**\n- Outbound, May 20: HAT041, departs EWR 07:00 and arrives LAX 12:30. Basic economy $86, economy $196, business $306.\n- Return, May 25: HAT012, departs LAX 12:00 and arrives EWR 17:30. Basic economy $77, economy $184, business $253.\n- Return, May 25: HAT228, departs LAX 20:00 and arrives EWR 01:30 the next day. Basic economy $85, economy $105, business $488.\n\nJFK to SFO has a flight on May 20 but no direct return on May 25.\n\n**Cheapest round trip per passenger, by cabin:**\n- Basic economy: $106 for JFK ⇄ SEA on HAT069 and HAT276.\n- Economy: $253 for JFK ⇄ SEA on HAT083 and HAT089. Only 2 economy seats are left on HAT089.\n- Business: $530 for JFK ⇄ SEA on HAT069 and HAT100. Only 1 business seat is left on HAT100.\n\nTo continue, please tell me:\n1. Which cabin class you want.\n2. The first name, last name and date of birth of each passenger."
+  },
+  {
+   "role": "user",
+   "content": "I'd like basic economy, since it's cheaper. Please book the $106 option, JFK to Seattle on HAT069 going out and HAT276 coming back, for just me. I'm Mia Kim, and my date of birth should be in my user profile, so could you look it up there?"
+  },
+  {
+   "role": "tool_call",
+   "id": "ac410a814015",
+   "name": "get_user_details",
+   "arguments": {
+    "user_id": "mia_kim_4397"
+   },
+   "output": "{\"user_id\": \"mia_kim_4397\", \"name\": {\"first_name\": \"Mia\", \"last_name\": \"Kim\"}, \"address\": {\"address1\": \"681 Cedar Street\", \"address2\": \"Suite 847\", \"city\": \"Washington\", \"country\": \"USA\", \"state\": \"DC\", \"zip\": \"20017\"}, \"email\": \"mia.kim6850@example.com\", \"dob\": \"1965-06-09\", \"payment_methods\": {\"gift_card_7359776\": {\"source\": \"gift_card\", \"id\": \"gift_card_7359776\", \"amount\": 39.0}, \"gift_card_7773485\": {\"source\": \"gift_card\", \"id\": \"gift_card_7773485\", \"amount\": 203.0}}, \"saved_passengers\": [{\"first_name\": \"Ethan\", \"last_name\": \"Lopez\", \"dob\": \"1991-11-04\"}], \"membership\": \"silver\", \"reservations\": [\"C4GP7M\", \"XL2C75\", \"H9ZU1C\"]}",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "Thanks, Mia. I found your date of birth in your profile: June 9, 1965. Here is the booking so far:\n\n- **Trip:** round trip, JFK ⇄ Seattle (SEA), basic economy\n- **Outbound:** HAT069 on May 20, 2024, departing JFK at 06:00 and arriving SEA at 12:00, for $51\n- **Return:** HAT276 on May 25, 2024, departing SEA at 18:00 and arriving JFK at 00:00 the next day, for $55\n- **Passenger:** Mia Kim, born 1965-06-09\n- **Flight total:** $106\n\nBefore I book it, I need three more answers:\n\n1. **Checked bags:** As a silver member, you get 1 free checked bag in basic economy. Each extra bag costs $50. How many checked bags will you bring?\n2. **Travel insurance:** Insurance costs $30 per passenger. It gives you a full refund if you need to cancel for health or weather reasons. Would you like to add it?\n3. **Payment:** You have two gift cards on your profile:\n   - gift_card_7359776, with a $39 balance\n   - gift_card_7773485, with a $203 balance\n\n   Gift card 7773485 covers the full amount on its own. You can also split the payment between both cards. Which would you like to use?"
+  },
+  {
+   "role": "user",
+   "content": "Thanks! I'll bring checked bags up to my full free allowance, so please make sure that's covered, but I don't want any travel insurance. For payment, I'd like to use the smaller gift card first (the $39 one), and then put the rest on the larger one."
+  },
+  {
+   "role": "assistant",
+   "content": "Here are the full booking details. Please check them:\n\n- **Trip:** round trip, JFK → Seattle (SEA) → JFK, basic economy\n- **Outbound:** HAT069 on May 20, 2024, departing JFK at 06:00 and arriving SEA at 12:00, for $51\n- **Return:** HAT276 on May 25, 2024, departing SEA at 18:00 and arriving JFK at 00:00 the next day, for $55\n- **Passenger:** Mia Kim, born 1965-06-09\n- **Checked bags:** 1, which is free with your silver membership. There are no extra bag fees.\n- **Travel insurance:** none\n- **Total:** $106\n- **Payment:**\n  - gift_card_7359776: $39, the card's full balance\n  - gift_card_7773485: $67, leaving $136 on the card\n\nShould I go ahead with this booking? Please reply yes to confirm."
+  },
+  {
+   "role": "user",
+   "content": "Yes, please go ahead and book it."
+  },
+  {
+   "role": "tool_call",
+   "id": "1a014f5870e1",
+   "name": "book_reservation",
+   "arguments": {
+    "user_id": "mia_kim_4397",
+    "origin": "JFK",
+    "destination": "SEA",
+    "flight_type": "round_trip",
+    "cabin": "basic_economy",
+    "flights": [
+     {
+      "flight_number": "HAT069",
+      "date": "2024-05-20"
+     },
+     {
+      "flight_number": "HAT276",
+      "date": "2024-05-25"
+     }
+    ],
+    "passengers": [
+     {
+      "first_name": "Mia",
+      "last_name": "Kim",
+      "dob": "1965-06-09"
+     }
+    ],
+    "payment_methods": [
+     {
+      "payment_id": "gift_card_7359776",
+      "amount": 39
+     },
+     {
+      "payment_id": "gift_card_7773485",
+      "amount": 67
+     }
+    ],
+    "total_baggages": 1,
+    "nonfree_baggages": 0,
+    "insurance": "no"
+   },
+   "output": "{\"reservation_id\": \"HATHAT\", \"user_id\": \"mia_kim_4397\", \"origin\": \"JFK\", \"destination\": \"SEA\", \"flight_type\": \"round_trip\", \"cabin\": \"basic_economy\", \"flights\": [{\"flight_number\": \"HAT069\", \"origin\": \"JFK\", \"destination\": \"SEA\", \"date\": \"2024-05-20\", \"price\": 51}, {\"flight_number\": \"HAT276\", \"origin\": \"SEA\", \"destination\": \"JFK\", \"date\": \"2024-05-25\", \"price\": 55}], \"passengers\": [{\"first_name\": \"Mia\", \"last_name\": \"Kim\", \"dob\": \"1965-06-09\"}], \"payment_history\": [{\"payment_id\": \"gift_card_7359776\", \"amount\": 39}, {\"payment_id\": \"gift_card_7773485\", \"amount\": 67}], \"created_at\": \"2024-05-15T15:00:00\", \"total_baggages\": 1, \"nonfree_baggages\": 0, \"insurance\": \"no\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "Your trip is booked, Mia. Your reservation number is **HATHAT**.\n\n- **Outbound:** HAT069 on May 20, 2024, departing JFK at 06:00 and arriving in Seattle at 12:00\n- **Return:** HAT276 on May 25, 2024, departing Seattle at 18:00 and arriving at JFK at 00:00 the next day\n- **Passenger:** Mia Kim\n- **Cabin:** basic economy\n- **Checked bags:** 1, covered by your free allowance\n- **Travel insurance:** none\n- **Payment:** $106 in total\n  - gift_card_7359776: $39\n  - gift_card_7773485: $67, leaving $136 on the card\n\nBasic economy flights can't be changed after booking. You can still change the cabin class before you fly, and you can add checked bags.\n\nYour other reservation, H9ZU1C, is unchanged. Is there anything else I can help you with?"
+  },
+  {
+   "role": "user",
+   "content": "###STOP###"
+  }
+ ]
+}

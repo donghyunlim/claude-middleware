@@ -1,0 +1,1 @@
+crmkit에 v2 클라이언트(`CustomerAPI`)가 들어왔어요. `app/` 쪽 코드(billing, notify, reports)를 v2로 옮겨 주세요. `invoice_header`, `renewal_messages`, `monthly_signups` 함수 이름과 인자는 그대로 둬야 하고, 테스트는 `python3 -m pytest -q`로 돌릴 수 있어요.

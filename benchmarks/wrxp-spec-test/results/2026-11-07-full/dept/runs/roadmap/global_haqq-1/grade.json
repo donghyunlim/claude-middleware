@@ -1,0 +1,55 @@
+{
+ "first": {
+  "score": 0.0,
+  "overall": 0,
+  "items": {},
+  "chars": 0
+ },
+ "delivery": {
+  "score": 0.9,
+  "overall": 8,
+  "items": {
+   "D1": 1,
+   "D2": 1,
+   "D3": 1,
+   "D4": 1,
+   "D5": 1,
+   "D6": 1,
+   "D7": 1,
+   "D8": 0,
+   "D9": 1,
+   "D10": 1
+  },
+  "chars": 3586
+ },
+ "delivery_turn": 1,
+ "final": {
+  "score": 0.9,
+  "overall": 8,
+  "items": {
+   "D1": 1,
+   "D2": 1,
+   "D3": 1,
+   "D4": 1,
+   "D5": 1,
+   "D6": 1,
+   "D7": 1,
+   "D8": 0,
+   "D9": 1,
+   "D10": 1
+  },
+  "chars": 3586
+ },
+ "agent_turns": 2,
+ "user_turns": 1,
+ "accepted": true,
+ "questions_answered": 1,
+ "revisions_requested": 0,
+ "user_chars": 284,
+ "agent_cost": 1.020776,
+ "user_cost": 0.0368808,
+ "agent_sec": 115.56874179840088,
+ "wall_sec": 131.47207164764404,
+ "first_reply_chars": 677,
+ "first_reply_korean": true
+}

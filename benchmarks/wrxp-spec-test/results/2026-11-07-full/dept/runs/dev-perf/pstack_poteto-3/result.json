@@ -1,0 +1,18 @@
+{
+ "task": "dev-perf",
+ "cond": "pstack_poteto",
+ "rep": 3,
+ "turns": [
+  {
+   "k": 0,
+   "rc": -9,
+   "agent_cost": 1.3360027999999995,
+   "agent_sec": 1500.1278767585754,
+   "num_turns": 2,
+   "agent_message": "The original took 1227 seconds (about 20 minutes, 1 run) on `prod1`. I'll write the final report once the full byte comparison on `prodA` finishes."
+  }
+ ],
+ "wall_sec": 1500.1417789459229,
+ "user_turns": 0,
+ "accepted": false
+}

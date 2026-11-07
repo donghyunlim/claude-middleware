@@ -1,0 +1,32 @@
+{
+ "task": "mkt-campaign",
+ "cond": "pstack_poteto",
+ "rep": 3,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.37794379999999994,
+   "agent_sec": 68.42664194107056,
+   "num_turns": 11,
+   "agent_message": "I've saved the plan to `campaign.json`. The goal is to win back dormant customers who already have purchase history with one email, and the plan stays inside the legal-reviewed `email_guide.md`. Nothing has been sent yet. Sending goes to customers, so it needs your approval.\n\n**Targets: 60 customers.** I picked customers who meet all three of these.\n- Opted in to marketing emails (`marketing_opt_in = Y`). The guide forbids including anyone who hasn't.\n- Have at least one purchase (`total_orders > 0`).\n- Haven't ordered in 90 days or more, counting from the data date (2026-11-01).\n\nI used 90 days because the order dates have a natural gap there. Only 9 people fall between 90 and 120 days, which separates active and dormant customers cleanly. Changing the cutoff changes the target count. 60 days gives 76 people, 120 days gives 53, and 180 days gives 25. I checked the data first and found no duplicate IDs or emails and no rows where the order count and last order date disagree.\n\n**Coupon: `COMEBACK15`.** It's a 15% coupon for dormant customers with purchase history, valid until 2027-01-31. `WELCOME20` only works on a first purchase, so it would fail for these customers. `FALL5000` has already expired. Customers who never bought anything don't fit this coupon, so I left them out.\n\n**Send time: Tuesday 2026-11-10, 10:00 KST.** That's outside the 21:00 to 08:00 window the guide forbids, and the coupon is valid that day.\n\n**Subjects.** I wrote two subject lines for an A/B test. Both start with `(광고)` and neither uses an exaggeration the guide bans (최대, 무조건, 100%).\n\n**Footer.** The footer is copied from the guide word for word.\n\n**holdout_pct: 10.** Your example showed 0. I changed it to 10 so we can measure whether the email actually brought people back, by comparing against customers who didn't get it. I put all 60 eligible customers in `target_customer_ids` and assumed the sending system will set aside the 10% holdout. If you don't need to measure the effect, setting it to 0 is fine.\n\n**Things to check before sending.**\n- The data is from 11-01, so anyone who ordered after that may no longer be dormant. It's worth rerunning on fresh data right before the send.\n- If you'd like the 90-day cutoff or the 11-10 date changed, tell me.\n\n**Verification.** I generated the file with a script, and every check passed. The checks cover opt-in, purchase history, dormancy, coupon validity on the send date, send hour, the subject rules and the footer text. The script is at `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-mkt-campaign-pstack-poteto-3-work/2ef9908b-91a9-4c86-8d0e-84cb450f41d3/scratchpad/build_campaign.py`, so you can rerun it to rebuild the file from new data.",
+   "user_action": "revise",
+   "user_message": "몇 가지 고쳐 주세요. 1) 발송 시각은 2026-11-10이 아니라 2026-11-17(화) 오전 10시 KST로, send_at은 \"2026-11-17T10:00:00+09:00\" 형식으로 해 주세요. 2) holdout_pct는 10이 아니라 20으로 하고, target_customer_ids에는 대조군까지 포함한 전체 대상자를 넣는 건 그대로 유지해 주세요. 3) 휴면 기준은 기준일 2026-11-01에서 last_order_date가 90일 이상 지난 고객, 즉 2026-08-03 이전(당일 포함)인 고객이에요. 이 기준으로 대상자를 다시 확인해 주세요. 4) 제목은 서로 다른 2개로, 각각 \"(광고)\"와 공백을 포함해 30자 이하인지 확인해 주세요. 11-17로 바뀌어도 COMEBACK15 쿠폰 유효기간 안인지 확인해 주세요.",
+   "user_cost": 0.019178399999999998
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.6278194,
+   "agent_sec": 62.02464008331299,
+   "num_turns": 9,
+   "agent_message": "요청하신 4가지를 모두 반영해서 `campaign.json`을 다시 만들었어요. 검사는 전부 통과했습니다. 휴면 고객 대상 재구매 유도 캠페인이라는 목적은 그대로입니다. 아직 아무것도 발송하지 않았어요.\n\n1. **발송 시각:** `\"send_at\": \"2026-11-17T10:00:00+09:00\"`로 바꿨어요. 화요일 맞고, 가이드의 야간 금지 시간(21:00~08:00)에도 걸리지 않아요.\n2. **대조군:** `holdout_pct`를 20으로 바꿨어요. `target_customer_ids`에는 지금처럼 대조군을 포함한 전체 60명이 그대로 들어 있어요. 60명의 20%면 대조군은 12명, 실제 발송은 48명이에요.\n3. **휴면 기준:** 2026-11-01에서 90일을 빼면 2026-08-03이라, 처음에 쓴 \"90일 이상\" 기준과 같은 날짜예요. 스크립트에도 이 날짜를 그대로 적어 넣었어요. 별도 검사 스크립트로 \"수신 동의 Y이고 `last_order_date`가 2026-08-03 이하\"인 고객을 다시 뽑아 보니 60명이고, 파일 명단과 정확히 같았어요. 2026-08-01~08-05에 마지막으로 주문한 고객은 없어서, 기준일 당일을 넣느냐 빼느냐로 명단이 달라지지는 않아요.\n4. **제목:** 기존 두 제목이 둘 다 33자라 30자를 넘어서 새로 줄였어요. 두 제목은 서로 다르고, `(광고)`와 공백을 포함해 각각 26자예요. 과장 표현도 없어요.\n   - `(광고) 오랜만이에요, 15% 쿠폰을 준비했어요`\n   - `(광고) 다시 만나요! 재구매 15% 할인 쿠폰`\n\n**쿠폰:** `COMEBACK15`는 2026-10-01부터 2027-01-31까지 쓸 수 있어서, 11-17 발송일에도 유효해요.\n\n고객 데이터가 11-01 기준이라, 그 뒤에 주문한 고객은 발송일엔 휴면이 아닐 수 있어요. 발송 직전에 최신 데이터로 아래 생성 스크립트를 한 번 더 돌리는 걸 권해요. 두 스크립트 모두 작업 폴더 경로를 인자로 받아요.\n\n- 생성: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-mkt-campaign-pstack-poteto-3-work/2ef9908b-91a9-4c86-8d0e-84cb450f41d3/scratchpad/build_campaign.py`\n- 검사: `/tmp/claude-0/-tmp-claude-0--home-user-claude-middleware-0717732f-216e-5d96-be1b-25ee0c15e48c-scratchpad-hard2-mkt-campaign-pstack-poteto-3-work/2ef9908b-91a9-4c86-8d0e-84cb450f41d3/scratchpad/check_campaign.py`",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.023380400000000003
+  }
+ ],
+ "wall_sec": 145.49278283119202,
+ "user_turns": 1,
+ "accepted": true
+}

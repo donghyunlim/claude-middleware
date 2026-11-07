@@ -1,0 +1,100 @@
+{
+ "domain": "airline",
+ "task_id": "19",
+ "cond": "global_haq",
+ "trial": 1,
+ "reward": {
+  "db": 1.0
+ },
+ "stopped": true,
+ "termination": "###STOP###",
+ "agent_turns": 3,
+ "tool_calls": 5,
+ "agent_cost": 0.6465998,
+ "user_cost": 0.039040700000000005,
+ "wall_sec": 62.36150813102722,
+ "events": [
+  {
+   "role": "assistant",
+   "content": "Hi! How can I help you today?"
+  },
+  {
+   "role": "user",
+   "content": "Hi, I'd like to change my return flight to a later one. My user id is olivia_gonzalez_2305."
+  },
+  {
+   "role": "tool_call",
+   "id": "2d98d6336250",
+   "name": "get_user_details",
+   "arguments": {
+    "user_id": "olivia_gonzalez_2305"
+   },
+   "output": "{\"user_id\": \"olivia_gonzalez_2305\", \"name\": {\"first_name\": \"Olivia\", \"last_name\": \"Gonzalez\"}, \"address\": {\"address1\": \"334 Laurel Lane\", \"address2\": \"Suite 970\", \"city\": \"Los Angeles\", \"country\": \"USA\", \"state\": \"CA\", \"zip\": \"90504\"}, \"email\": \"olivia.gonzalez4421@example.com\", \"dob\": \"1988-06-13\", \"payment_methods\": {\"gift_card_2200803\": {\"source\": \"gift_card\", \"id\": \"gift_card_2200803\", \"amount\": 123.0}, \"credit_card_9969263\": {\"source\": \"credit_card\", \"id\": \"credit_card_9969263\", \"brand\": \"mastercard\", \"last_four\": \"9475\"}}, \"saved_passengers\": [{\"first_name\": \"Mei\", \"last_name\": \"Johansson\", \"dob\": \"1981-09-25\"}, {\"first_name\": \"Yara\", \"last_name\": \"Lopez\", \"dob\": \"1975-09-15\"}], \"membership\": \"regular\", \"reservations\": [\"Z7GOZK\", \"K67C4W\", \"THY2DG\"]}",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "60be2b3e7f2f",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "Z7GOZK"
+   },
+   "output": "{\"reservation_id\": \"Z7GOZK\", \"user_id\": \"olivia_gonzalez_2305\", \"origin\": \"EWR\", \"destination\": \"IAH\", \"flight_type\": \"round_trip\", \"cabin\": \"basic_economy\", \"flights\": [{\"flight_number\": \"HAT188\", \"origin\": \"EWR\", \"destination\": \"IAH\", \"date\": \"2024-05-28\", \"price\": 52}, {\"flight_number\": \"HAT207\", \"origin\": \"IAH\", \"destination\": \"EWR\", \"date\": \"2024-05-28\", \"price\": 87}], \"passengers\": [{\"first_name\": \"Olivia\", \"last_name\": \"Gonzalez\", \"dob\": \"1988-06-13\"}], \"payment_history\": [{\"payment_id\": \"gift_card_2200803\", \"amount\": 169}], \"created_at\": \"2024-05-13T19:41:32\", \"total_baggages\": 0, \"nonfree_baggages\": 0, \"insurance\": \"yes\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "ba2fdf6d943e",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "K67C4W"
+   },
+   "output": "{\"reservation_id\": \"K67C4W\", \"user_id\": \"olivia_gonzalez_2305\", \"origin\": \"LAS\", \"destination\": \"MCO\", \"flight_type\": \"one_way\", \"cabin\": \"economy\", \"flights\": [{\"flight_number\": \"HAT137\", \"origin\": \"LAS\", \"destination\": \"MCO\", \"date\": \"2024-05-17\", \"price\": 114}], \"passengers\": [{\"first_name\": \"Olivia\", \"last_name\": \"Gonzalez\", \"dob\": \"1988-06-13\"}, {\"first_name\": \"Mei\", \"last_name\": \"Johansson\", \"dob\": \"1981-09-25\"}, {\"first_name\": \"Yara\", \"last_name\": \"Lopez\", \"dob\": \"1975-09-15\"}], \"payment_history\": [{\"payment_id\": \"credit_card_9969263\", \"amount\": 342}], \"created_at\": \"2024-05-11T06:28:05\", \"total_baggages\": 1, \"nonfree_baggages\": 0, \"insurance\": \"no\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "76d940dd314e",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "THY2DG"
+   },
+   "output": "{\"reservation_id\": \"THY2DG\", \"user_id\": \"olivia_gonzalez_2305\", \"origin\": \"MSP\", \"destination\": \"ORD\", \"flight_type\": \"one_way\", \"cabin\": \"economy\", \"flights\": [{\"flight_number\": \"HAT248\", \"origin\": \"MSP\", \"destination\": \"DTW\", \"date\": \"2024-05-26\", \"price\": 160}, {\"flight_number\": \"HAT119\", \"origin\": \"DTW\", \"destination\": \"ORD\", \"date\": \"2024-05-26\", \"price\": 178}], \"passengers\": [{\"first_name\": \"Yara\", \"last_name\": \"Martin\", \"dob\": \"1950-01-15\"}], \"payment_history\": [{\"payment_id\": \"credit_card_9969263\", \"amount\": 338}], \"created_at\": \"2024-05-03T23:15:42\", \"total_baggages\": 1, \"nonfree_baggages\": 0, \"insurance\": \"no\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "Thanks, Olivia. I found your round-trip reservation **Z7GOZK** (Newark EWR to Houston IAH, May 28, 2024). Its return flight is HAT207, IAH to EWR, also on May 28.\n\nI can't change the flights on this reservation because it was booked in **basic economy**, and basic economy flights can't be modified.\n\nHere are two options:\n1. **Upgrade the cabin first.** You can move the whole reservation, both flights, to economy or business. You would pay the price difference. Once the reservation is no longer basic economy, I can change your return to a later flight.\n2. **Keep the reservation as it is.**\n\nWould you like me to look up the price of upgrading to economy or business?"
+  },
+  {
+   "role": "user",
+   "content": "I don't want to upgrade. I'm not feeling well and I have travel insurance on this reservation, so could you cancel the trip instead?"
+  },
+  {
+   "role": "assistant",
+   "content": "I'm sorry you're not feeling well. Your reservation has travel insurance, and illness is a reason the insurance covers, so you can cancel this reservation for a full refund.\n\nHere's what would be cancelled:\n- **Reservation:** Z7GOZK (round trip, basic economy)\n  - HAT188: EWR to IAH, May 28, 2024\n  - HAT207: IAH to EWR, May 28, 2024\n- **Passenger:** Olivia Gonzalez\n- **Reason:** health\n- **Refund:** $169 back to your gift card (gift_card_2200803) within 5 to 7 business days\n\nDo you want me to cancel it? Please reply yes to confirm."
+  },
+  {
+   "role": "user",
+   "content": "Yes, please go ahead and cancel it."
+  },
+  {
+   "role": "tool_call",
+   "id": "c8a6ffab10eb",
+   "name": "cancel_reservation",
+   "arguments": {
+    "reservation_id": "Z7GOZK"
+   },
+   "output": "{\"reservation_id\": \"Z7GOZK\", \"user_id\": \"olivia_gonzalez_2305\", \"origin\": \"EWR\", \"destination\": \"IAH\", \"flight_type\": \"round_trip\", \"cabin\": \"basic_economy\", \"flights\": [{\"flight_number\": \"HAT188\", \"origin\": \"EWR\", \"destination\": \"IAH\", \"date\": \"2024-05-28\", \"price\": 52}, {\"flight_number\": \"HAT207\", \"origin\": \"IAH\", \"destination\": \"EWR\", \"date\": \"2024-05-28\", \"price\": 87}], \"passengers\": [{\"first_name\": \"Olivia\", \"last_name\": \"Gonzalez\", \"dob\": \"1988-06-13\"}], \"payment_history\": [{\"payment_id\": \"gift_card_2200803\", \"amount\": 169}, {\"payment_id\": \"gift_card_2200803\", \"amount\": -169}], \"created_at\": \"2024-05-13T19:41:32\", \"total_baggages\": 0, \"nonfree_baggages\": 0, \"insurance\": \"yes\", \"status\": \"cancelled\"}",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "I've cancelled reservation **Z7GOZK**. The full $169 will go back to your gift card (gift_card_2200803) within 5 to 7 business days.\n\nI hope you feel better soon. Is there anything else I can help with?"
+  },
+  {
+   "role": "user",
+   "content": "###STOP###"
+  }
+ ]
+}

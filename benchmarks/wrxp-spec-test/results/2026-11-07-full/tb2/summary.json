@@ -1,0 +1,166 @@
+{
+ "conds": [
+  "base",
+  "global",
+  "global_haq",
+  "global_haqq",
+  "pstack",
+  "pstack_poteto"
+ ],
+ "instances": [
+  "constraints-scheduling",
+  "db-wal-recovery",
+  "git-leak-recovery",
+  "multi-source-data-merger",
+  "polyglot-c-py",
+  "query-optimize",
+  "sanitize-git-repo",
+  "sqlite-db-truncate"
+ ],
+ "by_cond": {
+  "base": {
+   "pass@1": 0.875,
+   "pass^2": 0.75,
+   "runs": 16,
+   "cost": 0.219943725,
+   "sec": 132.9461928755045,
+   "diff_vs_base": null
+  },
+  "global": {
+   "pass@1": 0.8125,
+   "pass^2": 0.75,
+   "runs": 16,
+   "cost": 0.272021075,
+   "sec": 135.1407132446766,
+   "diff_vs_base": {
+    "mean": -0.0625,
+    "ci": [
+     -0.1875,
+     0.0
+    ]
+   }
+  },
+  "global_haq": {
+   "pass@1": 0.875,
+   "pass^2": 0.75,
+   "runs": 16,
+   "cost": 0.37657666250000005,
+   "sec": 114.67270877957344,
+   "diff_vs_base": {
+    "mean": 0.0,
+    "ci": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "global_haqq": {
+   "pass@1": 0.875,
+   "pass^2": 0.75,
+   "runs": 16,
+   "cost": 0.386165225,
+   "sec": 122.82671138644218,
+   "diff_vs_base": {
+    "mean": 0.0,
+    "ci": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "pstack": {
+   "pass@1": 0.9375,
+   "pass^2": 0.875,
+   "runs": 16,
+   "cost": 0.275899125,
+   "sec": 71.0382836163044,
+   "diff_vs_base": {
+    "mean": 0.0625,
+    "ci": [
+     0.0,
+     0.1875
+    ]
+   }
+  },
+  "pstack_poteto": {
+   "pass@1": 0.9375,
+   "pass^2": 0.875,
+   "runs": 16,
+   "cost": 0.38462772500000003,
+   "sec": 78.8342898786068,
+   "diff_vs_base": {
+    "mean": 0.0625,
+    "ci": [
+     0.0,
+     0.1875
+    ]
+   }
+  }
+ },
+ "by_instance": {
+  "constraints-scheduling": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "db-wal-recovery": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "git-leak-recovery": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "multi-source-data-merger": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "polyglot-c-py": {
+   "base": "1/2",
+   "global": "1/2",
+   "global_haq": "1/2",
+   "global_haqq": "1/2",
+   "pstack": "1/2",
+   "pstack_poteto": "1/2"
+  },
+  "query-optimize": {
+   "base": "1/2",
+   "global": "0/2",
+   "global_haq": "1/2",
+   "global_haqq": "1/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "sanitize-git-repo": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  },
+  "sqlite-db-truncate": {
+   "base": "2/2",
+   "global": "2/2",
+   "global_haq": "2/2",
+   "global_haqq": "2/2",
+   "pstack": "2/2",
+   "pstack_poteto": "2/2"
+  }
+ }
+}

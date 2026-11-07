@@ -1,0 +1,163 @@
+{
+ "domain": "airline",
+ "task_id": "8",
+ "cond": "global",
+ "trial": 2,
+ "reward": {
+  "db": 1.0
+ },
+ "stopped": true,
+ "termination": "###STOP###",
+ "agent_turns": 3,
+ "tool_calls": 8,
+ "agent_cost": 0.7153822000000001,
+ "user_cost": 0.0476745,
+ "wall_sec": 75.49889016151428,
+ "events": [
+  {
+   "role": "assistant",
+   "content": "Hi! How can I help you today?"
+  },
+  {
+   "role": "user",
+   "content": "Hi, I'd like to book a one-way flight from ORD to PHL on May 26. My user id is sophia_silva_7557, and my name is Sophia Silva."
+  },
+  {
+   "role": "tool_call",
+   "id": "aaf71a6e654a",
+   "name": "get_user_details",
+   "arguments": {
+    "user_id": "sophia_silva_7557"
+   },
+   "output": "{\"user_id\": \"sophia_silva_7557\", \"name\": {\"first_name\": \"Sophia\", \"last_name\": \"Silva\"}, \"address\": {\"address1\": \"141 Cedar Avenue\", \"address2\": \"Suite 436\", \"city\": \"Columbus\", \"country\": \"USA\", \"state\": \"OH\", \"zip\": \"43282\"}, \"email\": \"sophia.silva5929@example.com\", \"dob\": \"1957-10-05\", \"payment_methods\": {\"certificate_8045380\": {\"source\": \"certificate\", \"id\": \"certificate_8045380\", \"amount\": 500.0}, \"certificate_3887113\": {\"source\": \"certificate\", \"id\": \"certificate_3887113\", \"amount\": 150.0}, \"credit_card_4196779\": {\"source\": \"credit_card\", \"id\": \"credit_card_4196779\", \"brand\": \"visa\", \"last_four\": \"7238\"}, \"gift_card_5094406\": {\"source\": \"gift_card\", \"id\": \"gift_card_5094406\", \"amount\": 274.0}}, \"saved_passengers\": [{\"first_name\": \"Yara\", \"last_name\": \"Silva\", \"dob\": \"1972-06-16\"}, {\"first_name\": \"Isabella\", \"last_name\": \"Moore\", \"dob\": \"1988-06-04\"}], \"membership\": \"regular\", \"reservations\": [\"NM1VX1\", \"KC18K6\", \"S61CZX\", \"H8Q05L\", \"WUNA5K\"]}",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "376be7fa3952",
+   "name": "search_direct_flight",
+   "arguments": {
+    "origin": "ORD",
+    "destination": "PHL",
+    "date": "2024-05-26"
+   },
+   "output": "[{\"flight_number\": \"HAT139\", \"origin\": \"ORD\", \"destination\": \"PHL\", \"status\": \"available\", \"scheduled_departure_time_est\": \"17:00:00\", \"scheduled_arrival_time_est\": \"19:00:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 7, \"economy\": 1, \"business\": 7}, \"prices\": {\"basic_economy\": 65, \"economy\": 114, \"business\": 395}}, {\"flight_number\": \"HAT271\", \"origin\": \"ORD\", \"destination\": \"PHL\", \"status\": \"available\", \"scheduled_departure_time_est\": \"19:00:00\", \"scheduled_arrival_time_est\": \"21:00:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 20, \"economy\": 3, \"business\": 14}, \"prices\": {\"basic_economy\": 83, \"economy\": 174, \"business\": 338}}, {\"flight_number\": \"HAT289\", \"origin\": \"ORD\", \"destination\": \"PHL\", \"status\": \"available\", \"scheduled_departure_time_est\": \"05:00:00\", \"scheduled_arrival_time_est\": \"07:00:00\", \"date\": null, \"available_seats\": {\"basic_economy\": 17, \"economy\": 14, \"business\": 10}, \"prices\": {\"basic_economy\": 83, \"economy\": 161, \"business\": 253}}]",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "Thanks, Sophia. I found these direct flights from ORD to PHL on May 26, 2024:\n\n1. **HAT139**, departs 17:00 and arrives 19:00\n   - Basic Economy: $65 (7 seats)\n   - Economy: $114 (1 seat)\n   - Business: $395 (7 seats)\n2. **HAT271**, departs 19:00 and arrives 21:00\n   - Basic Economy: $83 (20 seats)\n   - Economy: $174 (3 seats)\n   - Business: $338 (14 seats)\n3. **HAT289**, departs 05:00 and arrives 07:00\n   - Basic Economy: $83 (17 seats)\n   - Economy: $161 (14 seats)\n   - Business: $253 (10 seats)\n\nTo finish the booking, please tell me:\n- Which flight and cabin class you'd like.\n- The passengers' names and dates of birth. Is it just you, or will others travel too?\n- How many checked bags you need.\n- Whether you'd like travel insurance. It costs $30 per passenger.\n- How you'd like to pay. Your profile has a Visa credit card ending in 7238, gift card 5094406 (balance $274), and two travel certificates worth $500 and $150."
+  },
+  {
+   "role": "user",
+   "content": "I want the same flight I took on May 10 from ORD to PHL, but I don't remember the flight number. Could you look up my reservation for that trip and tell me which of these matches? I don't want any of the other flights.\n\nI'm fine with economy. I also want to add a second passenger, Kevin Smith, born 2001-04-12. We don't have any checked bags and don't need travel insurance. If possible, I'd like an aisle seat and a middle seat together. My birthday is already in my profile, so I'd rather not give it again."
+  },
+  {
+   "role": "tool_call",
+   "id": "52264c458c03",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "NM1VX1"
+   },
+   "output": "{\"reservation_id\": \"NM1VX1\", \"user_id\": \"sophia_silva_7557\", \"origin\": \"MSP\", \"destination\": \"EWR\", \"flight_type\": \"round_trip\", \"cabin\": \"basic_economy\", \"flights\": [{\"flight_number\": \"HAT300\", \"origin\": \"MSP\", \"destination\": \"EWR\", \"date\": \"2024-05-25\", \"price\": 100}, {\"flight_number\": \"HAT208\", \"origin\": \"EWR\", \"destination\": \"MSP\", \"date\": \"2024-05-27\", \"price\": 53}], \"passengers\": [{\"first_name\": \"Yara\", \"last_name\": \"Silva\", \"dob\": \"1972-06-16\"}], \"payment_history\": [{\"payment_id\": \"gift_card_5094406\", \"amount\": 183}], \"created_at\": \"2024-05-03T08:46:43\", \"total_baggages\": 0, \"nonfree_baggages\": 0, \"insurance\": \"yes\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "2a19e1a6f5fa",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "KC18K6"
+   },
+   "output": "{\"reservation_id\": \"KC18K6\", \"user_id\": \"sophia_silva_7557\", \"origin\": \"MSP\", \"destination\": \"CLT\", \"flight_type\": \"one_way\", \"cabin\": \"basic_economy\", \"flights\": [{\"flight_number\": \"HAT300\", \"origin\": \"MSP\", \"destination\": \"EWR\", \"date\": \"2024-05-21\", \"price\": 55}, {\"flight_number\": \"HAT215\", \"origin\": \"EWR\", \"destination\": \"CLT\", \"date\": \"2024-05-21\", \"price\": 51}], \"passengers\": [{\"first_name\": \"Sophia\", \"last_name\": \"Silva\", \"dob\": \"1957-10-05\"}], \"payment_history\": [{\"payment_id\": \"credit_card_4196779\", \"amount\": 136}], \"created_at\": \"2024-05-04T14:07:11\", \"total_baggages\": 0, \"nonfree_baggages\": 0, \"insurance\": \"yes\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "ace451a565f3",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "S61CZX"
+   },
+   "output": "{\"reservation_id\": \"S61CZX\", \"user_id\": \"sophia_silva_7557\", \"origin\": \"LAX\", \"destination\": \"CLT\", \"flight_type\": \"round_trip\", \"cabin\": \"economy\", \"flights\": [{\"flight_number\": \"HAT228\", \"origin\": \"LAX\", \"destination\": \"EWR\", \"date\": \"2024-05-23\", \"price\": 131}, {\"flight_number\": \"HAT043\", \"origin\": \"EWR\", \"destination\": \"CLT\", \"date\": \"2024-05-24\", \"price\": 163}, {\"flight_number\": \"HAT157\", \"origin\": \"CLT\", \"destination\": \"EWR\", \"date\": \"2024-05-24\", \"price\": 157}, {\"flight_number\": \"HAT041\", \"origin\": \"EWR\", \"destination\": \"LAX\", \"date\": \"2024-05-25\", \"price\": 186}], \"passengers\": [{\"first_name\": \"Harper\", \"last_name\": \"Jackson\", \"dob\": \"1974-09-05\"}], \"payment_history\": [{\"payment_id\": \"credit_card_4196779\", \"amount\": 667}], \"created_at\": \"2024-05-02T04:38:01\", \"total_baggages\": 1, \"nonfree_baggages\": 0, \"insurance\": \"yes\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "ef1eae890bfa",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "H8Q05L"
+   },
+   "output": "{\"reservation_id\": \"H8Q05L\", \"user_id\": \"sophia_silva_7557\", \"origin\": \"JFK\", \"destination\": \"ATL\", \"flight_type\": \"one_way\", \"cabin\": \"basic_economy\", \"flights\": [{\"flight_number\": \"HAT268\", \"origin\": \"JFK\", \"destination\": \"ATL\", \"date\": \"2024-05-24\", \"price\": 74}], \"passengers\": [{\"first_name\": \"Harper\", \"last_name\": \"Kovacs\", \"dob\": \"1973-10-26\"}], \"payment_history\": [{\"payment_id\": \"credit_card_4196779\", \"amount\": 104}], \"created_at\": \"2024-05-03T15:12:00\", \"total_baggages\": 0, \"nonfree_baggages\": 0, \"insurance\": \"yes\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "tool_call",
+   "id": "a90ea2a3d3c9",
+   "name": "get_reservation_details",
+   "arguments": {
+    "reservation_id": "WUNA5K"
+   },
+   "output": "{\"reservation_id\": \"WUNA5K\", \"user_id\": \"sophia_silva_7557\", \"origin\": \"ORD\", \"destination\": \"PHL\", \"flight_type\": \"round_trip\", \"cabin\": \"economy\", \"flights\": [{\"flight_number\": \"HAT271\", \"origin\": \"ORD\", \"destination\": \"PHL\", \"date\": \"2024-05-10\", \"price\": 160}, {\"flight_number\": \"HAT197\", \"origin\": \"PHL\", \"destination\": \"ORD\", \"date\": \"2024-05-11\", \"price\": 100}], \"passengers\": [{\"first_name\": \"Sophia\", \"last_name\": \"Silva\", \"dob\": \"1957-10-05\"}], \"payment_history\": [{\"payment_id\": \"gift_card_5094406\", \"amount\": 260}], \"created_at\": \"2024-05-08T19:01:02\", \"total_baggages\": 1, \"nonfree_baggages\": 0, \"insurance\": \"no\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "I found it. Your May 10 trip from ORD to PHL (reservation WUNA5K) was on **HAT271**, and that flight also runs on May 26 at 19:00, arriving at 21:00. Economy has 3 seats left at **$174 per passenger**, so the total for 2 passengers would be **$348**.\n\nAbout seats: I can't choose or assign specific seats, so I can't promise an aisle and a middle seat together.\n\nHere is the booking so far:\n- **Trip:** One way, ORD to PHL\n- **Flight:** HAT271 on 2024-05-26, Economy\n- **Passengers:**\n  1. Sophia Silva, born 1957-10-05 (taken from your profile)\n  2. Kevin Smith, born 2001-04-12\n- **Checked bags:** 0\n- **Travel insurance:** No\n- **Total:** $348\n\nHow would you like to pay? Your options are:\n- Visa credit card ending in 7238\n- Gift card 5094406 (balance $274)\n- Certificate 8045380 ($500)\n- Certificate 3887113 ($150)\n\nYou can combine up to one certificate, one credit card and three gift cards. Any amount left on a travel certificate is not refunded.\n\nOnce you choose a payment method, please reply \"yes\" to confirm the booking."
+  },
+  {
+   "role": "user",
+   "content": "I'll pay with the $500 certificate, 8045380, and only that, with no other payment method. It's fine that you can't pick the seats. Yes, please go ahead and book it."
+  },
+  {
+   "role": "tool_call",
+   "id": "96bc6f1c25ae",
+   "name": "book_reservation",
+   "arguments": {
+    "user_id": "sophia_silva_7557",
+    "origin": "ORD",
+    "destination": "PHL",
+    "flight_type": "one_way",
+    "cabin": "economy",
+    "flights": [
+     {
+      "flight_number": "HAT271",
+      "date": "2024-05-26"
+     }
+    ],
+    "passengers": [
+     {
+      "first_name": "Sophia",
+      "last_name": "Silva",
+      "dob": "1957-10-05"
+     },
+     {
+      "first_name": "Kevin",
+      "last_name": "Smith",
+      "dob": "2001-04-12"
+     }
+    ],
+    "payment_methods": [
+     {
+      "payment_id": "certificate_8045380",
+      "amount": 348
+     }
+    ],
+    "total_baggages": 0,
+    "nonfree_baggages": 0,
+    "insurance": "no"
+   },
+   "output": "{\"reservation_id\": \"HATHAT\", \"user_id\": \"sophia_silva_7557\", \"origin\": \"ORD\", \"destination\": \"PHL\", \"flight_type\": \"one_way\", \"cabin\": \"economy\", \"flights\": [{\"flight_number\": \"HAT271\", \"origin\": \"ORD\", \"destination\": \"PHL\", \"date\": \"2024-05-26\", \"price\": 174}], \"passengers\": [{\"first_name\": \"Sophia\", \"last_name\": \"Silva\", \"dob\": \"1957-10-05\"}, {\"first_name\": \"Kevin\", \"last_name\": \"Smith\", \"dob\": \"2001-04-12\"}], \"payment_history\": [{\"payment_id\": \"certificate_8045380\", \"amount\": 348}], \"created_at\": \"2024-05-15T15:00:00\", \"total_baggages\": 0, \"nonfree_baggages\": 0, \"insurance\": \"no\", \"status\": null}",
+   "error": false
+  },
+  {
+   "role": "assistant",
+   "content": "Your flight is booked. Your reservation number is **HATHAT**.\n\n- **Flight:** HAT271 from ORD to PHL on May 26, 2024, departing 19:00 and arriving 21:00\n- **Cabin:** Economy\n- **Passengers:** Sophia Silva and Kevin Smith\n- **Checked bags:** 0\n- **Travel insurance:** None\n- **Payment:** $348 charged to certificate 8045380\n\nThe certificate had $500, so $152 is left over. That remaining amount will not be refunded.\n\nIs there anything else I can help you with?"
+  },
+  {
+   "role": "user",
+   "content": "###STOP###"
+  }
+ ]
+}

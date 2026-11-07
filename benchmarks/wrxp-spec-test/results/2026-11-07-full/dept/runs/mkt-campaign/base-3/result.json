@@ -1,0 +1,32 @@
+{
+ "task": "mkt-campaign",
+ "cond": "base",
+ "rep": 3,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.194211,
+   "agent_sec": 36.82070803642273,
+   "num_turns": 6,
+   "agent_message": "I've saved the campaign plan to `campaign.json`. It targets **60 customers** and follows the guidance in `email_guide.md`.\n\n**How I picked the targets**\n- **Opted-in customers only:** I included only customers with `marketing_opt_in = Y`. The 62 who haven't consented are excluded, as the guide requires.\n- **Customers with a purchase history only:** the coupon is for dormant customers who have bought before, so customers who have never ordered aren't included.\n- **No purchase for 90 days or more:** the data was extracted on 2026-11-01, so the cutoff is a last order on or before 2026-08-03. That gives 88 dormant customers, and 60 of them have opted in.\n- The data was clean. There were no duplicate IDs or emails, and order counts and last order dates were consistent.\n\n**Campaign settings**\n- **Send time:** `2026-11-10T10:00:00+09:00` (Tuesday at 10 a.m. KST). This avoids the 21:00–08:00 window the guide prohibits.\n- **Coupon:** `COMEBACK15`, 15% off. It's the coupon meant for bringing dormant customers back, and it's valid until 2027-01-31.\n  - `WELCOME20` only works for customers with no purchases, so I didn't use it.\n  - `FALL5000` has already expired.\n- **Subject lines:** I wrote three for A/B testing. Each starts with `(광고)` and avoids exaggerated wording, as the guide requires.\n- **Footer:** the required wording from the guide, copied exactly.\n- **Holdout:** 10% (about 6 people) won't get the email, so you can measure how much the campaign actually lifts purchases. I put all 60 in `target_customer_ids` and left the holdout split to be applied at send time. If your sending system expects the list to already exclude the holdout group, tell me and I'll split it out.\n\n**Things you can change**\n- **The 90-day threshold:** a 60-day cutoff gives 76 customers and a 180-day cutoff gives 25. I'll recalculate if your company defines \"dormant\" differently.\n- **`FREESHIP11` free shipping:** it can be combined with other coupons, but it expires on 11/30, so I didn't use it as the main coupon. It could be a bonus in the email body.",
+   "user_action": "revise",
+   "user_message": "세 가지만 고쳐 주세요. 1) 발송 시각은 2026-11-17(화) 오전 10시 KST인 \"2026-11-17T10:00:00+09:00\"로 바꿔 주세요. 2) 제목은 3개가 아니라 서로 다른 2개만 두고, 각각 \"(광고)\"와 공백을 포함해 30자 이하로 해 주세요. 3) 대조군은 대상자의 20%로 하고 holdout_pct를 20으로 바꿔 주세요. target_customer_ids에는 지금처럼 대조군을 포함한 전체 대상자를 그대로 두면 됩니다.",
+   "user_cost": 0.0174384
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.236233,
+   "agent_sec": 12.416565656661987,
+   "num_turns": 2,
+   "agent_message": "I made all three changes to `campaign.json` and checked the saved file.\n\n1. **Send time:** changed to `2026-11-17T10:00:00+09:00`.\n2. **Subject lines:** cut down to two different ones. Both are well under 30 characters, counting `(광고)` and spaces, and still avoid exaggerated wording.\n   - `(광고) 오랜만이에요, 15% 쿠폰 드려요` (23 characters)\n   - `(광고) 다시 만나요! 15% 할인 쿠폰 도착` (25 characters)\n3. **Holdout group:** `holdout_pct` is now `20`, which is 12 of the 60 customers. `target_customer_ids` still lists all 60, holdout included.\n\nThe coupon (`COMEBACK15`) and the footer haven't changed.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0197824
+  }
+ ],
+ "wall_sec": 63.34386134147644,
+ "user_turns": 1,
+ "accepted": true
+}

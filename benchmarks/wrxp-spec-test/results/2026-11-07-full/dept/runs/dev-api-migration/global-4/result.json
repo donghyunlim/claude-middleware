@@ -1,0 +1,32 @@
+{
+ "task": "dev-api-migration",
+ "cond": "global",
+ "rep": 4,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.32126059999999995,
+   "agent_sec": 57.54933142662048,
+   "num_turns": 11,
+   "agent_message": "`app/`의 billing, notify, reports를 v2 `CustomerAPI`로 옮겼습니다. 이제 `app/` 안에는 `client_v1`을 쓰는 곳이 없습니다. 세 함수의 이름과 인자는 바꾸지 않았고, 결과도 v1일 때와 같습니다. `python3 -m pytest -q`는 기존 테스트 3개와 새 테스트 3개를 합해 **6 passed, exit 0**으로 끝났습니다. `python3 -m app.cli`로 `report`, `invoice`, `notify`를 실행한 출력도 이전과 같았습니다.\n\n**v2에서 동작이 달라지는 지점과 처리 방법**\n- **`monthly_signups`의 고객 수:** v2의 `list_customers()`는 첫 페이지 50건만 돌려줍니다. 그대로 쓰면 고객이 50명을 넘을 때 집계가 모자라게 나오므로 `iter_customers()`로 전체 고객을 순회하도록 했습니다.\n- **`monthly_signups`의 가입 월:** v2의 `created_at`은 UTC 시각입니다. 그대로 월을 세면 월말 밤 9시 이후 가입자가 이전 달에 들어가므로, KST(UTC+9)로 바꾼 뒤 월을 셉니다.\n- **상호:** v1의 `name`은 서버에서 `legal_name`과 같은 값이었습니다. 그래서 청구서 머리말과 갱신 문자 모두 `legal_name`을 씁니다.\n- **없는 고객:** v2 `fetch()`는 고객이 없으면 `None` 대신 `CustomerNotFound`를 발생시킵니다.\n  - `invoice_header`는 이 예외를 받아 예전처럼 `KeyError`를 냅니다. `CustomerNotFound`는 `KeyError`의 하위 클래스가 아니어서, 바꾸지 않으면 `KeyError`를 잡는 호출 쪽이 깨지기 때문입니다.\n  - `renewal_messages`는 예전처럼 그 고객을 건너뜁니다.\n\n**`tests/test_app.py`에 추가한 테스트**\n- 없는 고객으로 청구서를 만들면 `KeyError`가 나는지 확인합니다.\n- 고객 120명이 모두 집계되는지 확인합니다.\n- `2026-08-31T16:00Z`에 가입한 고객이 KST 기준인 2026-09로 집계되는지 확인합니다.\n\n**정해 주셔야 할 것:** 갱신 안내 문자의 받는 사람 이름은 지금 사업자 등록상 상호(`legal_name`, 예: \"(주)한빛상사\")로 나갑니다. 고객이 앱에서 설정한 별칭(`display_name`, 예: \"한빛\")으로 바꾸려면 `app/notify.py`의 한 줄만 고치면 됩니다. 다만 이것은 기존 동작을 바꾸는 일이라 이번에는 고치지 않았습니다.",
+   "user_action": "answer",
+   "user_message": "갱신 안내 문자도 `legal_name`을 그대로 쓰세요. `display_name`은 쓰지 않습니다. 지금 상태로 두면 됩니다.",
+   "user_cost": 0.0190564
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.34346039999999994,
+   "agent_sec": 6.908667087554932,
+   "num_turns": 1,
+   "agent_message": "갱신 안내 문자는 지금처럼 `legal_name`으로 두겠습니다. `app/notify.py`는 이미 `legal_name`을 쓰고 있어 고칠 곳이 없습니다. `app/` 코드는 `display_name`을 어디에서도 쓰지 않습니다. 앞서 실행한 테스트 6개도 모두 통과한 상태 그대로입니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.0183764
+  }
+ ],
+ "wall_sec": 79.70096492767334,
+ "user_turns": 1,
+ "accepted": true
+}

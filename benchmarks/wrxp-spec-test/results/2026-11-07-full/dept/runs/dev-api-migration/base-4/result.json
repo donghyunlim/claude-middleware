@@ -1,0 +1,32 @@
+{
+ "task": "dev-api-migration",
+ "cond": "base",
+ "rep": 4,
+ "turns": [
+  {
+   "k": 0,
+   "rc": 0,
+   "agent_cost": 0.2758262,
+   "agent_sec": 52.569860219955444,
+   "num_turns": 9,
+   "agent_message": "`app/`의 billing, notify, reports를 v2 `CustomerAPI`로 옮겼습니다. 세 함수의 이름과 인자는 그대로입니다. `python3 -m pytest -q`는 기존 테스트 3개와 새로 넣은 테스트 4개 모두 통과했습니다(7 passed). `app.cli`의 report / invoice / notify도 실행해 봤는데 출력이 전과 같습니다. 이제 `app/`과 `tests/`에서 `client_v1`·`CRMClient`를 쓰는 곳은 없습니다.\n\nCHANGELOG에 나온 차이 중 그대로 바꾸면 동작이 달라지는 부분은 이렇게 처리했습니다.\n\n- **상호 필드 (`name` → `legal_name` / `display_name`)**: v1의 `name`은 `legal_name`과 같은 값이라 청구서와 갱신 문자 모두 `legal_name`을 씁니다. 예를 들어 C003은 \"바른가구 강남점\"(별칭)이 아니라 \"(주)바른가구\"로 나옵니다.\n- **없는 고객 처리**: v2 `fetch()`는 고객이 없으면 `None` 대신 `CustomerNotFound`를 던집니다.\n  - `invoice_header`는 전처럼 `KeyError`를 던지도록 바꿔서 다시 던집니다.\n  - `renewal_messages`는 전처럼 없는 고객을 건너뜁니다.\n- **페이지 나눔**: v2 `list_customers()`는 한 페이지(50건)만 돌려줍니다. 그대로 쓰면 고객이 50명을 넘을 때 리포트가 조용히 덜 세어지므로 `monthly_signups`는 `iter_customers()`로 전체를 돕니다.\n- **시간대**: v2 `created_at`은 UTC입니다. v1 `joined`처럼 KST(UTC+9)로 바꾼 뒤 월을 뽑습니다. 이걸 빼먹으면 UTC 기준 월말 15시 이후 가입자가 이전 달로 잡힙니다.\n\n새로 넣은 테스트 4개(`tests/test_app.py`)는 KST 월 경계, 50건이 넘는 페이지, 없는 고객일 때의 `KeyError`, 별칭 대신 법인명이 들어가는지를 확인합니다.\n\n확인이 필요한 점이 하나 있습니다. 갱신 문자의 \"OO 담당자님\"에 지금은 법인명이 들어가는데, v2에서 새로 생긴 `display_name`(앱 별칭)을 쓰는 편이 문자에 더 자연스러울 수도 있습니다. 원하시면 바꿔 드릴게요.",
+   "user_action": "answer",
+   "user_message": "아니요, 바꾸지 마세요. 갱신 문자도 청구서와 똑같이 사업자 등록상 상호인 legal_name을 쓰기로 정해 둔 거라 display_name(앱 별칭)은 쓰지 않습니다. 지금처럼 두세요.",
+   "user_cost": 0.0191384
+  },
+  {
+   "k": 1,
+   "rc": 0,
+   "agent_cost": 0.29750000000000004,
+   "agent_sec": 7.569050312042236,
+   "num_turns": 1,
+   "agent_message": "알겠습니다. 갱신 문자는 지금처럼 `legal_name`을 그대로 쓰고 `display_name`은 쓰지 않겠습니다. 코드는 바꾸지 않았습니다.\n\n`legal_name`을 쓴다는 점은 `app/notify.py`의 주석과 테스트 `test_messages_use_legal_name_not_display_name`에 이미 들어가 있습니다. 나중에 누가 별칭으로 바꾸면 이 테스트가 실패합니다.",
+   "user_action": "accept",
+   "user_message": "",
+   "user_cost": 0.018060399999999997
+  }
+ ],
+ "wall_sec": 76.38453531265259,
+ "user_turns": 1,
+ "accepted": true
+}

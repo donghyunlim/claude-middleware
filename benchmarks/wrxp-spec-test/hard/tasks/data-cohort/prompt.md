@@ -1,0 +1,1 @@
+8~9월 가입자 주간 코호트 리텐션 좀 뽑아 주세요. 데이터는 `data/`에 있고 설명은 `DATA_DICTIONARY.md`에 있어요. W1~W4까지만 보면 되고, 결과는 `retention.csv`로 저장해 주세요. 컬럼은 `cohort_week,cohort_size,W1,W2,W3,W4`이고, cohort_week는 그 주 시작일(YYYY-MM-DD), W1~W4는 코호트 대비 비율(0~1, 소수 넷째 자리 반올림)로 써 주세요. 코호트 오래된 순으로요.

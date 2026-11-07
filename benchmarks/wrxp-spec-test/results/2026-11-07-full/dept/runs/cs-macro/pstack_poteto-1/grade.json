@@ -1,0 +1,30 @@
+{
+ "first": {
+  "score": 0.7777777777777778,
+  "pass": 7,
+  "total": 9
+ },
+ "delivery": {
+  "score": 0.7777777777777778,
+  "pass": 7,
+  "total": 9
+ },
+ "delivery_turn": 0,
+ "final": {
+  "score": 1.0,
+  "pass": 9,
+  "total": 9
+ },
+ "agent_turns": 3,
+ "user_turns": 2,
+ "accepted": true,
+ "questions_answered": 0,
+ "revisions_requested": 2,
+ "user_chars": 332,
+ "agent_cost": 2.0613564,
+ "user_cost": 0.0791092,
+ "agent_sec": 169.92877960205078,
+ "wall_sec": 194.6231460571289,
+ "first_reply_chars": 1664,
+ "first_reply_korean": true
+}

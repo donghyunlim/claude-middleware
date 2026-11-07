@@ -1,0 +1,241 @@
+<title>wrxp 효과 실측 보고서</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a report column with a sticky table of contents on wide screens; figures first, method last. */
+:root {
+  --paper: #f5f7f6; --panel: #ffffff; --ink: #1c2321; --muted: #5a6662; --rule: #d7dedb;
+  --accent: #1b6b5e; --accent-soft: #dcebe7; --copper: #a85f2b; --copper-soft: #f1e1d4;
+  --good: #2c7a49; --bad: #b0372f; --warn: #8a6400; --grey: #8d9894; --grey-soft: #e6ebe9;
+  --h0: #f3dcd8; --h1: #f2ead2; --h2: #dcebe2; --h3: #bfe0d1;
+  --f-display: "Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #111615; --panel: #181e1d; --ink: #e4eae7; --muted: #9aa6a1; --rule: #2a3330;
+  --accent: #5fb7a6; --accent-soft: #1d3530; --copper: #e09a62; --copper-soft: #3a2a1d;
+  --good: #73c491; --bad: #ec7a71; --warn: #e2b44c; --grey: #7c8884; --grey-soft: #252d2b;
+  --h0: #4a2622; --h1: #3d3620; --h2: #213a2e; --h3: #1f5242; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #111615; --panel: #181e1d; --ink: #e4eae7; --muted: #9aa6a1; --rule: #2a3330;
+  --accent: #5fb7a6; --accent-soft: #1d3530; --copper: #e09a62; --copper-soft: #3a2a1d;
+  --good: #73c491; --bad: #ec7a71; --warn: #e2b44c; --grey: #7c8884; --grey-soft: #252d2b;
+  --h0: #4a2622; --h1: #3d3620; --h2: #213a2e; --h3: #1f5242; color-scheme: dark; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15.5px; line-height: 1.7; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 80px;
+  display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 13px; }
+nav.toc p { margin: 0 0 10px; color: var(--muted); letter-spacing: .08em; font-size: 11.5px; font-weight: 600; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: s; }
+nav.toc a { color: var(--muted); text-decoration: none; display: block; padding: 2px 0 2px 10px; border-left: 2px solid var(--rule); }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); border-left-color: var(--accent); outline: none; }
+main { min-width: 0; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 700; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 4.4vw, 44px); line-height: 1.2; margin: 6px 0 16px; }
+h2 { font-size: 26px; line-height: 1.3; margin: 0 0 14px; }
+h3 { font-size: 18.5px; margin: 28px 0 8px; }
+p, li { max-width: 68ch; }
+p { margin: 0 0 14px; }
+.kicker { font-family: var(--f-mono); font-size: 12px; color: var(--accent); letter-spacing: .06em; }
+.lede { font-size: 18px; color: var(--ink); max-width: 60ch; }
+.meta { color: var(--muted); font-size: 13.5px; }
+section { padding-top: 44px; margin-top: 44px; border-top: 1px solid var(--rule); scroll-margin-top: 24px; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 12px; margin: 26px 0 8px; }
+.fig { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.fig .n { font-family: var(--f-display); font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fig .n.acc { color: var(--accent); } .fig .n.cop { color: var(--copper); }
+.fig .t { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.callout { border-left: 3px solid var(--copper); background: var(--copper-soft); padding: 12px 16px; margin: 18px 0; border-radius: 0 6px 6px 0; max-width: 72ch; }
+.callout.ok { border-left-color: var(--accent); background: var(--accent-soft); }
+.callout p:last-child { margin-bottom: 0; }
+.tbl { overflow-x: auto; margin: 14px 0 18px; border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { padding: 8px 12px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12.5px; white-space: nowrap; background: var(--grey-soft); }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.hl { background: var(--accent-soft); }
+b.sig { color: var(--accent); }
+.heat { display: inline-block; min-width: 44px; padding: 1px 6px; border-radius: 4px; text-align: right; color: var(--ink); }
+.h0 { background: var(--h0); } .h1 { background: var(--h1); } .h2 { background: var(--h2); } .h3 { background: var(--h3); }
+figure { margin: 18px 0 22px; background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 16px 16px 10px; }
+figure svg { width: 100%; height: auto; display: block; max-width: 100%; }
+figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+svg .grid { stroke: var(--rule); stroke-width: 1; }
+svg .ref { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+svg .tick { fill: var(--muted); font: 11px var(--f-mono); }
+svg .lab { fill: var(--ink); font: 13px var(--f-body); }
+svg .val { fill: var(--ink); font: 12px var(--f-mono); }
+svg .seg { fill: var(--paper); font: 600 11.5px var(--f-mono); }
+svg .ci { stroke: var(--ink); stroke-width: 1.4; }
+svg .bar.c-base, svg .bar.c-global { fill: var(--grey); }
+svg .bar.c-haq, svg .bar.c-haqq { fill: var(--accent); }
+svg .bar.c-pst, svg .bar.c-pst2 { fill: var(--copper); }
+svg .s-asked { fill: var(--accent); } svg .s-shown { fill: var(--good); opacity: .65; } svg .s-over { fill: var(--bad); opacity: .8; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.pill { display: inline-block; font-size: 12px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); }
+.pill.good { color: var(--good); border-color: var(--good); } .pill.bad { color: var(--bad); border-color: var(--bad); } .pill.warn { color: var(--warn); border-color: var(--warn); }
+ol.steps, ul.plain { padding-left: 20px; }
+ol.steps li, ul.plain li { margin-bottom: 8px; }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--grey-soft); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 8px; } nav.toc { position: static; } nav.toc ol { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } }
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="목차">
+  <p>목차</p>
+  <ol>
+    <li><a href="#summary">요약과 사용법</a></li>
+    <li><a href="#setup">무엇을 비교했나</a></li>
+    <li><a href="#ability">모델 능력: 표준 벤치마크</a></li>
+    <li><a href="#work">실무 효과: 부서 시나리오</a></li>
+    <li><a href="#interaction">상호작용의 질</a></li>
+    <li><a href="#costs">약점과 비용</a></li>
+    <li><a href="#corrections">정정한 결론</a></li>
+    <li><a href="#recommend">권고</a></li>
+    <li><a href="#limits">한계와 다음 단계</a></li>
+    <li><a href="#method">방법과 재현</a></li>
+  </ol>
+</nav>
+<main>
+<header>
+  <div class="kicker">wrxp 0.1.78 · pstack 0.9.132 · claude-opus-5-5 · 2026-11-06 ~ 11-07</div>
+  <h1>wrxp 효과 실측 보고서</h1>
+  <p class="lede">wrxp는 모델을 더 똑똑하게 만들지 않습니다. 대신 요구가 덜 정해진 일에서 처음 넘기는 결과물이 맞을 가능성을 크게 높입니다. 그 효과는 질문 tier(haq, haqq)에서 나오고, 비용은 실행당 약 50% 늘어납니다.</p>
+  <p class="meta">실행 약 2,200회 · 실행 비용 약 850달러 · 표준 벤치마크 10종, 공개 에이전트 벤치마크 3종, 부서 시나리오 15개</p>
+  <div class="figs">
+    <div class="fig"><span class="n acc">+22~28%p</span><span class="t">요구가 덜 정해진 부서 업무에서 첫 납품 점수 향상(haq·haqq, 95% 구간이 0을 넘음)</span></div>
+    <div class="fig"><span class="n acc">0~1%</span><span class="t">haq·haqq 질문 중 이미 파일에 있던 것을 물은 비율</span></div>
+    <div class="fig"><span class="n acc">$1.99</span><span class="t">첫 납품 성공 1건당 비용(haqq). 미적용은 $3.21</span></div>
+    <div class="fig"><span class="n">±0</span><span class="t">표준 벤치마크와 SWE-bench Verified 정답률 차이</span></div>
+    <div class="fig"><span class="n cop">약 30%</span><span class="t">향상분 가운데 모의 사용자가 묻지 않은 것까지 말해 준 몫. 그래서 위 향상은 상한값입니다.</span></div>
+  </div>
+</header>
+
+<section id="summary">
+  <h2>요약과 사용법</h2>
+  <ol class="steps">
+    <li><b>모델 능력은 그대로입니다.</b> MMLU-Pro, GPQA Diamond, MATH-500, HumanEval, SWE-bench Verified 등에서 조건 간 차이는 표본 오차 안이었습니다. Opus 5.5가 이미 천장에 가깝습니다.</li>
+    <li><b>요구가 덜 정해진 실무에서는 첫 결과물이 확실히 좋아집니다.</b> haq·haqq는 15개 부서 과제 중 10개에서 첫 납품 점수를 올렸고, 사용자의 수정 요청을 과제당 0.45~0.57회 줄였습니다.</li>
+    <li><b>실제 작동 방식은 "질문 몇 개와 기본값 미리 보여 주기"입니다.</b> 직접 묻는 숨은 결정은 12~16%뿐입니다. 대신 작업 전에 "따로 말씀 없으면 이렇게 하겠다"는 목록을 보여 주고, 사용자가 그 목록을 고칩니다.</li>
+    <li><b>전역 CLAUDE.md 블록의 효과는 응답 언어입니다.</b> 켠 조건은 한국어 질문에 모두 한국어로 답했습니다. 정확도 효과는 없습니다.</li>
+    <li><b>pstack은 부서 업무에서 효과가 없었습니다.</b> 코드·터미널 과제에서는 비슷하거나 약간 빨랐고, 보고 충실도는 유의하게 낮았습니다.</li>
+  </ol>
+  <h3>언제 무엇을 쓰나</h3>
+  <div class="tbl "><table><thead><tr><th class="">상황</th><th class="">추천</th><th class="">근거</th></tr></thead><tbody><tr><td class="">요구가 분명하고 정답이 정해진 작업(버그 수정, 명세가 있는 구현)</td><td class="">그냥 요청하거나 <code>/ha</code></td><td class="">정답률 차이가 없고, 질문 tier는 비용만 늘립니다.</td></tr><tr><td class="">원하는 그림은 있는데 세부를 다 말하지 않았을 때(문서 형식, 계산 기준, 대상 범위)</td><td class=""><code>/haq</code></td><td class="">첫 납품 +22%p, 수정 요청 −0.45회</td></tr><tr><td class="">정할 게 많을 때(우선순위 기준, 여러 조건이 얽힌 기획)</td><td class=""><code>/haqq</code></td><td class="">첫 납품 +28%p. RICE, 캠페인, 내보내기에서 haq보다 높았습니다.</td></tr><tr><td class="">아직 뭘 원하는지 모를 때</td><td class=""><code>/haqq</code>로 정리해 볼 만함</td><td class="">측정하지 않았습니다(다음 단계).</td></tr><tr><td class="">형식·길이·금지어 제약이 있는 결과물을 채팅으로 받을 때</td><td class=""><code>/ha</code> 계열은 피함</td><td class="">덧붙이는 결과 틀이 제약을 깹니다(IFEval −7.5%p).</td></tr></tbody></table></div>
+</section>
+
+<section id="setup">
+  <h2>무엇을 비교했나</h2>
+  <p>모든 조건은 같은 모델(claude-opus-5-5, Claude Code 2.1.318), 같은 권한, 같은 과제 문장을 썼습니다. 조건마다 별도의 설정 폴더를 써서 차이가 조건 정의에서만 나도록 했습니다.</p>
+  <div class="tbl "><table><thead><tr><th class="">조건</th><th class="">전역 CLAUDE.md(wrxp:setup)</th><th class="">플러그인</th><th class="">첫 메시지 앞</th></tr></thead><tbody><tr><td class="">미적용</td><td class="">없음</td><td class="">없음</td><td class="">—</td></tr><tr><td class="">전역만</td><td class="">있음</td><td class="">wrxp</td><td class="">—</td></tr><tr><td class="">/ha만</td><td class="">없음</td><td class="">wrxp</td><td class=""><code>/wrxp:ha</code></td></tr><tr><td class="">전역+ha</td><td class="">있음</td><td class="">wrxp</td><td class=""><code>/wrxp:ha</code></td></tr><tr><td class="">전역+haq</td><td class="">있음</td><td class="">wrxp</td><td class=""><code>/wrxp:haq</code></td></tr><tr><td class="">전역+haqq</td><td class="">있음</td><td class="">wrxp</td><td class=""><code>/wrxp:haqq</code></td></tr><tr><td class="">pstack</td><td class="">없음</td><td class="">pstack</td><td class="">— (훅이 poteto-mode로 라우팅)</td></tr><tr><td class="">pstack+poteto</td><td class="">없음</td><td class="">pstack</td><td class=""><code>/pstack:poteto-mode</code></td></tr></tbody></table></div>
+  <h3>실험 일정</h3>
+  <div class="tbl "><table><thead><tr><th class="">차수</th><th class="">내용</th><th class="">조건</th><th class="num">실행 수</th><th class="num">비용</th></tr></thead><tbody><tr><td class="">1차</td><td class="">부서 실무 과제 14개(사용자 없음)</td><td class="">미적용 / /ha</td><td class="num">84</td><td class="num">$24</td></tr><tr><td class="">2차</td><td class="">2×2 설계 + 표준 벤치마크 10종</td><td class="">미적용 / 전역만 / /ha만 / 전역+ha</td><td class="num">964</td><td class="num">$177</td></tr><tr><td class="">3차</td><td class="">숨은 의도 과제 5개 + 모의 사용자</td><td class="">미적용 / 전역 / ha / haq / haqq</td><td class="num">75</td><td class="num">$83</td></tr><tr><td class="">4차</td><td class="">부서 시나리오 15개 + τ²-bench + SWE-bench Verified + Terminal-Bench 2</td><td class="">미적용 / 전역 / haq / haqq / pstack ×2</td><td class="num">648</td><td class="num">약 $560</td></tr><tr><td class="">재분석</td><td class="">4차 부서 기록 360회로 상호작용 지표 계산</td><td class="">4차와 같음</td><td class="num">판정 약 500회</td><td class="num">약 $16</td></tr></tbody></table></div>
+</section>
+
+<section id="ability">
+  <h2>모델 능력: 표준 벤치마크</h2>
+  <p>정답이 정해진 문항에서는 어느 조건도 점수를 바꾸지 못했습니다. 차이가 난 것은 형식 제약을 지키는 IFEval과 검색 순위 정도였고, 그마저도 문항이 적어 대부분 표본 오차 안입니다.</p>
+  <div class="tbl "><table><thead><tr><th class="">벤치마크</th><th class="">지표</th><th class="num">미적용</th><th class="num">전역만</th><th class="num">/ha만</th><th class="num">전역+ha</th></tr></thead><tbody><tr><td class="">MMLU-Pro</td><td class="">정확도</td><td class="num">95%</td><td class="num">95%</td><td class="num">95%</td><td class="num">95%</td></tr><tr><td class="">GPQA Diamond</td><td class="">정확도</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td></tr><tr><td class="">MATH-500</td><td class="">정확도</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td></tr><tr><td class="">GSM8K</td><td class="">정확도</td><td class="num">90%</td><td class="num">95%</td><td class="num">95%</td><td class="num">95%</td></tr><tr><td class="">BIG-Bench Hard</td><td class="">정확 일치</td><td class="num">95%</td><td class="num">95%</td><td class="num">95%</td><td class="num">95%</td></tr><tr><td class="">HumanEval · MBPP</td><td class="">pass@1</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td></tr><tr><td class="">TruthfulQA MC1</td><td class="">정확도</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td></tr><tr><td class="">IFEval</td><td class="">프롬프트 strict</td><td class="num">90%</td><td class="num">95%</td><td class="num">85%</td><td class="num">85%</td></tr><tr><td class="">SciFact</td><td class="">Recall@5</td><td class="num">93%</td><td class="num">93%</td><td class="num">88%</td><td class="num">88%</td></tr><tr><td class="">SciFact</td><td class="">MRR@10</td><td class="num">0.853</td><td class="num">0.845</td><td class="num">0.911</td><td class="num">0.864</td></tr><tr><td class="">10종 평균</td><td class=""></td><td class="num">96.3%</td><td class="num">97.3%</td><td class="num">95.8%</td><td class="num">95.8%</td></tr></tbody></table></div>
+  <p class="meta">벤치마크당 약 20문항, 2차 실험(2026-11-06).</p>
+  <h3>공개 에이전트 벤치마크 (4차)</h3>
+  <div class="tbl "><table><thead><tr><th class="">벤치마크</th><th class="">지표</th><th class="num">미적용</th><th class="num">전역만</th><th class="num">전역+haq</th><th class="num">전역+haqq</th><th class="num">pstack</th><th class="num">pstack+poteto</th></tr></thead><tbody><tr><td class="">τ²-bench (retail+airline)</td><td class="">pass^1</td><td class="num">88%</td><td class="num">88%</td><td class="num">75%</td><td class="num">81%</td><td class="num">88%</td><td class="num">88%</td></tr><tr><td class="">τ²-bench</td><td class="">pass^2</td><td class="num">75%</td><td class="num">75%</td><td class="num">62%</td><td class="num">75%</td><td class="num">75%</td><td class="num">75%</td></tr><tr><td class="">SWE-bench Verified</td><td class="">해결률</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td><td class="num">100%</td></tr><tr><td class="">Terminal-Bench 2</td><td class="">해결률</td><td class="num">88%</td><td class="num">81%</td><td class="num">88%</td><td class="num">88%</td><td class="num">94%</td><td class="num">94%</td></tr></tbody></table></div>
+  <p>τ²-bench는 8과제 × 2회라 1~2과제 차이입니다. SWE-bench Verified는 고른 8문항이 모두 천장이었습니다. Terminal-Bench 2의 차이는 부하에 민감한 성능 측정 과제 하나에서만 났습니다. 이 세 벤치마크에서는 어느 쪽에도 유의한 효과가 없었습니다.</p>
+</section>
+
+<section id="work">
+  <h2>실무 효과: 부서 시나리오</h2>
+  <p>15개 과제마다 숨은 의도를 아는 모의 사용자(Sonnet 5.5)가 같은 세션에서 질문에 답하고, 결과 보고에서 어긋난 점이 보이면 수정을 요청합니다. 사용자 턴은 최대 3회입니다. 조건마다 과제당 4회, 모두 360회 실행했습니다.</p>
+  <figure>
+    <svg viewBox="0 0 640 262" role="img" aria-label="조건별 첫 납품 점수"><line class="grid" x1="120.0" x2="120.0" y1="18" y2="236"/><text class="tick" x="120.0" y="254" text-anchor="middle">0%</text><line class="grid" x1="232.5" x2="232.5" y1="18" y2="236"/><text class="tick" x="232.5" y="254" text-anchor="middle">25%</text><line class="grid" x1="345.0" x2="345.0" y1="18" y2="236"/><text class="tick" x="345.0" y="254" text-anchor="middle">50%</text><line class="grid" x1="457.5" x2="457.5" y1="18" y2="236"/><text class="tick" x="457.5" y="254" text-anchor="middle">75%</text><line class="grid" x1="570.0" x2="570.0" y1="18" y2="236"/><text class="tick" x="570.0" y="254" text-anchor="middle">100%</text><text class="lab" x="110" y="39" text-anchor="end">미적용</text><rect class="bar c-base" x="120" y="28" width="287.5" height="16" rx="3"/><text class="val" x="415.5" y="40">64%</text><text class="lab" x="110" y="73" text-anchor="end">전역만</text><rect class="bar c-global" x="120" y="62" width="299.2" height="16" rx="3"/><line class="ci" x1="398.0" x2="448.0" y1="70" y2="70"/><line class="ci" x1="398.0" x2="398.0" y1="65" y2="75"/><line class="ci" x1="448.0" x2="448.0" y1="65" y2="75"/><text class="val" x="456.0" y="74">66%</text><text class="lab" x="110" y="107" text-anchor="end">전역+haq</text><rect class="bar c-haq" x="120" y="96" width="387.0" height="16" rx="3"/><line class="ci" x1="450.7" x2="563.6" y1="104" y2="104"/><line class="ci" x1="450.7" x2="450.7" y1="99" y2="109"/><line class="ci" x1="563.6" x2="563.6" y1="99" y2="109"/><text class="val" x="571.6" y="108">86%</text><text class="lab" x="110" y="141" text-anchor="end">전역+haqq</text><rect class="bar c-haqq" x="120" y="130" width="412.7" height="16" rx="3"/><line class="ci" x1="467.8" x2="597.9" y1="138" y2="138"/><line class="ci" x1="467.8" x2="467.8" y1="133" y2="143"/><line class="ci" x1="597.9" x2="597.9" y1="133" y2="143"/><text class="val" x="605.9" y="142">92%</text><text class="lab" x="110" y="175" text-anchor="end">pstack</text><rect class="bar c-pst" x="120" y="164" width="291.2" height="16" rx="3"/><line class="ci" x1="388.6" x2="438.1" y1="172" y2="172"/><line class="ci" x1="388.6" x2="388.6" y1="167" y2="177"/><line class="ci" x1="438.1" x2="438.1" y1="167" y2="177"/><text class="val" x="446.1" y="176">65%</text><text class="lab" x="110" y="209" text-anchor="end">pstack+poteto</text><rect class="bar c-pst2" x="120" y="198" width="312.0" height="16" rx="3"/><line class="ci" x1="407.0" x2="463.3" y1="206" y2="206"/><line class="ci" x1="407.0" x2="407.0" y1="201" y2="211"/><line class="ci" x1="463.3" x2="463.3" y1="201" y2="211"/><text class="val" x="471.3" y="210">69%</text><line class="ref" x1="407.5" x2="407.5" y1="18" y2="236"/></svg>
+    <figcaption>첫 납품 점수 평균. 막대 위 가로선은 미적용 대비 차이의 95% 구간(과제 단위 부트스트랩)이고, 점선은 미적용 수준입니다.</figcaption>
+  </figure>
+  <div class="tbl "><table><thead><tr><th class="">지표</th><th class="num">미적용</th><th class="num">전역만</th><th class="num">전역+haq</th><th class="num">전역+haqq</th><th class="num">pstack</th><th class="num">pstack+poteto</th></tr></thead><tbody><tr><td class="">첫 납품 점수</td><td class="num">64%</td><td class="num">66%</td><td class="num"><b class='sig'>86%</b></td><td class="num"><b class='sig'>92%</b></td><td class="num">65%</td><td class="num">69%</td></tr><tr><td class="">최종 점수</td><td class="num">98%</td><td class="num">97%</td><td class="num">98%</td><td class="num">97%</td><td class="num">99%</td><td class="num">98%</td></tr><tr><td class="">수정 요청(과제당)</td><td class="num">0.9</td><td class="num">0.8</td><td class="num"><b class='sig'>0.5</b></td><td class="num"><b class='sig'>0.3</b></td><td class="num">0.9</td><td class="num">0.8</td></tr><tr><td class="">미적용 대비 첫 납품</td><td class="num">—</td><td class="num">+3%p</td><td class="num">+22%p</td><td class="num">+28%p</td><td class="num">+1%p</td><td class="num">+5%p</td></tr><tr><td class="">좋아진 과제 / 나빠진 과제</td><td class="num">—</td><td class="num">4 / 5</td><td class="num">10 / 1</td><td class="num">10 / 1</td><td class="num">2 / 5</td><td class="num">5 / 1</td></tr><tr><td class="">1건 비용</td><td class="num">$0.75</td><td class="num">$0.85</td><td class="num">$1.14</td><td class="num">$1.16</td><td class="num">$0.95</td><td class="num">$1.02</td></tr></tbody></table></div>
+  <h3>과제별 첫 납품 점수</h3>
+  <div class="tbl heat-table"><table><thead><tr><th class="">과제</th><th class="num">미적용</th><th class="num">전역만</th><th class="num">전역+haq</th><th class="num">전역+haqq</th><th class="num">pstack</th><th class="num">pstack+poteto</th></tr></thead><tbody><tr><td class="">개발: 주문 CSV</td><td class="num"><span class="heat h0">22%</span></td><td class="num"><span class="heat h0">22%</span></td><td class="num"><span class="heat h2">75%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h0">22%</span></td><td class="num"><span class="heat h0">22%</span></td></tr><tr><td class="">개발: 쿠폰 규칙</td><td class="num"><span class="heat h1">60%</span></td><td class="num"><span class="heat h1">57%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h2">92%</span></td><td class="num"><span class="heat h1">57%</span></td><td class="num"><span class="heat h1">60%</span></td></tr><tr><td class="">데이터: 이탈률</td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td></tr><tr><td class="">개발: 재고 버그</td><td class="num"><span class="heat h2">83%</span></td><td class="num"><span class="heat h2">75%</span></td><td class="num"><span class="heat h1">67%</span></td><td class="num"><span class="heat h1">67%</span></td><td class="num"><span class="heat h2">83%</span></td><td class="num"><span class="heat h2">75%</span></td></tr><tr><td class="">기획: 3개 팀 로드맵</td><td class="num"><span class="heat h2">70%</span></td><td class="num"><span class="heat h1">65%</span></td><td class="num"><span class="heat h2">90%</span></td><td class="num"><span class="heat h2">85%</span></td><td class="num"><span class="heat h1">62%</span></td><td class="num"><span class="heat h2">75%</span></td></tr><tr><td class="">마케팅: 재활성화 캠페인</td><td class="num"><span class="heat h1">60%</span></td><td class="num"><span class="heat h1">68%</span></td><td class="num"><span class="heat h1">65%</span></td><td class="num"><span class="heat h2">90%</span></td><td class="num"><span class="heat h1">60%</span></td><td class="num"><span class="heat h2">70%</span></td></tr><tr><td class="">재무: 예산 대비 실적</td><td class="num"><span class="heat h3">95%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h2">78%</span></td><td class="num"><span class="heat h3">98%</span></td></tr><tr><td class="">기획: RICE 우선순위</td><td class="num"><span class="heat h1">40%</span></td><td class="num"><span class="heat h1">55%</span></td><td class="num"><span class="heat h1">60%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h2">70%</span></td><td class="num"><span class="heat h1">40%</span></td></tr><tr><td class="">법무: 공급 계약 검토</td><td class="num"><span class="heat h1">68%</span></td><td class="num"><span class="heat h1">60%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h1">60%</span></td><td class="num"><span class="heat h3">100%</span></td></tr><tr><td class="">HR: 온보딩 일정</td><td class="num"><span class="heat h0">20%</span></td><td class="num"><span class="heat h1">57%</span></td><td class="num"><span class="heat h2">88%</span></td><td class="num"><span class="heat h2">90%</span></td><td class="num"><span class="heat h1">40%</span></td><td class="num"><span class="heat h1">60%</span></td></tr><tr><td class="">CS: 환불 매크로</td><td class="num"><span class="heat h1">69%</span></td><td class="num"><span class="heat h1">67%</span></td><td class="num"><span class="heat h1">69%</span></td><td class="num"><span class="heat h1">69%</span></td><td class="num"><span class="heat h1">67%</span></td><td class="num"><span class="heat h1">69%</span></td></tr><tr><td class="">영업: 견적서</td><td class="num"><span class="heat h0">33%</span></td><td class="num"><span class="heat h0">33%</span></td><td class="num"><span class="heat h2">89%</span></td><td class="num"><span class="heat h2">94%</span></td><td class="num"><span class="heat h0">33%</span></td><td class="num"><span class="heat h0">33%</span></td></tr><tr><td class="">데이터: 코호트 리텐션</td><td class="num"><span class="heat h1">50%</span></td><td class="num"><span class="heat h1">50%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h1">50%</span></td><td class="num"><span class="heat h1">50%</span></td></tr><tr><td class="">개발: API v1→v2</td><td class="num"><span class="heat h2">88%</span></td><td class="num"><span class="heat h2">88%</span></td><td class="num"><span class="heat h2">88%</span></td><td class="num"><span class="heat h2">88%</span></td><td class="num"><span class="heat h2">88%</span></td><td class="num"><span class="heat h2">88%</span></td></tr><tr><td class="">개발: 성능 개선</td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td><td class="num"><span class="heat h3">100%</span></td></tr></tbody></table></div>
+  <p>숨은 결정이 있는 과제(견적서, 코호트, 계약 검토, 온보딩, 내보내기, 쿠폰)에서 차이가 컸습니다. 질문으로 풀리지 않는 과제(재고 버그, API 이전, 성능 개선, CS 매크로)는 조건 간 차이가 없거나 작았습니다.</p>
+</section>
+
+<section id="interaction">
+  <h2>상호작용의 질</h2>
+  <p>4차 부서 기록 360회를 다시 판정해, 결과의 정답률이 아니라 대화의 질을 숫자로 만들었습니다. 과제마다 숨은 결정과 파일에서 찾을 수 있는 사실의 목록을 만들고, 각 실행의 질문과 보고를 그 목록에 대응시켰습니다. 굵은 녹색은 미적용 대비 95% 구간이 0을 넘는 값입니다.</p>
+  <div class="tbl "><table><thead><tr><th class="">축</th><th class="">지표</th><th class="num">미적용</th><th class="num">전역만</th><th class="num">전역+haq</th><th class="num">전역+haqq</th><th class="num">pstack</th><th class="num">pstack+poteto</th></tr></thead><tbody><tr><td class="">의도</td><td class="">납품 전 질문 수</td><td class="num">0.07</td><td class="num">0.22</td><td class="num"><b class="sig">0.83</b></td><td class="num"><b class="sig">1.05</b></td><td class="num"><b class="sig">0.22</b></td><td class="num">0.27</td></tr><tr><td class="">의도</td><td class="">숨은 결정을 물은 비율</td><td class="num">0%</td><td class="num">3%</td><td class="num"><b class="sig">12%</b></td><td class="num"><b class="sig">16%</b></td><td class="num"><b class="sig">3%</b></td><td class="num">3%</td></tr><tr><td class="">의도</td><td class="">질문 정밀도(숨은 결정을 짚은 질문)</td><td class="num">50%</td><td class="num">68%</td><td class="num">98%</td><td class="num">94%</td><td class="num">82%</td><td class="num">83%</td></tr><tr><td class="">의도</td><td class="">질문 낭비율(파일에 있는 것을 물음)</td><td class="num">50%</td><td class="num">30%</td><td class="num">1%</td><td class="num">0%</td><td class="num">5%</td><td class="num">17%</td></tr><tr><td class="">투명성</td><td class="">숨은 결정 재현율(물음+공개)</td><td class="num">75%</td><td class="num">71%</td><td class="num">75%</td><td class="num">80%</td><td class="num">76%</td><td class="num">69%</td></tr><tr><td class="">투명성</td><td class="">가정 공개율(묻지 않은 결정 중 공개)</td><td class="num">75%</td><td class="num">70%</td><td class="num">72%</td><td class="num">79%</td><td class="num">75%</td><td class="num">68%</td></tr><tr><td class="">정직성</td><td class="">보고 충실도(도구 기록으로 뒷받침된 주장)</td><td class="num">91%</td><td class="num">94%</td><td class="num">87%</td><td class="num">86%</td><td class="num"><b class="sig">80%</b></td><td class="num"><b class="sig">78%</b></td></tr><tr><td class="">정직성</td><td class="">검증 주장 수(첫 납품 보고)</td><td class="num">2.30</td><td class="num">2.53</td><td class="num"><b class="sig">3.67</b></td><td class="num"><b class="sig">3.58</b></td><td class="num">2.60</td><td class="num"><b class="sig">3.50</b></td></tr><tr><td class="">결과</td><td class="">완료 보고 후 결함 비율(첫 납품 &lt; 100%)</td><td class="num">77%</td><td class="num">73%</td><td class="num"><b class="sig">50%</b></td><td class="num"><b class="sig">42%</b></td><td class="num">75%</td><td class="num">70%</td></tr><tr><td class="">결과</td><td class="">수정 1회 해결률</td><td class="num">88%</td><td class="num">85%</td><td class="num">86%</td><td class="num">79%</td><td class="num">81%</td><td class="num">85%</td></tr><tr><td class="">효율</td><td class="">첫 납품 성공 1건당 비용(USD)</td><td class="num">$3.21</td><td class="num">$3.19</td><td class="num">$2.27</td><td class="num">$1.99</td><td class="num">$3.80</td><td class="num">$3.42</td></tr><tr><td class="">트랙</td><td class="">데이터 답의 정의 명시율(기간·필터·단위·정의)</td><td class="num">79%</td><td class="num">85%</td><td class="num">96%</td><td class="num">92%</td><td class="num">94%</td><td class="num">94%</td></tr></tbody></table></div>
+  <p class="meta">질문 정밀도와 낭비율은 질문이 적은 조건(60회 합계: 미적용 4개, 전역만 13개, pstack 13개, pstack+poteto 16개)에서 불안정합니다. haq 50개, haqq 63개입니다.</p>
+  <h3>사용자가 드러낸 숨은 결정은 어디서 나왔나</h3>
+  <figure>
+    <svg viewBox="0 0 640 218" role="img" aria-label="사용자가 드러낸 숨은 결정의 출처"><text class="lab" x="110" y="25" text-anchor="end">미적용</text><rect class="s-asked" x="120.0" y="13" width="126.0" height="18"/><text class="seg" x="183.0" y="26" text-anchor="middle">25%</text><rect class="s-shown" x="246.0" y="13" width="252.0" height="18"/><text class="seg" x="372.0" y="26" text-anchor="middle">50%</text><rect class="s-over" x="498.0" y="13" width="126.0" height="18"/><text class="seg" x="561.0" y="26" text-anchor="middle">25%</text><text class="tick" x="624" y="26" text-anchor="end"></text><text class="lab" x="110" y="59" text-anchor="end">전역만</text><rect class="s-asked" x="120.0" y="47" width="116.3" height="18"/><text class="seg" x="178.2" y="60" text-anchor="middle">23%</text><rect class="s-shown" x="236.3" y="47" width="271.4" height="18"/><text class="seg" x="372.0" y="60" text-anchor="middle">54%</text><rect class="s-over" x="507.7" y="47" width="116.3" height="18"/><text class="seg" x="565.8" y="60" text-anchor="middle">23%</text><text class="tick" x="624" y="60" text-anchor="end"></text><text class="lab" x="110" y="93" text-anchor="end">전역+haq</text><rect class="s-asked" x="120.0" y="81" width="86.8" height="18"/><text class="seg" x="163.4" y="94" text-anchor="middle">17%</text><rect class="s-shown" x="206.8" y="81" width="262.3" height="18"/><text class="seg" x="337.9" y="94" text-anchor="middle">52%</text><rect class="s-over" x="469.1" y="81" width="154.9" height="18"/><text class="seg" x="546.5" y="94" text-anchor="middle">31%</text><text class="tick" x="624" y="94" text-anchor="end"></text><text class="lab" x="110" y="127" text-anchor="end">전역+haqq</text><rect class="s-asked" x="120.0" y="115" width="118.6" height="18"/><text class="seg" x="179.3" y="128" text-anchor="middle">24%</text><rect class="s-shown" x="238.6" y="115" width="233.2" height="18"/><text class="seg" x="355.2" y="128" text-anchor="middle">46%</text><rect class="s-over" x="471.8" y="115" width="152.2" height="18"/><text class="seg" x="547.9" y="128" text-anchor="middle">30%</text><text class="tick" x="624" y="128" text-anchor="end"></text><text class="lab" x="110" y="161" text-anchor="end">pstack</text><rect class="s-asked" x="120.0" y="149" width="197.2" height="18"/><text class="seg" x="218.6" y="162" text-anchor="middle">39%</text><rect class="s-shown" x="317.2" y="149" width="284.9" height="18"/><text class="seg" x="459.7" y="162" text-anchor="middle">57%</text><rect class="s-over" x="602.1" y="149" width="21.9" height="18"/><text class="tick" x="624" y="162" text-anchor="end"></text><text class="lab" x="110" y="195" text-anchor="end">pstack+poteto</text><rect class="s-asked" x="120.0" y="183" width="95.6" height="18"/><text class="seg" x="167.8" y="196" text-anchor="middle">19%</text><rect class="s-shown" x="215.6" y="183" width="356.3" height="18"/><text class="seg" x="393.7" y="196" text-anchor="middle">71%</text><rect class="s-over" x="571.9" y="183" width="52.1" height="18"/><text class="seg" x="597.9" y="196" text-anchor="middle">10%</text><text class="tick" x="624" y="196" text-anchor="end"></text></svg>
+    <div class="legend"><span><i style="background:var(--accent)"></i>에이전트가 물은 것</span><span><i style="background:var(--good);opacity:.65"></i>에이전트가 기본값으로 먼저 보여 주고 사용자가 고친 것</span><span><i style="background:var(--bad);opacity:.8"></i>묻지도 보여 주지도 않았는데 사용자가 먼저 말한 것</span></div>
+    <figcaption>첫 납품 전에 사용자가 답한 실행만 셌습니다.</figcaption>
+  </figure>
+  <div class="tbl "><table><thead><tr><th class="">조건</th><th class="num">답변이 있었던 실행</th><th class="num">실행당 드러난 결정</th><th class="num">물은 것</th><th class="num">기본값을 고친 것</th><th class="num">과잉 공개</th></tr></thead><tbody><tr><td class="">미적용</td><td class="num">5</td><td class="num">3.2</td><td class="num">25%</td><td class="num">50%</td><td class="num"><b>25%</b></td></tr><tr><td class="">전역만</td><td class="num">11</td><td class="num">3.5</td><td class="num">23%</td><td class="num">54%</td><td class="num"><b>23%</b></td></tr><tr><td class="">전역+haq</td><td class="num">40</td><td class="num">6.1</td><td class="num">17%</td><td class="num">52%</td><td class="num"><b>31%</b></td></tr><tr><td class="">전역+haqq</td><td class="num">44</td><td class="num">5.8</td><td class="num">24%</td><td class="num">46%</td><td class="num"><b>30%</b></td></tr><tr><td class="">pstack</td><td class="num">7</td><td class="num">3.3</td><td class="num">39%</td><td class="num">57%</td><td class="num"><b>4%</b></td></tr><tr><td class="">pstack+poteto</td><td class="num">9</td><td class="num">6.4</td><td class="num">19%</td><td class="num">71%</td><td class="num"><b>10%</b></td></tr></tbody></table></div>
+  <div class="callout ok"><p><b>해석.</b> haq·haqq가 첫 결과물을 맞히는 주된 경로는 작업 전 기본값 공개였습니다. 드러난 결정의 절반이 이 경로에서 나왔고, 직접 질문은 17~24%였습니다. 질문은 정확했습니다. 94~98%가 실제 숨은 결정을 짚었고, 파일에 이미 있는 것을 물은 경우는 거의 없었습니다.</p></div>
+  <div class="callout"><p><b>주의.</b> haq·haqq 실행에서 드러난 결정의 약 30%는 에이전트가 묻지도 보여 주지도 않았는데 모의 사용자가 먼저 말했습니다. "묻지 않은 세부를 먼저 알려 주지 않는다"는 지시를 Sonnet이 어긴 것입니다. 그래서 첫 납품 향상은 상한값으로 봐야 하고, 엄격한 모의 사용자로 다시 재야 합니다.</p></div>
+  <p>그 밖의 발견은 이렇습니다.</p>
+  <ul class="plain">
+    <li><b>가정 공개율은 조건 간 차이가 없습니다(68~79%).</b> Opus 5.5는 원래 자기가 정한 값을 보고에 적습니다. wrxp는 그 시점을 결과물 앞으로 옮깁니다.</li>
+    <li><b>보고 충실도는 pstack이 유의하게 낮았습니다(78~80%).</b> 도구 기록에 없는 "다시 계산해 확인했다"류 주장이 많았습니다. haq·haqq(86~87%)와 미적용(91%)의 차이는 유의하지 않습니다.</li>
+    <li><b>수정 1회 해결률은 모든 조건이 79~88%로 비슷합니다.</b> 지적받은 뒤 고치는 능력은 모델 자체의 능력입니다.</li>
+  </ul>
+</section>
+
+<section id="costs">
+  <h2>약점과 비용</h2>
+  <div class="tbl "><table><thead><tr><th class="">항목</th><th class="">측정값</th><th class="">판단</th></tr></thead><tbody><tr><td class="">실행 1건 비용</td><td class="">부서 업무 +$0.39~0.41(+52%), 코드·터미널 +$0.10~0.17(+30~75%)</td><td class=""><span class='pill warn'>비용 증가</span></td></tr><tr><td class="">형식 제약 산출물</td><td class="">IFEval 90% → 85%(/ha). 덧붙인 확인 문장이 금지어를 쓰거나 글머리표 개수를 깸</td><td class=""><span class='pill bad'>고쳐야 함</span></td></tr><tr><td class="">응답 언어</td><td class="">/ha만 쓰면 영어 응답이 늘었고, 전역 블록과 함께 쓰면 100% 한국어</td><td class=""><span class='pill good'>전역 블록으로 해결</span></td></tr><tr><td class="">범위 확장 앞 멈춤</td><td class="">같은 원인 버그 두 곳을 9회 중 9회 '함께 고칠까요?'로 묻고 멈춤</td><td class=""><span class='pill warn'>규칙 재검토</span></td></tr><tr><td class="">답 길이</td><td class="">미적용 대비 1.4배</td><td class=""><span class='pill warn'>정보 밀도 확인 필요</span></td></tr><tr><td class="">pstack 보고 충실도</td><td class="">도구 기록으로 뒷받침된 검증 주장 78~80%(미적용 91%)</td><td class=""><span class='pill bad'>pstack 약점</span></td></tr></tbody></table></div>
+</section>
+
+<section id="corrections">
+  <h2>정정한 결론</h2>
+  <p>표본을 늘리거나 다시 분석하면서 앞서 보고한 내용 중 세 가지를 바로잡았습니다.</p>
+  <div class="tbl "><table><thead><tr><th class="">앞선 보고</th><th class="">정정</th></tr></thead><tbody><tr><td class="">문서에 지어낸 사실이 −67% 줄었다(1차)</td><td class="">2차에서 재현되지 않았습니다(미적용 2건, /ha 5건). 채점자 판정의 변동이 조건 차이보다 컸습니다.</td></tr><tr><td class="">질문 tier는 비용이 늘지 않는다(3차, 5과제)</td><td class="">15과제에서는 건당 +52%로 유의했습니다. 대신 첫 납품 성공 1건당 비용은 더 낮습니다.</td></tr><tr><td class="">haq·haqq 첫 납품 +22~28%p</td><td class="">약 30%가 모의 사용자의 과잉 공개 덕분이므로 상한값입니다.</td></tr></tbody></table></div>
+</section>
+
+<section id="recommend">
+  <h2>권고</h2>
+  <h3>wrxp에 반영할 것</h3>
+  <ol class="steps">
+    <li><b>결과 틀을 산출물에서 분리합니다.</b> 형식·길이·금지어 제약이 있는 결과물에서는 "제가 정한 것·확인한 것"을 빼거나 산출물 밖으로 옮깁니다.</li>
+    <li><b>같은 원인의 버그는 함께 고치고 보고하는 쪽을 기본으로 합니다.</b> 9회 중 9회가 같은 질문으로 멈췄고, 미적용은 묻지 않고 모두 고쳤습니다.</li>
+    <li><b>작업 전 기본값 공개를 명시적인 강점으로 다듬습니다.</b> 효과의 주된 경로이므로 /ha(질문 0개)에서도 쓸 수 있는지 검토할 만합니다.</li>
+    <li><b>README의 논문 인용 수치를 실측값으로 바꿉니다.</b> "모호한 요청 정확도 33.3%→100%" 같은 수치는 이번 실측으로 재현되지 않았습니다.</li>
+  </ol>
+  <h3>사용자에게</h3>
+  <ul class="plain">
+    <li>전역 블록(<code>/wrxp:setup</code>)은 켜 둡니다. 비용이 작고 언어 일관성 효과가 분명합니다.</li>
+    <li>요구가 덜 정해진 기획·영업·HR·데이터·법무 작업은 <code>/haqq</code>로 시작합니다.</li>
+    <li>정답이 정해진 코드 수정은 그냥 진행합니다.</li>
+    <li>wrxp와 pstack을 함께 쓸 근거는 이번 데이터에 없습니다(함께 설치한 조건은 측정하지 않음).</li>
+  </ul>
+</section>
+
+<section id="limits">
+  <h2>한계와 다음 단계</h2>
+  <ul class="plain">
+    <li><b>모의 사용자는 실제 사용자가 아닙니다.</b> 의도를 정확히 알고, 지시를 어기고 먼저 말하기도 했습니다.</li>
+    <li><b>판정자는 Sonnet 5.5 하나입니다.</b> 과제별 정답지와 일부 표본만 사람이 검토했습니다.</li>
+    <li><b>τ²-bench는 DB 상태 보상만 썼습니다.</b> 사용자 모델도 공식과 달라 리더보드와 직접 비교할 수 없습니다.</li>
+    <li><b>Terminal-Bench 2는 컨테이너 네트워크 없이 돌렸습니다.</b> SWE-bench는 쉬운 문항만 들어갔습니다.</li>
+    <li><b>측정하지 못한 것:</b> 불필요한 질문 비율, 과잉 차단율, "모르겠다"는 사용자, 수정 5·10회 점검, 사람 독자의 이해도.</li>
+  </ul>
+  <h3>다음 실험(제안, 약 150~250달러)</h3>
+  <ol class="steps">
+    <li>질문받은 것과 보여 준 기본값에만 답하는 엄격한 모의 사용자로 부서 시나리오를 다시 측정합니다.</li>
+    <li>숨은 결정이 없는 쌍둥이 과제로 불필요한 질문 비율을 잽니다.</li>
+    <li>위험·안전 시나리오 각 8개로 무단 위험 행동률과 과잉 차단율을 잽니다.</li>
+    <li>"모르겠다"고 답하는 사용자 조건을 추가합니다.</li>
+    <li>결과 틀을 고친 뒤 IFEval을 다시 잽니다.</li>
+  </ol>
+</section>
+
+<section id="method">
+  <h2>방법과 재현</h2>
+  <p>코드와 원자료는 <code>donghyunlim/claude-middleware</code> 저장소의 <code>ccr-19908822-0fhs21</code> 브랜치, <code>benchmarks/wrxp-spec-test/</code>에 있습니다.</p>
+  <div class="tbl "><table><thead><tr><th class="">구성</th><th class="">경로</th><th class="">내용</th></tr></thead><tbody><tr><td class="">조건 정의</td><td class=""><code>conditions.py</code></td><td class="">조건마다 별도 설정 폴더. 전역 조건은 setup 스크립트의 실제 출력 사용</td></tr><tr><td class="">부서 시나리오</td><td class=""><code>hard/</code></td><td class="">fixture, 숨은 의도, 숨긴 테스트, 모의 사용자 실행기, 채점기</td></tr><tr><td class="">상호작용 지표</td><td class=""><code>hard/metrics_tier1.py</code> 외</td><td class="">과제별 정답지, 실행별 판정, 과잉 공개 검사</td></tr><tr><td class="">표준 벤치마크</td><td class=""><code>std/</code></td><td class="">원 배포처에서 받아 고정 시드 표본, IFEval 공식 채점 코드</td></tr><tr><td class="">τ²-bench</td><td class=""><code>tau2/</code></td><td class="">도메인 도구를 MCP로 노출, τ²-bench DB 평가기로 채점</td></tr><tr><td class="">SWE-bench Verified</td><td class=""><code>swebench/</code></td><td class="">공개 실행 로그에서 문항 재구성, 공식 Docker 이미지로 채점</td></tr><tr><td class="">Terminal-Bench 2</td><td class=""><code>tbench/</code></td><td class="">공식 이미지, 오프라인 테스트 키트</td></tr><tr><td class="">결과 문서</td><td class=""><code>results/</code></td><td class="">차수별 RESULTS.md, 표, 실행별 원자료</td></tr></tbody></table></div>
+  <p class="meta">통계: 차이의 구간은 과제 단위(부서 시나리오) 또는 문항 단위(표준 벤치마크) 부트스트랩 95% 구간입니다. 표본이 작아 구간이 0을 포함하는 차이는 효과로 해석하지 않았습니다.</p>
+</section>
+</main>
+</div>

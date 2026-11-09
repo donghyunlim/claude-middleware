@@ -1,0 +1,270 @@
+<title>wrxp 소개</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; a before/after conversation opens the page, then numbers, how it works, where it fits, how to start. */
+:root {
+  --paper: #f7f8fa; --panel: #ffffff; --ink: #18202e; --muted: #5b6577; --rule: #dde2ea;
+  --steel: #27467f; --steel-soft: #e3e9f5; --mark: #d9951f; --mark-soft: #fbefd8;
+  --miss: #b8433a; --miss-soft: #f6e1de; --hit: #2b7a50; --hit-soft: #dcefe3;
+  --f-display: "Black Han Sans", "Noto Sans KR", sans-serif;
+  --f-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0f141c; --panel: #161d28; --ink: #e6ebf3; --muted: #9ba6b8; --rule: #263041;
+  --steel: #8fb0ee; --steel-soft: #1d2a42; --mark: #f0b44a; --mark-soft: #3a2d14;
+  --miss: #ee8077; --miss-soft: #3b1f1d; --hit: #74c597; --hit-soft: #18342a; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #0f141c; --panel: #161d28; --ink: #e6ebf3; --muted: #9ba6b8; --rule: #263041;
+  --steel: #8fb0ee; --steel-soft: #1d2a42; --mark: #f0b44a; --mark-soft: #3a2d14;
+  --miss: #ee8077; --miss-soft: #3b1f1d; --hit: #74c597; --hit-soft: #18342a; color-scheme: dark; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.75; }
+.col { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.col { padding-block: 56px 24px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12.5px; letter-spacing: .08em; color: var(--steel); }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(38px, 7vw, 76px); line-height: 1.08; margin: 10px 0 18px; letter-spacing: -0.01em; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--steel); }
+.lede { font-size: clamp(17px, 2.1vw, 20px); max-width: 44ch; color: var(--ink); margin: 0; }
+h2 { font-family: var(--f-display); font-weight: 400; font-size: clamp(28px, 4vw, 40px); line-height: 1.2; margin: 0 0 10px; text-wrap: balance; }
+h3 { font-size: 18px; font-weight: 700; margin: 0 0 6px; text-wrap: balance; }
+p { margin: 0 0 12px; max-width: 64ch; }
+.sub { color: var(--muted); max-width: 60ch; }
+section { padding-block: 56px; border-top: 1px solid var(--rule); }
+
+/* before / after */
+.duel { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 18px; margin-top: 30px; }
+.side { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.side .tag { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.msg { border-radius: 10px; padding: 10px 14px; font-size: 14.5px; line-height: 1.65; max-width: 100%; }
+.msg.u { background: var(--steel-soft); justify-self: end; max-width: 88%; }
+.msg.a { background: var(--paper); border: 1px solid var(--rule); }
+.msg b { font-weight: 700; }
+.msg ul { margin: 6px 0 0; padding-left: 18px; }
+.guess { color: var(--miss); font-weight: 700; }
+.right { color: var(--hit); font-weight: 700; }
+.score { display: flex; align-items: baseline; gap: 10px; border-top: 1px dashed var(--rule); padding-top: 10px; }
+.score .v { font-family: var(--f-display); font-size: 38px; line-height: 1; }
+.score .v.lo { color: var(--miss); } .score .v.hi { color: var(--hit); }
+.score .t { color: var(--muted); font-size: 13.5px; }
+
+/* numbers */
+.nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0; margin-top: 26px; border-top: 2px solid var(--ink); }
+.num { padding: 18px 18px 18px 0; border-bottom: 1px solid var(--rule); display: grid; gap: 6px; align-content: start; }
+.num .big { font-family: var(--f-display); font-size: clamp(34px, 4.6vw, 48px); line-height: 1.05; font-variant-numeric: tabular-nums; }
+.num .big small { font-family: var(--f-body); font-size: 15px; color: var(--muted); font-weight: 500; margin: 0 4px; }
+.num .big .to { color: var(--steel); }
+.num .t { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+/* steps */
+.steps { list-style: none; padding: 0; margin: 26px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 18px; counter-reset: st; }
+.steps li { counter-increment: st; display: grid; gap: 8px; align-content: start; padding-top: 14px; border-top: 3px solid var(--steel); }
+.steps li::before { content: counter(st); font-family: var(--f-display); font-size: 30px; color: var(--steel); line-height: 1; }
+.steps p { color: var(--muted); font-size: 15px; margin: 0; }
+
+/* where it fits */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; margin-top: 26px; }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.card .dept { font-family: var(--f-mono); font-size: 12px; color: var(--steel); letter-spacing: .05em; }
+.card p { font-size: 14.5px; color: var(--muted); margin: 0; }
+.meter { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.track { position: relative; height: 10px; background: var(--rule); border-radius: 5px; overflow: hidden; }
+.track .fill { position: absolute; inset: 0 auto 0 0; background: var(--mark); border-radius: 5px; }
+.track .base { position: absolute; inset: 0 auto 0 0; background: var(--muted); opacity: .55; border-radius: 5px; }
+.meter .from { color: var(--muted); } .meter .to { color: var(--ink); font-weight: 600; }
+.catch { font-size: 13.5px; background: var(--mark-soft); border-radius: 6px; padding: 6px 10px; }
+
+/* guide table */
+.tbl { overflow-x: auto; margin-top: 22px; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 12.5px; color: var(--muted); font-weight: 500; letter-spacing: .03em; background: var(--steel-soft); white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+td code, p code { font-family: var(--f-mono); font-size: 13px; background: var(--steel-soft); color: var(--steel); padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+
+/* plus */
+.plus { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 22px; margin-top: 24px; }
+.plus div { display: grid; gap: 4px; align-content: start; }
+.plus .k { font-family: var(--f-display); font-size: 26px; color: var(--steel); line-height: 1.2; }
+.plus p { font-size: 14.5px; color: var(--muted); margin: 0; }
+
+/* versus */
+.vs { display: grid; gap: 12px; margin-top: 22px; max-width: 720px; }
+.vs .row { display: grid; grid-template-columns: 120px 1fr 52px; align-items: center; gap: 12px; font-size: 14px; }
+.vs .bar { height: 22px; border-radius: 4px; background: var(--rule); position: relative; overflow: hidden; }
+.vs .bar i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--muted); }
+.vs .bar i.w { background: var(--steel); }
+.vs .val { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+
+/* start */
+.start { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; margin-top: 22px; }
+pre { margin: 0; font-family: var(--f-mono); font-size: 13px; line-height: 1.7; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; overflow-x: auto; color: var(--ink); }
+pre .c { color: var(--muted); }
+footer.col { padding-block: 30px 60px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+footer p { max-width: 80ch; }
+@media (max-width: 520px) { .vs .row { grid-template-columns: 92px 1fr 46px; } }
+</style>
+
+<header class="col">
+  <div class="eyebrow">wrxp · Claude Code · Codex 플러그인</div>
+  <h1>말하지 않은 의도까지<br><em>처음부터 맞춥니다</em></h1>
+  <p class="lede">요청은 짧고 기준은 머릿속에 있을 때가 많습니다. wrxp는 작업을 시작하기 전에 꼭 필요한 것만 묻고, 정해 둘 기본값을 먼저 보여 줍니다. 그래서 첫 결과물이 바로 맞습니다.</p>
+
+  <div class="duel" aria-label="같은 요청에 대한 두 응답">
+    <div class="side">
+      <div class="tag"><span>플러그인 없이</span><span>영업 · 견적서</span></div>
+      <div class="msg u">한빛물류에서 견적 요청 메일 왔어요. 가격표랑 할인 정책 보고 견적서 만들어 주세요.</div>
+      <div class="msg a"><code>quote.json</code>을 만들었습니다. 메일에 좌석 수와 약정 기간이 정확히 없어서 제가 정했습니다.
+        <ul>
+          <li>좌석 <span class="guess">100석</span> ("100명은 넘을 것 같다"를 최소치로 봄)</li>
+          <li>약정 3년, 할인 상한 20%</li>
+          <li>유효기간 <span class="guess">14일</span> (2026-11-23까지)</li>
+        </ul>
+      </div>
+      <div class="msg u">통화로 확인했어요. 120석이고, 유효기간은 팀장 승인 받았으니 30일로 다시 계산해 주세요.</div>
+      <div class="score"><span class="v lo">33%</span><span class="t">첫 결과물의 채점 항목 통과율. 다 만든 뒤에 다시 고쳐야 했습니다.</span></div>
+    </div>
+    <div class="side">
+      <div class="tag"><span>/wrxp:haq</span><span>영업 · 견적서</span></div>
+      <div class="msg u">한빛물류에서 견적 요청 메일 왔어요. 가격표랑 할인 정책 보고 견적서 만들어 주세요.</div>
+      <div class="msg a">메일, 가격표, 할인 정책을 모두 읽었습니다. 금액을 정하기 전에 하나만 여쭙겠습니다.<br><b>약정은 2년과 3년 중 어느 쪽인가요?</b> 3년이면 할인 상한 20%가 적용됩니다.
+        <ul>
+          <li>따로 말씀 없으면 좌석은 100석으로 하겠습니다.</li>
+          <li>유효기간은 기본 14일입니다. 30일은 팀장 승인이 필요합니다.</li>
+        </ul>
+      </div>
+      <div class="msg u">3년이요. 좌석은 120석이고, 팀장 승인 받았으니 30일로 해 주세요.</div>
+      <div class="score"><span class="v hi">89%</span><span class="t">첫 결과물의 채점 항목 통과율. 만들기 전에 기준이 맞춰졌습니다.</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="col">
+    <h2>숫자로 본 차이</h2>
+    <p class="sub">마케팅, 재무, 기획, 법무, HR, CS, 영업, 데이터, 개발 업무 15가지를 같은 모델로 360번 실행해 비교했습니다.</p>
+    <div class="nums">
+      <div class="num"><span class="big">64%<small>→</small><span class="to">92%</span></span><span class="t">첫 결과물 정답률. 요구가 덜 정해진 업무에서 haqq를 쓸 때</span></div>
+      <div class="num"><span class="big">0.9<small>→</small><span class="to">0.3</span></span><span class="t">과제당 "다시 해 주세요" 횟수</span></div>
+      <div class="num"><span class="big"><span class="to">98%</span></span><span class="t">질문이 실제로 정해야 할 결정을 짚은 비율(haq)</span></div>
+      <div class="num"><span class="big"><span class="to">0~1%</span></span><span class="t">이미 파일에 있는 것을 물어본 비율. 찾을 수 있는 건 먼저 찾아봅니다.</span></div>
+      <div class="num"><span class="big">$3.21<small>→</small><span class="to">$1.99</span></span><span class="t">처음부터 맞은 결과물 1건을 얻는 데 든 비용</span></div>
+      <div class="num"><span class="big"><span class="to">100%</span></span><span class="t">한국어로 물으면 한국어로 답한 비율(전역 설정을 켰을 때)</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>이렇게 일합니다</h2>
+    <p class="sub">질문 개수가 많아서가 아니라 순서가 달라서 결과가 달라집니다.</p>
+    <ol class="steps">
+      <li><h3>먼저 찾아봅니다</h3><p>요청, 첨부 파일, 저장소 문서, 데이터를 먼저 읽습니다. 확인할 수 있는 사실은 묻지 않습니다. 실행해 보면 알 수 있는 것도 직접 돌려 봅니다.</p></li>
+      <li><h3>당신만 정할 수 있는 것만 묻습니다</h3><p>독자, 기준, 범위, 승인처럼 결과를 바꾸는 결정만 고릅니다. 나머지는 "따로 말씀 없으면 이렇게 하겠습니다"라고 기본값을 미리 보여 줍니다. 틀린 줄만 고쳐 주시면 됩니다.</p></li>
+      <li><h3>실제로 확인하고 정직하게 보고합니다</h3><p>테스트와 실제 실행으로 확인한 것만 통과로 적습니다. 확인하지 못한 것은 확인하지 못했다고 씁니다. 되돌리기 어려운 작업 앞에서는 먼저 승인을 받습니다.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>이런 업무에서 빛납니다</h2>
+    <p class="sub">기준이 담당자 머릿속에 있는 일입니다. 아래 막대는 첫 결과물 정답률이고, 회색은 플러그인 없이 쓴 경우, 노란색은 wrxp를 쓴 경우입니다.</p>
+    <div class="grid">
+      <div class="card"><span class="dept">영업</span><h3>고객 견적서</h3>
+        <div class="meter"><span class="from">33%</span><span class="track"><span class="fill" style="width:94%"></span><span class="base" style="width:33%"></span></span><span class="to">94%</span></div>
+        <p class="catch">메일엔 "100명 넘게", "몇 년 쓸 생각"뿐. 좌석 수, 약정 기간, 유효기간 승인을 짚어 냅니다.</p></div>
+      <div class="card"><span class="dept">데이터</span><h3>코호트 리텐션 분석</h3>
+        <div class="meter"><span class="from">50%</span><span class="track"><span class="fill" style="width:100%"></span><span class="base" style="width:50%"></span></span><span class="to">100%</span></div>
+        <p class="catch">리텐션을 로그인으로 볼지 결제로 볼지 계산 전에 확인합니다.</p></div>
+      <div class="card"><span class="dept">법무</span><h3>공급 계약 검토</h3>
+        <div class="meter"><span class="from">68%</span><span class="track"><span class="fill" style="width:100%"></span><span class="base" style="width:68%"></span></span><span class="to">100%</span></div>
+        <p class="catch">우리가 구매자인지 공급자인지에 따라 위험 조항이 정반대입니다. 그것부터 묻습니다.</p></div>
+      <div class="card"><span class="dept">HR</span><h3>신규 입사자 온보딩 일정</h3>
+        <div class="meter"><span class="from">20%</span><span class="track"><span class="fill" style="width:90%"></span><span class="base" style="width:20%"></span></span><span class="to">90%</span></div>
+        <p class="catch">입사일, 재택 요일, 멘토 면담 주기처럼 파일에 없는 것만 골라 묻고, 공휴일과 사내 규정은 직접 찾아 반영합니다.</p></div>
+      <div class="card"><span class="dept">기획</span><h3>RICE 우선순위</h3>
+        <div class="meter"><span class="from">40%</span><span class="track"><span class="fill" style="width:100%"></span><span class="base" style="width:40%"></span></span><span class="to">100%</span></div>
+        <p class="catch">도달 범위 기간, 신뢰도 상한, 공수 단위처럼 점수를 바꾸는 기준을 맞춘 뒤 계산합니다.</p></div>
+      <div class="card"><span class="dept">마케팅</span><h3>휴면 고객 재활성화 캠페인</h3>
+        <div class="meter"><span class="from">60%</span><span class="track"><span class="fill" style="width:90%"></span><span class="base" style="width:60%"></span></span><span class="to">90%</span></div>
+        <p class="catch">휴면 기준일, 발송 시각, 대조군 비율을 정하고, 신규 전용 쿠폰 같은 함정은 문서에서 걸러 냅니다.</p></div>
+      <div class="card"><span class="dept">개발</span><h3>주문 내역 엑셀 내보내기</h3>
+        <div class="meter"><span class="from">22%</span><span class="track"><span class="fill" style="width:100%"></span><span class="base" style="width:22%"></span></span><span class="to">100%</span></div>
+        <p class="catch">한 행의 단위, 열 순서, 취소 주문 포함 여부를 만들기 전에 맞춥니다.</p></div>
+      <div class="card"><span class="dept">개발</span><h3>쿠폰 할인 규칙</h3>
+        <div class="meter"><span class="from">60%</span><span class="track"><span class="fill" style="width:100%"></span><span class="base" style="width:60%"></span></span><span class="to">100%</span></div>
+        <p class="catch">세일 상품 제외, 10원 단위 절사, 무료배송 기준처럼 기획자만 아는 규칙을 짚습니다.</p></div>
+      <div class="card"><span class="dept">경영기획</span><h3>여러 팀 의견을 조율한 로드맵</h3>
+        <div class="meter"><span class="from">70%</span><span class="track"><span class="fill" style="width:90%"></span><span class="base" style="width:70%"></span></span><span class="to">90%</span></div>
+        <p class="catch">문서를 누가 읽고 무엇을 결정하는지부터 확인해, 결론을 앞에 둔 선택지 비교 문서를 만듭니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>다른 방식과 비교하면</h2>
+    <p class="sub">같은 15개 업무에서 처음 넘긴 결과물의 정답률입니다. 코드 작업 절차에 강한 플러그인(pstack)과 비교해도 차이는 의도 맞추기에서 납니다.</p>
+    <div class="vs" role="img" aria-label="조건별 첫 결과물 정답률">
+      <div class="row"><span>플러그인 없음</span><span class="bar"><i style="width:64%"></i></span><span class="val">64%</span></div>
+      <div class="row"><span>pstack</span><span class="bar"><i style="width:65%"></i></span><span class="val">65%</span></div>
+      <div class="row"><span>pstack 직접 호출</span><span class="bar"><i style="width:69%"></i></span><span class="val">69%</span></div>
+      <div class="row"><span><b>wrxp haq</b></span><span class="bar"><i class="w" style="width:86%"></i></span><span class="val">86%</span></div>
+      <div class="row"><span><b>wrxp haqq</b></span><span class="bar"><i class="w" style="width:92%"></i></span><span class="val">92%</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>무엇을 부르면 되나요</h2>
+    <p class="sub">모두 같은 엔진입니다. 달라지는 것은 작업 전에 확인할 결정의 양입니다.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>명령</th><th>이럴 때</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td><code>/wrxp:ha</code></td><td>할 일이 분명하고 바로 진행하면 될 때. 승인이 필요한 경계만 확인합니다.</td><td>"이 함수 off-by-one 고쳐 줘"</td></tr>
+        <tr><td><code>/wrxp:haq</code></td><td>원하는 그림은 있는데 세부를 다 말하지 않았을 때. 한 번에 최대 4개를 묻습니다.</td><td>"주문 내역 엑셀로 뽑게 해 줘"</td></tr>
+        <tr><td><code>/wrxp:haqq</code></td><td>정할 기준이 여러 개 얽혀 있을 때. 두 번까지 나눠 묻습니다.</td><td>"3분기 이탈률 이사회 보고용으로 구해 줘"</td></tr>
+        <tr><td><code>/wrxp:haqqq</code></td><td>되돌리기 어렵거나 위험이 큰 일. 깊게 확인한 뒤 진행합니다.</td><td>"운영 DB 마이그레이션 안전한지 보고 진행해 줘"</td></tr>
+        <tr><td><code>/wrxp:setup</code></td><td>처음 한 번. 전역 규칙을 설치해 답변 언어와 작업 원칙을 맞춥니다.</td><td>"양쪽 전역 지침에 wrxp 설정해 줘"</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>함께 따라오는 것들</h2>
+    <div class="plus">
+      <div><span class="k">승인 먼저</span><p>운영 DB 변경, 영구 삭제, 외부 공개처럼 되돌리기 어려운 일은 실행 전에 확인합니다. 실험에서 승인 없이 운영 DB를 바꾼 경우는 한 번도 없었습니다.</p></div>
+      <div><span class="k">거짓 확인 없음</span><p>확인할 수 없는 환경에서 "확인했다"고 보고한 경우가 0건이었습니다. 확인하지 못한 것은 그렇다고 적습니다.</p></div>
+      <div><span class="k">근거가 붙은 데이터</span><p>수치를 보고할 때 기간, 필터, 단위, 정의를 함께 적은 비율이 92~96%였습니다.</p></div>
+      <div><span class="k">일관된 한국어</span><p>전역 설정을 켜면 한국어 질문에 언제나 한국어로, 명확한 문장으로 답합니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <h2>시작하기</h2>
+    <div class="start">
+      <pre><span class="c"># Claude Code</span>
+claude plugin marketplace add donghyunlim/claude-middleware
+claude plugin install wrxp@donghyunlim
+<span class="c"># 그다음 Claude Code에서</span>
+/wrxp:setup</pre>
+      <pre><span class="c"># Codex</span>
+codex plugin marketplace add donghyunlim/claude-middleware --ref main
+codex plugin add wrxp@donghyunlim
+<span class="c"># 그다음 Codex에서</span>
+$wrxp:setup</pre>
+    </div>
+    <p class="sub" style="margin-top:16px">평소에는 그냥 요청하고, 기준이 머릿속에만 있는 일이면 앞에 <code>/wrxp:haq</code>나 <code>/wrxp:haqq</code>를 붙이세요.</p>
+  </div>
+</section>
+
+<footer class="col">
+  <p>첫 화면의 대화는 실제 실행 기록을 줄인 것입니다. 측정 조건: wrxp 0.1.78, Claude Opus 5.5, 2026-11-07. 숨은 의도를 아는 모의 사용자가 질문에 답하는 부서 업무 15종을 조건마다 4회 실행했습니다(총 360회). 업무 카드의 수치는 과제별 4회 평균이고, haq와 haqq 중 높은 쪽입니다. 모의 사용자가 묻지 않은 내용까지 답한 경우가 있어, 실제 사용자 환경의 효과는 이보다 작을 수 있습니다. 정답이 정해진 문제(표준 벤치마크, SWE-bench)에서는 조건 간 차이가 없었습니다. 측정 원자료는 저장소의 benchmarks/wrxp-spec-test 폴더에 있습니다.</p>
+</footer>

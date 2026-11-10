@@ -443,7 +443,6 @@ class WrxpInvariantTests(unittest.TestCase):
             "3. 새 증거 없이 같은 시도를 반복하지 않고, 같은 전제로 거듭 실패하면 전제부터 확인한다.\n"
             "4. 대체물로 확인한 것과 결론이 안 난 것은 통과로 보고하지 않는다.\n"
             "5. 대신 정한 판단은 반환 보고에 `defaults_taken`으로 적는다. 나중에 바꿔야 할 한계를 남긴 곳에는 코드에 `shortcut: <한계>, <바꿀 시점>` 주석도 단다.\n"
-            "6. 새 코드보다 기존 코드, 표준 라이브러리, 이미 설치된 의존성을 먼저 쓴다. 신뢰 경계의 검증, 데이터 손실 방지, 보안, 접근성은 줄이지 않는다.\n"
         )
         delegation = (WRXP_ROOT / "skills/code-delegation/SKILL.md").read_text()
         self.assertIn("```text\n" + core + "```", delegation)

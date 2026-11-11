@@ -21,6 +21,16 @@
       "source": "./wrxp",
       "category": "productivity",
       "tags": ["orchestration", "agents", "staged-development", "delegation"]
+    },
+    {
+      "name": "don",
+      "description": "ha family entry point plus staged development, delegation, handoff, intent check, visual decision pages, and Korean writing skills",
+      "source": {
+        "source": "github",
+        "repo": "donghyunlim/don"
+      },
+      "category": "productivity",
+      "tags": ["orchestration", "agents", "staged-development", "delegation"]
     }
   ]
 }
